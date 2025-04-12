@@ -12,7 +12,7 @@ export const useAuthStore = defineStore('auth', {
   },
   actions: {
     async setCsrfToken() {
-      await fetch('http://localhost:8000/api/set-csrf-token', {
+      await fetch('http://localhost:8000/users/api/set-csrf-token', {
         method: 'GET',
         credentials: 'include',
       })
@@ -23,7 +23,7 @@ export const useAuthStore = defineStore('auth', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': getCSRFToken(),
+          // 'X-CSRFToken': getCSRFToken(),
         },
         body: JSON.stringify({
           email,
@@ -32,7 +32,7 @@ export const useAuthStore = defineStore('auth', {
         credentials: 'include',
       })
       const data = await response.json()
-      if (data.success) {
+      if (data.message) {
         this.isAuthenticated = true
         this.saveState()
         if (router) {
