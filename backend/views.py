@@ -8,11 +8,6 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from .forms import CreateUserForm
 
-import requests
-from django.conf import settings
-from rest_framework.response import Response
-from rest_framework.decorators import api_view
-
 @ensure_csrf_cookie
 @require_http_methods(['GET'])
 def set_csrf_token(request):
@@ -57,27 +52,11 @@ def user(request):
 
 @require_http_methods(['POST'])
 def register(request):
-    recaptcha_token = request.data.get('recaptcha')
-    if not recaptcha_token:
-        return Response({'error': 'reCAPTCHA verification failed'}, status=400)
-    
-    recaptcha_response = requests.post(
-        'https://www.google.com/recaptcha/api/siteverify',
-        data={
-            'secret': "6Lc0jxUrAAAAAMT1p8R9mq3XxgyTvoCllheU6LDM",
-            'response': recaptcha_token
-        }
-    )
-
-    result = recaptcha_response.json()
-    if not result.get('success'):
-        return Response({'error': 'Invalid reCAPTCHA. Try again.'}, status=400)
+    data = json.loads(request.body.decode('utf-8'))
+    form = CreateUserForm(data)
+    if form.is_valid():
+        form.save()
+        return JsonResponse({'success': 'User registered successfully'}, status=201)
     else:
-        data = json.loads(request.body.decode('utf-8'))
-        form = CreateUserForm(data)
-        if form.is_valid():
-            form.save()
-            return JsonResponse({'success': 'User registered successfully'}, status=201)
-        else:
-            errors = form.errors.as_json()
-            return JsonResponse({'error': errors}, status=400)
+        errors = form.errors.as_json()
+        return JsonResponse({'error': errors}, status=400)
