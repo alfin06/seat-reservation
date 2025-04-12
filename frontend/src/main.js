@@ -15,6 +15,9 @@ import "bootstrap/dist/js/bootstrap.js"
 import en from './locales/en.json'
 import zh from './locales/zh.json'
 
+// vue3-notification
+import Notifications from '@kyvg/vue3-notification'
+
 // Configure i18n
 const i18n = createI18n({
     locale: 'en',
@@ -28,6 +31,7 @@ app.use(createPinia())
 app.use(router)
 app.use(i18n)
 app.use(ElementPlus)
+app.use(Notifications)
 
 const authStore = useAuthStore()
 authStore.setCsrfToken()

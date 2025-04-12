@@ -19,7 +19,7 @@ export const useAuthStore = defineStore('auth', {
     },
 
     async login(email, password, router = null) {
-      const response = await fetch('http://localhost:8000/api/login', {
+      const response = await fetch('http://localhost:8000/users/login/', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,6 +43,7 @@ export const useAuthStore = defineStore('auth', {
       } else {
         this.user = null
         this.isAuthenticated = false
+        this.message = data["error"]
         this.saveState()
       }
     },

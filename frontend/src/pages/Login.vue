@@ -25,7 +25,7 @@ export default {
             else {
                 await this.authStore.login(this.email, this.password, this.$router)
                 if (!this.authStore.isAuthenticated) {
-                    this.error = 'Login failed. Please check your credentials.'
+                    this.error = this.authStore.message
                 }
             }
         },

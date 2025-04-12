@@ -23,7 +23,7 @@ export default {
                     this.error = "Passwords do not match!"
                 }
                 else {
-                    const response = await fetch('http://localhost:8000/api/register', {
+                    const response = await fetch('http://localhost:8000/users/register/', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -31,14 +31,17 @@ export default {
                         },
                         body: JSON.stringify({
                             email: this.email,
-                            password: this.password
+                            name: this.email,
+                            password: this.password,
+                            confirm_password: this.password,
+                            role: "STUDENT"
                         }),
                         credentials: 'include'
                     })
                     const data = await response.json()
                     if (response.ok) {
                         this.success = 'Registration successful! Please log in.'
-                        alert('Registration successful! Please log in.')
+                        this.$notify({type:"success", text:"Registration successful! Please log in."})
                         setTimeout(() => {
                             this.$router.push('/login')
                         }, 1000)

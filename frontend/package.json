@@ -9,6 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@kyvg/vue3-notification": "^3.4.1",
     "@unhead/vue": "^2.0.5",
     "bootstrap": "^5.3.5",
     "element-plus": "^2.9.7",

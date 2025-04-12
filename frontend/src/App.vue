@@ -15,6 +15,7 @@ export default {
 
 <template>
   <div class="app-container">
+    <notifications />
     <h1>{{ $t('title') }}</h1>
     <!-- <nav>
       <router-link to="/register">{{ $t('register') }}</router-link> |
