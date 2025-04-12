@@ -10,7 +10,8 @@
   "submitRegister": "Register Now",
   "submitLogin": "Login Now",
   "generateReports": "Generate and view reports on seat utilization and no-show rates.",
-
+  "forgetPassword": "Forget Password",
+  "noAccount": "Don't have an account",
   "reservationTitle": "Study Room & Seat Reservation",
   "reservationDescription": "Select a study room and reserve a seat for your session.",
   "checkInTitle": "Check-In & No-show Management",

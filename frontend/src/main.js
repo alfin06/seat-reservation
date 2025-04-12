@@ -8,6 +8,8 @@ import { useAuthStore } from './store/auth'
 import { createI18n } from 'vue-i18n'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import "bootstrap/dist/css/bootstrap.css"
+import "bootstrap/dist/js/bootstrap.js"
 
 // Import locale files
 import en from './locales/en.json'

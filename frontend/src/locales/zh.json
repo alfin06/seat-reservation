@@ -21,6 +21,7 @@
     "manageRoomsDesc": "管理学习室和座位：",
     "addRoom": "添加房间",
     "generateReports": "生成并查看座位利用率和缺席率的报告。",
+    "forgetPassword": "忘记密码",
     "selectStudyRoom": "选择学习室",
     "selectRoomPlaceholder": "请选择房间",
     "selectSeat": "选择座位",
@@ -40,6 +41,7 @@
     "actionsColumn": "操作",
     "editButton": "编辑",
     "deleteButton": "删除",
-    "adminReportsDesc": "生成并查看座位利用率和缺席率的报告。"
+    "adminReportsDesc": "生成并查看座位利用率和缺席率的报告。",
+    "noAccount": "没有账户"
   }
   

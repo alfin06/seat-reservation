@@ -32,7 +32,7 @@ export default {
     
     <!-- Bottom controls: login button and language translation controls -->
     <div class="bottom-controls">
-      <el-button type="primary" @click="onLogin">{{ $t('login') }}</el-button>
+      <!-- <el-button type="primary" @click="onLogin">{{ $t('login') }}</el-button> -->
       <div class="translation-controls">
         <button @click="changeLanguage('en')">English</button>
         <button @click="changeLanguage('zh')">中文</button>

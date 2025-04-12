@@ -49,24 +49,28 @@ export default {
             } catch (err) {
                 this.error = 'An error occurred during registration: ' + err
             }
+        },
+        onLogin() {
+            // For example, redirect to the login page.
+            this.$router.push('/login');
         }
     }
 } 
 </script>
 
 <template>
-    <el-card class="box-card">
+    <el-card class="box-card card-body">
         <h2>{{ $t('register') }}</h2>
         <p v-if="error" class="error">{{error}}</p> 
         <p v-if="success">{{success}}</p>
-        <el-form :model="form" ref="registerForm" label-width="120px" @submit.prevent="register">
-            <el-form-item :label="$t('enterEmail')" prop="email">
+        <el-form :model="form" ref="registerForm" label-width="120px" @submit.prevent="register" class="form-horizontal form-material">
+            <el-form-item :label="$t('enterEmail')" prop="email" class="form-label">
                 <el-input v-model="email" id="email" type="email" required :placeholder="$t('enterEmail')"></el-input>
             </el-form-item>
-            <el-form-item :label="$t('enterPassword')" prop="password">
+            <el-form-item :label="$t('enterPassword')" prop="password" class="form-label">
                 <el-input v-model="password" id="password" type="password" required :placeholder="$t('enterPassword')"></el-input>
             </el-form-item>
-            <el-form-item :label="$t('confirmPassword')" prop="password2">
+            <el-form-item :label="$t('confirmPassword')" prop="password2" class="form-label">
                 <el-input v-model="password2" id="password2" type="password" required :placeholder="$t('confirmPassword')"></el-input>
             </el-form-item>
             <br />
@@ -74,6 +78,7 @@ export default {
                 <el-button type="primary" @click="register">{{ $t('submitRegister') }}</el-button>
             </el-form-item>
         </el-form>
+        <p>Already have an account? <el-link @click="onLogin">{{ $t('login') }}</el-link></p>
     </el-card>
 </template>
 
