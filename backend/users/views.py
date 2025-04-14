@@ -22,11 +22,9 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 
-# Existing view
 def all_user(request):
     return HttpResponse('Returning all users')
 
-# New Login View
 class LoginView(APIView):
     permission_classes = [AllowAny]
 
