@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'users',
-    'dashboard',
+    # 'dashboard',  # Commented out dashboard app
 ]
 
 MIDDLEWARE = [
@@ -156,22 +156,31 @@ REST_FRAMEWORK = {
 }
 
 # Email Configuration
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'  # Changed for development
-# EMAIL_HOST = 'mail.finicode.com'
-# EMAIL_PORT = 465
-# EMAIL_USE_SSL = True
-# EMAIL_HOST_USER = 'seat-reservation@finicode.com'
-# EMAIL_HOST_PASSWORD = 'A^Ld&a?]vHM2'
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'mail.finicode.com'
+EMAIL_PORT = 587  # Changed to TLS port
+EMAIL_USE_TLS = True  # Use TLS instead of SSL
+EMAIL_USE_SSL = False  # Disable SSL since we're using TLS
+EMAIL_HOST_USER = 'seat-reservation@finicode.com'
+EMAIL_HOST_PASSWORD = 'A^Ld&a?]vHM2'
 DEFAULT_FROM_EMAIL = 'seat-reservation@finicode.com'
 SERVER_EMAIL = 'seat-reservation@finicode.com'
+EMAIL_TIMEOUT = 30  # Add timeout setting
 
 # Frontend URL for email verification
-FRONTEND_URL = 'http://localhost:8000'
+FRONTEND_URL = 'http://localhost:5174'
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
 CORS_ALLOW_CREDENTIALS = True
-CORS_ALLOW_METHODS = ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS']
+CORS_ALLOW_METHODS = [
+    'GET',
+    'POST',
+    'PUT',
+    'PATCH',
+    'DELETE',
+    'OPTIONS'
+]
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -185,10 +194,17 @@ CORS_ALLOW_HEADERS = [
 ]
 
 # CSRF Settings
-CSRF_TRUSTED_ORIGINS = ['http://localhost:3000', 'http://127.0.0.1:3000', 'http://localhost:8000', 'http://127.0.0.1:8000']
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5173',
+    'http://localhost:5174',
+    'http://127.0.0.1:5173',
+    'http://127.0.0.1:5174',
+    'http://localhost:8000',
+    'http://127.0.0.1:8000'
+]
 CSRF_COOKIE_SECURE = False  # Set to True in production
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = None  # Changed from 'Lax' to None for development
+CSRF_COOKIE_SAMESITE = 'Lax'
 CSRF_USE_SESSIONS = False
 CSRF_COOKIE_NAME = 'csrftoken'
 
@@ -200,3 +216,36 @@ CSRF_EXEMPT_URLS = [
     'users/password-reset-confirm/',
     'users/verify-email/'
 ]
+
+# Session settings
+SESSION_COOKIE_SECURE = False  # Set to True in production
+SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_HTTPONLY = True
+
+# Logging Configuration
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django.request': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.security': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+        'django.mail': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+            'propagate': True,
+        },
+    },
+}

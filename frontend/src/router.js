@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import Home from './pages/Home.vue'
 import Login from './pages/Login.vue'
 import Register from './pages/Register.vue'
+import ForgotPassword from './pages/ForgotPassword.vue'
 
 const routes = [
   { 
@@ -17,6 +18,11 @@ const routes = [
     path: '/register',
     name: 'register',
     component: Register,
+  },
+  {
+    path: '/forgot-password',
+    name: 'forgot-password',
+    component: ForgotPassword,
   },
   {
     path: '/home',
@@ -36,8 +42,8 @@ router.beforeEach((to, from, next) => {
   const storedState = JSON.parse(localStorage.getItem('authState'))
   const isAuthenticated = storedState?.isAuthenticated
 
-  // Redirect authenticated users away from login/register
-  if ((to.name === 'login' || to.name === 'register') && isAuthenticated) {
+  // Redirect authenticated users away from login/register/forgot-password
+  if ((to.name === 'login' || to.name === 'register' || to.name === 'forgot-password') && isAuthenticated) {
     next({ name: 'home' })
   }
 
