@@ -1,29 +1,20 @@
 <template>
   <div class="admin-dashboard">
-    <!-- Header with Language Toggle -->
+    <!-- Header -->
     <div class="admin-header">
-      <h1>Study Seat Reservation System</h1>
-      <el-dropdown trigger="click" @command="changeLanguage">
-        <span class="language-toggle">
-          <i class="el-icon-global"></i> {{ currentLanguage.toUpperCase() }} ▼
-        </span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="en">English</el-dropdown-item>
-          <el-dropdown-item command="zh">中文</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      <h1>{{ $t('adminTitle') }}</h1>
     </div>
 
     <!-- Urgent Alert -->
     <el-alert 
       type="warning" 
-      title="Immediate Action Needed" 
+      :title="$t('urgentAlertTitle')" 
       show-icon
       style="margin-bottom: 20px;"
     >
-      <span>3 seats need cleaning in Room B</span>
+      <span>{{ $t('cleaningNotice') }}</span>
       <el-button type="warning" size="mini" style="margin-left: 10px;">
-        Mark as Cleaned
+        {{ $t('markAsCleaned') }}
       </el-button>
     </el-alert>
 
@@ -33,8 +24,8 @@
         <el-card class="stat-card" shadow="hover">
           <div class="stat-content">
             <h3>8</h3>
-            <p>Total Rooms</p>
-            <el-tag type="success" effect="dark">+2 New</el-tag>
+            <p>{{ $t('totalRooms') }}</p>
+            <el-tag type="success" effect="dark">{{ $t('newRoomsTag') }}</el-tag>
           </div>
         </el-card>
       </el-col>
@@ -42,8 +33,8 @@
         <el-card class="stat-card" shadow="hover">
           <div class="stat-content">
             <h3>24</h3>
-            <p>Active Bookings</p>
-            <el-tag type="warning" effect="dark">3 Ending Soon</el-tag>
+            <p>{{ $t('activeBookings') }}</p>
+            <el-tag type="warning" effect="dark">{{ $t('endingSoonTag') }}</el-tag>
           </div>
         </el-card>
       </el-col>
@@ -51,8 +42,8 @@
         <el-card class="stat-card" shadow="hover">
           <div class="stat-content">
             <h3>2</h3>
-            <p>Today's No-Shows</p>
-            <el-tag type="danger" effect="dark">-10% from avg</el-tag>
+            <p>{{ $t('todaysNoShows') }}</p>
+            <el-tag type="danger" effect="dark">{{ $t('noShowDropTag') }}</el-tag>
           </div>
         </el-card>
       </el-col>
@@ -60,13 +51,13 @@
 
     <!-- Main Tabs -->
     <el-tabs v-model="activeTab">
-      <el-tab-pane label="Rooms" name="rooms">
+      <el-tab-pane :label="$t('tabRooms')" name="rooms">
         <room-management />
       </el-tab-pane>
-      <el-tab-pane label="Users" name="users">
+      <el-tab-pane :label="$t('tabUsers')" name="users">
         <user-management />
       </el-tab-pane>
-      <el-tab-pane label="Settings" name="settings">
+      <el-tab-pane :label="$t('tabSettings')" name="settings">
         <system-settings />
       </el-tab-pane>
     </el-tabs>
@@ -86,14 +77,7 @@ export default {
   },
   data() {
     return {
-      activeTab: 'rooms',
-      currentLanguage: 'en'
-    }
-  },
-  methods: {
-    changeLanguage(lang) {
-      this.currentLanguage = lang
-      this.$message.success(`Language changed to ${lang === 'en' ? 'English' : 'Chinese'}`)
+      activeTab: 'rooms'
     }
   }
 }
@@ -110,14 +94,6 @@ export default {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-}
-.language-toggle {
-  cursor: pointer;
-  color: #666;
-  font-size: 14px;
-}
-.language-toggle:hover {
-  color: #409EFF;
 }
 .stats-row {
   margin-bottom: 20px;
