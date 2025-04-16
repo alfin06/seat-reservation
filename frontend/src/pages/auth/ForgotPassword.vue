@@ -1,27 +1,3 @@
-<template>
-    <div class="container my-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <el-card class="box-card card-body">
-                    <h2>Reset Password</h2>
-                    <p class="description">Enter your email address and we'll send you instructions to reset your password.</p>
-                    <p v-if="error" class="error text-danger">{{error}}</p> 
-                    <p v-if="success" class="success text-success">{{success}}</p>
-                    <el-form :model="form" ref="resetForm" label-width="120px" @submit.prevent="resetPassword" class="form-horizontal form-material">
-                        <el-input v-model="email" id="email" type="email" required :placeholder="$t('enterEmail')"></el-input>
-                        <br/><br/>
-                        <el-button type="primary" @click="resetPassword">{{ $t('sendInstructions') }}</el-button>
-                    </el-form>
-                    <div class="links-container">
-                        <p>Remember your password? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
-                        <p>Don't have an account? <el-link type="primary" @click="onRegister">{{ $t('register') }}</el-link></p>
-                    </div>
-                </el-card>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script>
 import { useAuthStore } from '../../store/auth'
 
@@ -31,7 +7,8 @@ export default {
         return {
             email: '',
             error: '',
-            success: ''
+            success: '',
+            loading: false, // Loader state
         }
     },
     methods: {
@@ -39,6 +16,7 @@ export default {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         
             try {
+                this.loading = true; // Show loader
                 if(!emailRegex.test(this.email)) {
                     this.error = "Invalid email address!"
                     return
@@ -58,6 +36,8 @@ export default {
                     type: "error",
                     text: this.error
                 })
+            } finally {
+                this.loading = false; // Hide loader
             }
         },
         onLogin() {
@@ -69,6 +49,30 @@ export default {
     }
 }
 </script>
+
+<template>
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <el-card class="box-card card-body" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
+                    <h2>Reset Password</h2>
+                    <p class="description">Enter your email address and we'll send you instructions to reset your password.</p>
+                    <p v-if="error" class="error text-danger">{{error}}</p> 
+                    <p v-if="success" class="success text-success">{{success}}</p>
+                    <el-form :model="form" ref="resetForm" label-width="120px" @submit.prevent="resetPassword" class="form-horizontal form-material">
+                        <el-input v-model="email" id="email" type="email" required :placeholder="$t('enterEmail')"></el-input>
+                        <br/><br/>
+                        <el-button type="primary" @click="resetPassword">{{ $t('sendInstructions') }}</el-button>
+                    </el-form>
+                    <div class="links-container">
+                        <p>Remember your password? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
+                        <p>Don't have an account? <el-link type="primary" @click="onRegister">{{ $t('register') }}</el-link></p>
+                    </div>
+                </el-card>
+            </div>
+        </div>
+    </div>
+</template>
 
 <style scoped>
 .box-card {

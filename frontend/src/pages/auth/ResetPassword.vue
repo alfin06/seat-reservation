@@ -2,7 +2,7 @@
     <div class="container my-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <el-card class="box-card card-body">
+                <el-card class="box-card card-body" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
                     <h2>Create a new Password</h2>
                     <p v-if="error" class="error text-danger">{{error}}</p> 
                     <p v-if="success" class="success text-success">{{success}}</p>
@@ -37,7 +37,7 @@ export default {
             token: '',
             password: '',
             password2: '',
-            loading: true,
+            loading: false,
             success: false,
         }
     },
@@ -47,6 +47,7 @@ export default {
     methods: {
         async resetPassword() {
             try {
+                this.loading = true; // Show loader
                 if (this.password != this.password2) {
                     this.error = "Passwords do not match!"
                     return
@@ -71,7 +72,6 @@ export default {
                         type: "error",
                         text: "Something wrong! Please wait for 5 minute and reset your password again."
                     })
-                    return
                 }
                 else {
                     //this.success = 'Password reset instructions have been sent to your email.'
@@ -90,6 +90,8 @@ export default {
                     type: "error",
                     text: this.error
                 })
+            } finally {
+                this.loading = false; // Hide loader
             }
         },
         onLogin() {
