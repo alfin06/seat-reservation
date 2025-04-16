@@ -5,6 +5,7 @@ import Reservation from '../views/Reservation.vue'
 import CheckIn from '../views/CheckIn.vue'
 import InstantBooking from '../views/InstantBooking.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
+import ForgotPassword from '../views/ForgotPassword.vue' // NEW IMPORT
 
 const routes = [
   { path: '/register', component: Register },
@@ -13,6 +14,7 @@ const routes = [
   { path: '/checkin', component: CheckIn },
   { path: '/instant-booking', component: InstantBooking },
   { path: '/admin', component: AdminDashboard },
+  { path: '/forgot-password', component: ForgotPassword }, // NEW ROUTE
   { path: '/', redirect: '/register' }
 ]
 

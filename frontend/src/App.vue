@@ -1,81 +1,78 @@
-<script>
-export default {
-  name: 'App',
-  methods: {
-    changeLanguage(lang) {
-      this.$i18n.locale = lang;
-    },
-    onLogin() {
-      // For example, redirect to the login page.
-      this.$router.push('/login');
-    }
-  }
-}
-</script>
-
 <template>
-  <div class="app-container">
-    <notifications />
-    
-    <!-- Main content (e.g., table, forms, etc.) -->
-    <div class="content-container">
+  <div class="app">
+    <header class="app-header">
+      <h1>Study Seat Reservation System</h1>
+      <nav class="main-nav">
+        <router-link to="/register" class="nav-link">Register</router-link>
+        <span class="nav-divider">|</span>
+        <router-link to="/login" class="nav-link">Login</router-link>
+        <span class="nav-divider">|</span>
+        <router-link to="/reservation" class="nav-link">Study Room & Seat Reservation</router-link>
+        <span class="nav-divider">|</span>
+        <router-link to="/checkin" class="nav-link">Check-In & No-show Management</router-link>
+        <span class="nav-divider">|</span>
+        <router-link to="/instant-booking" class="nav-link">Seat Availability & Instant Booking</router-link>
+        <span class="nav-divider">|</span>
+        <router-link to="/admin" class="nav-link">Admin Dashboard</router-link>
+      </nav>
+    </header>
+
+    <main class="app-content">
       <router-view />
-    </div>
-    
-    <!-- Bottom controls: language translation controls -->
-    <div class="bottom-controls">
-      <div class="translation-controls">
-        <button @click="changeLanguage('en')" class="lang-btn">English</button>
-        <button @click="changeLanguage('zh')" class="lang-btn">中文</button>
-      </div>
-    </div>
+    </main>
   </div>
 </template>
 
-<style scoped>
-.app-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  min-height: 100vh;
+<style>
+.app {
+  max-width: 1200px;
+  margin: 0 auto;
   padding: 20px;
 }
 
-.content-container {
-  width: 100%;
+.app-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.app-header h1 {
+  font-size: 2rem;
+  margin-bottom: 15px;
+  color: #2c3e50;
+}
+
+.main-nav {
   display: flex;
   justify-content: center;
-  margin: 20px 0;
-}
-
-/* Bottom controls styling */
-.bottom-controls {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
   align-items: center;
-  margin-top: 20px;
-  position: fixed;
-  bottom: 20px;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding-bottom: 15px;
+  border-bottom: 1px solid #eee;
 }
 
-.translation-controls {
-  margin-top: 10px;
+.nav-link {
+  font-weight: 600;
+  color: #2c3e50;
+  text-decoration: none;
+  padding: 5px 10px;
 }
 
-.lang-btn {
-  margin: 0 5px;
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  background: #f8f9fa;
-  color: #495057;
-  cursor: pointer;
-  transition: all 0.3s ease;
+.nav-link:hover {
+  color: #646cff;
 }
 
-.lang-btn:hover {
-  background: #e9ecef;
+.nav-link.router-link-exact-active {
+  color: #646cff;
+  text-decoration: underline;
+}
+
+.nav-divider {
+  color: #ccc;
+  padding: 0 5px;
+}
+
+.app-content {
+  padding: 20px 0;
 }
 </style>

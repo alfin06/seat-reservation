@@ -1,83 +1,93 @@
 :root {
-    font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-    line-height: 1.5;
-    font-weight: 400;
-  
-    color-scheme: light dark;
-    background-color: white;
-    color: #1a1a1a;
-  
-    font-synthesis: none;
-    text-rendering: optimizeLegibility;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-}
-  
-a {
-    font-weight: 500;
-    color: #646cff;
-    text-decoration: inherit;
+  --primary-color: #409EFF;
+  --success-color: #67C23A;
+  --warning-color: #E6A23C;
+  --danger-color: #F56C6C;
+  --info-color: #909399;
+  --text-primary: #303133;
+  --text-regular: #606266;
+  --text-secondary: #909399;
+  --border-color: #DCDFE6;
 }
 
-a:hover {
-    color: #535bf2;
-}
-  
 body {
-    margin: 0;
-    min-width: 320px;
-    min-height: 100vh;
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', Arial, sans-serif;
+  color: var(--text-primary);
+  background-color: #f5f7fa;
 }
-  
-h1 {
-    font-size: 3.2em;
-    line-height: 1.1;
+
+#app {
+  min-height: 100vh;
 }
-  
+
 button {
-    border-radius: 8px;
-    border: 1px solid transparent;
-    padding: 0.6em 1.2em;
-    font-size: 1em;
-    font-weight: 500;
-    font-family: inherit;
-    background-color: #1a1a1a;
-    color: white;
-    cursor: pointer;
-    transition: border-color 0.25s;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  padding: 0.6em 1.2em;
+  font-size: 1em;
+  font-weight: 500;
+  font-family: inherit;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: border-color 0.25s, background-color 0.25s;
 }
 
 button:hover {
-    border-color: #646cff;
+  border-color: var(--primary-color);
 }
 
 button:focus,
 button:focus-visible {
-    outline: 4px auto -webkit-focus-ring-color;
-}
-  
-.card {
-    padding: 2em;
-}
-  
-#app {
-    width: 100%;
-    min-height: 100vh;
+  outline: 4px auto -webkit-focus-ring-color;
 }
 
-.error {
-    color: red;
+.card {
+  padding: 20px;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
-  
-@media (prefers-color-scheme: light) {
-    :root {
-        color: #213547;
-        background-color: #ffffff;
-    }
-    a:hover {
-        color: #747bff;
-    }
-    button {
-        background-color: #f9f9f9;
-    }
+
+/* Utility Classes */
+.text-primary {
+  color: var(--primary-color);
+}
+
+.text-success {
+  color: var(--success-color);
+}
+
+.text-warning {
+  color: var(--warning-color);
+}
+
+.text-danger {
+  color: var(--danger-color);
+}
+
+.bg-primary {
+  background-color: var(--primary-color);
+}
+
+.bg-success {
+  background-color: var(--success-color);
+}
+
+.bg-warning {
+  background-color: var(--warning-color);
+}
+
+.bg-danger {
+  background-color: var(--danger-color);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .stats-grid {
+    flex-direction: column;
+  }
 }
