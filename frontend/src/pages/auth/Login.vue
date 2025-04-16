@@ -1,5 +1,5 @@
 <script>
-import {useAuthStore} from '../store/auth';
+import {useAuthStore} from '../../store/auth';
 
 export default {
     setup() {
@@ -32,11 +32,10 @@ export default {
             try {
                 await this.authStore.login({
                     email: this.email,
-                    password: this.password,
-                    role: this.role
+                    password: this.password
                 }, this.$router)
             } catch (error) {
-                this.error = error.message || "Login failed"
+                this.error = "Login failed: Please check your credentials!"
             }
         },
         resetError() {
@@ -68,7 +67,7 @@ export default {
             <el-form-item :label="$t('enterPassword')" prop="password" class="form-label">
                 <el-input v-model="password" id="password" type="password" required @input="resetError" :placeholder="$t('enterPassword')"></el-input>
             </el-form-item>
-            <el-form-item label="Role" prop="role" class="form-label">
+            <!-- <el-form-item label="Role" prop="role" class="form-label">
                 <el-select v-model="role" placeholder="Select role">
                     <el-option
                         v-for="option in roles"
@@ -77,15 +76,14 @@ export default {
                         :value="option.value"
                     ></el-option>
                 </el-select>
-            </el-form-item>
+            </el-form-item> -->
             <br/>
-            <el-form-item>
-                <el-button type="primary" @click="login">{{ $t('submitLogin') }}</el-button>
-            </el-form-item>
+            <el-button type="primary" @click="login">{{ $t('submitLogin') }}</el-button>
+            
         </el-form>
         <div class="links">
+            <p><el-link @click="onForgotPassword">{{ $t('forgetPassword') }}?</el-link></p>
             <p>{{ $t('noAccount') }}? <el-link @click="onRegister">{{ $t('register') }}</el-link></p>
-            <el-link @click="onForgotPassword">{{ $t('forgetPassword') }}?</el-link>
         </div>
     </el-card>
 </template>

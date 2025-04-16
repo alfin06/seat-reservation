@@ -97,14 +97,14 @@ export const useAuthStore = defineStore('auth', {
         const data = await response.json()
         this.user = {
           ...data.user,
-          role: credentials.role // Include role in user data
+          role: data.role // Include role in user data
         }
         this.isAuthenticated = true
         this.saveState()
         
         if (router) {
           // Redirect based on role
-          const route = credentials.role === 'ADMIN' ? 'admin-dashboard' : 'home'
+          const route = data.role === 'ADMIN' ? 'admin-dashboard' : 'home'
           await router.push({ name: route })
         }
       } catch (error) {

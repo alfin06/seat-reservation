@@ -1,5 +1,5 @@
 <script>
-import {getCSRFToken} from '../store/auth'
+import {getCSRFToken} from '../../store/auth'
 
 export default {
     data() {
@@ -10,6 +10,7 @@ export default {
             error: '',
             success: '',
             role: 'STUDENT',
+            loading: false, // Loader state
             roles: [
                 {
                     value: 'STUDENT',
@@ -27,6 +28,9 @@ export default {
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         
             try {
+                this.error = '';
+                this.loading = true; // Show loader
+
                 if(!emailRegex.test(this.email)) {
                     this.error = "Invalid email address!"
                 }
@@ -54,15 +58,15 @@ export default {
                         const contentType = response.headers.get("content-type");
                         if (contentType && contentType.indexOf("application/json") !== -1) {
                             const data = await response.json();
-                            this.error = data.error || 'Registration failed';
+                            this.error =  'Registration failed: ' + JSON.stringify(data.email);
                         } else {
-                            this.error = `Registration failed: ${response.status} ${response.statusText}`;
+                            this.error = `Registration failed: Please contact the administrator.`;
                         }
                         return;
                     }
 
                     const data = await response.json();
-                    this.success = 'Registration successful! Please log in.';
+                    // this.success = 'Registration successful! Please log in.';
                     this.$notify({type:"success", text:"Registration successful! Please log in."});
                     setTimeout(() => {
                         this.$router.push('/login');
@@ -70,6 +74,8 @@ export default {
                 }
             } catch (err) {
                 this.error = 'An error occurred during registration: ' + err
+            } finally {
+                this.loading = false; // Hide loader
             }
         },
         onLogin() {
@@ -84,39 +90,46 @@ export default {
 </script>
 
 <template>
-    <el-card class="box-card card-body">
-        <h2>{{ $t('register') }}</h2>
-        <p v-if="error" class="error text-danger">{{error}}</p> 
-        <p v-if="success" class="success text-success">{{success}}</p>
-        <el-form :model="form" ref="registerForm" label-width="120px" @submit.prevent="register" class="form-horizontal form-material">
-            <el-form-item :label="$t('enterEmail')" prop="email" class="form-label">
-                <el-input v-model="email" id="email" type="email" required :placeholder="$t('enterEmail')"></el-input>
-            </el-form-item>
-            <el-form-item :label="$t('enterPassword')" prop="password" class="form-label">
-                <el-input v-model="password" id="password" type="password" required :placeholder="$t('enterPassword')"></el-input>
-            </el-form-item>
-            <el-form-item :label="$t('confirmPassword')" prop="password2" class="form-label">
-                <el-input v-model="password2" id="password2" type="password" required :placeholder="$t('confirmPassword')"></el-input>
-            </el-form-item>
-            <el-form-item label="Role" prop="role" class="form-label form-spacing">
-                <el-select v-model="role" placeholder="Select role">
-                    <el-option
-                        v-for="role in roles"
-                        :key="role.value"
-                        :label="role.label"
-                        :value="role.value">
-                    </el-option>
-                </el-select>
-            </el-form-item>
-            <el-form-item class="form-spacing">
-                <el-button type="primary" @click="register">{{ $t('submitRegister') }}</el-button>
-            </el-form-item>
-        </el-form>
-        <div class="links-container">
-            <p>Already have an account? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
-            <p>Forgot your password? <el-link type="primary" @click="onForgotPassword">Reset Password</el-link></p>
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <el-card class="box-card card-body" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
+                    <h2>{{ $t('register') }}</h2>
+                    <br/>
+                    <p v-if="error" class="error text-danger">{{error}}</p> 
+                    <p v-if="success" class="success text-success">{{success}}</p>
+                    <el-form :model="form" ref="registerForm" label-width="120px" @submit.prevent="register" class="form-horizontal form-material">
+                        <el-form-item :label="$t('enterEmail')" prop="email" class="form-label">
+                            <el-input v-model="email" id="email" type="email" required :placeholder="$t('enterEmail')"></el-input>
+                        </el-form-item>
+                        <el-form-item :label="$t('enterPassword')" prop="password" class="form-label">
+                            <el-input v-model="password" id="password" type="password" required :placeholder="$t('enterPassword')"></el-input>
+                        </el-form-item>
+                        <el-form-item :label="$t('confirmPassword')" prop="password2" class="form-label">
+                            <el-input v-model="password2" id="password2" type="password" required :placeholder="$t('confirmPassword')"></el-input>
+                        </el-form-item>
+                        <!-- <el-form-item label="Role" prop="role" class="form-label form-spacing">
+                            <el-select v-model="role" placeholder="Select role">
+                                <el-option
+                                    v-for="role in roles"
+                                    :key="role.value"
+                                    :label="role.label"
+                                    :value="role.value">
+                                </el-option>
+                            </el-select>
+                        </el-form-item> -->
+                        <br/>
+                        <el-button type="primary" @click="register">{{ $t('submitRegister') }}</el-button>
+                        
+                    </el-form>
+                    <div class="links-container">
+                        <p>Already have an account? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
+                        <!-- <p>Forgot your password? <el-link type="primary" @click="onForgotPassword">Reset Password</el-link></p> -->
+                    </div>
+                </el-card>
+            </div>
         </div>
-    </el-card>
+    </div>
 </template>
 
 <style scoped>
