@@ -1,23 +1,25 @@
 <template>
-    <el-card class="box-card card-body">
-        <h2>Reset Password</h2>
-        <p class="description">Enter your email address and we'll send you instructions to reset your password.</p>
-        <p v-if="error" class="error text-danger">{{error}}</p> 
-        <p v-if="success" class="success text-success">{{success}}</p>
-        <el-form :model="form" ref="resetForm" label-width="120px" @submit.prevent="resetPassword" class="form-horizontal form-material">
-            <el-form-item label="Email" prop="email" class="form-label">
-                <el-input v-model="email" id="email" type="email" required placeholder="Enter your email">
-                </el-input>
-            </el-form-item>
-            <el-form-item class="form-spacing">
-                <el-button type="primary" @click="resetPassword">Send Reset Instructions</el-button>
-            </el-form-item>
-        </el-form>
-        <div class="links-container">
-            <p>Remember your password? <el-link type="primary" @click="onLogin">Login</el-link></p>
-            <p>Don't have an account? <el-link type="primary" @click="onRegister">Register</el-link></p>
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <el-card class="box-card card-body">
+                    <h2>Reset Password</h2>
+                    <p class="description">Enter your email address and we'll send you instructions to reset your password.</p>
+                    <p v-if="error" class="error text-danger">{{error}}</p> 
+                    <p v-if="success" class="success text-success">{{success}}</p>
+                    <el-form :model="form" ref="resetForm" label-width="120px" @submit.prevent="resetPassword" class="form-horizontal form-material">
+                        <el-input v-model="email" id="email" type="email" required :placeholder="$t('enterEmail')"></el-input>
+                        <br/><br/>
+                        <el-button type="primary" @click="resetPassword">{{ $t('sendInstructions') }}</el-button>
+                    </el-form>
+                    <div class="links-container">
+                        <p>Remember your password? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
+                        <p>Don't have an account? <el-link type="primary" @click="onRegister">{{ $t('register') }}</el-link></p>
+                    </div>
+                </el-card>
+            </div>
         </div>
-    </el-card>
+    </div>
 </template>
 
 <script>
@@ -45,13 +47,13 @@ export default {
                 const authStore = useAuthStore()
                 await authStore.resetPassword(this.email)
 
-                this.success = 'Password reset instructions have been sent to your email.'
+                //this.success = 'Password reset instructions have been sent to your email.'
                 this.$notify({
                     type: "success",
                     text: "Password reset instructions have been sent to your email."
                 })
             } catch (error) {
-                this.error = error.message || 'Failed to send reset instructions'
+                //this.error = error.message || 'Failed to send reset instructions'
                 this.$notify({
                     type: "error",
                     text: this.error
@@ -116,5 +118,9 @@ export default {
 
 :deep(.el-button) {
     min-width: 200px;
+}
+
+#email {
+    text-align: center;
 }
 </style> 

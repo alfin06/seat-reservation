@@ -170,12 +170,12 @@ class PasswordResetRequestView(APIView):
                 )
                 
                 return Response({
-                    "message": "Password reset email has been sent. Please check your inbox."
+                    "message": "Password reset email has been sent. Please check your inbox/spam folder."
                 }, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 # We return the same message even if the email doesn't exist for security
                 return Response({
-                    "message": "Password reset email has been sent. Please check your inbox."
+                    "message": "Password reset email has been sent. Please check your inbox/spam folder."
                 }, status=status.HTTP_200_OK)
                 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

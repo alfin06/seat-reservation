@@ -42,6 +42,8 @@
     "editButton": "编辑",
     "deleteButton": "删除",
     "adminReportsDesc": "生成并查看座位利用率和缺席率的报告。",
-    "noAccount": "没有账户"
+    "noAccount": "没有账户",
+    "sendInstructions": "发送重置指令"
+
   }
   

@@ -176,7 +176,7 @@ export const useAuthStore = defineStore('auth', {
         // First get CSRF token
         await this.setCsrfToken()
 
-        const response = await fetch('http://localhost:8000/users/auth/reset-password/', {
+        const response = await fetch('http://localhost:8000/users/auth/password-reset/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

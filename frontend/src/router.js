@@ -4,6 +4,7 @@ import Login from './pages/auth/Login.vue'
 import Register from './pages/auth/Register.vue'
 import ForgotPassword from './pages/auth/ForgotPassword.vue'
 import VerifyEmail from './pages/auth/VerifyEmail.vue'
+import ResetPassword from './pages/auth/ResetPassword.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -11,6 +12,7 @@ const routes = [
   { path: '/register', name: 'register', component: Register, },
   { path: '/forgot-password', name: 'forgot-password', component: ForgotPassword, },
   { path: '/verify-email/:token', name: 'verify-email', component: VerifyEmail, },
+  { path: '/reset-password/:token', name: 'reset-password', component: ResetPassword, },
 
   { path: '/home', name: 'home', component: Home, meta: { requiresAuth: true } },
 ]
