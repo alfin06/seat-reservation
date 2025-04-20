@@ -20,7 +20,6 @@ class Seat(models.Model):
         null=True,
         blank=True
     )
-    seat_number = models.IntegerField(null=True, blank=True)
     location = models.CharField(max_length=100)
     name = models.CharField(max_length=200)
     is_available = models.SmallIntegerField(choices=RESERVE_STATE, default=1)
@@ -29,14 +28,15 @@ class Seat(models.Model):
     update_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            super().save(*args, **kwargs)
-        if not self.name:
-            self.name = f"Seat {self.id} - {self.location}"
+        is_new = self.pk is None
+        if is_new and not self.name:
+            self.name = f"Seat - {self.location}"
+        
         super().save(*args, **kwargs)
 
-    def __str__(self):
-        return f"Seat {self.id} - {self.location}"
+        if is_new and "Seat -" in self.name:
+            self.name = f"Seat {self.id} - {self.location}"
+            Seat.objects.filter(pk=self.pk).update(name=self.name)
 
 class ClassRoom(models.Model):
     RESERVE_STATE = (
@@ -57,11 +57,12 @@ class ClassRoom(models.Model):
     update_at = models.DateTimeField(auto_now=True)
         
     def save(self, *args, **kwargs):
-        if not self.pk:
-            super().save(*args, **kwargs)
-        if not self.name:
-            self.name = f"Room {self.id} - {self.location}"
+        is_new = self.pk is None
         super().save(*args, **kwargs)
+
+        if is_new and not self.name:
+            self.name = f"Room {self.id} - {self.location}"
+            self.__class__.objects.filter(pk=self.pk).update(name=self.name)
 
     def __str__(self):
         return f"Room {self.id} - {self.location}"

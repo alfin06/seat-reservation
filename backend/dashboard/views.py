@@ -162,5 +162,5 @@ class ClassRoomEnableView(generics.DestroyAPIView):
 
         classroom.seats.update(is_disable=1)
 
-        return Response({'message': f'ClassRoom {classroom_id} and its seats have been disabled successfully.'},
+        return Response({'message': f'ClassRoom {classroom_id} and its seats have been enable successfully.'},
                         status=status.HTTP_201_CREATED)
