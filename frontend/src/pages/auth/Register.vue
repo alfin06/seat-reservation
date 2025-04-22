@@ -67,7 +67,7 @@ export default {
 
                     const data = await response.json();
                     // this.success = 'Registration successful! Please log in.';
-                    this.$notify({type:"success", text:"Registration successful! Please log in."});
+                    this.$notify({type:"success", text:"Registration successful! Please check your email and verify your account."});
                     setTimeout(() => {
                         this.$router.push('/login');
                     }, 1000);
