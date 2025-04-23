@@ -15,6 +15,7 @@ const routes = [
   { path: '/reset-password/:token', name: 'reset-password', component: ResetPassword, },
 
   { path: '/home', name: 'home', component: Home, meta: { requiresAuth: true } },
+  { path: '/admin-dashboard', name: 'admin-dashboard', component: Home, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({

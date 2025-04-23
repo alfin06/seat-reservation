@@ -26,6 +26,10 @@ export default {
         <button @click="changeLanguage('en')" class="lang-btn">English</button>
         <button @click="changeLanguage('zh')" class="lang-btn">中文</button>
       </div>
+      <br/>
+      <footer class="footer"> 
+        &copy; {{ new Date().getFullYear() }} Seat Reservation App | Developed by Inter Students
+      </footer>
     </div>
   </div>
 </template>
@@ -56,6 +60,16 @@ export default {
   margin-top: 20px;
   position: fixed;
   bottom: 20px;
+}
+
+.footer {
+  bottom: 0;
+  color: #67757c;
+  left: 0px;
+  padding: 17px 15px;
+  right: 0;
+  border-top: 1px solid rgba(120, 130, 140, 0.13);
+  background: #ffffff; 
 }
 
 .translation-controls {
