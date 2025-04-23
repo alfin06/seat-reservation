@@ -15,28 +15,16 @@ export default {
 
 <template>
   <div class="app-container">
-    <notifications />
-    <h1>{{ $t('title') }}</h1>
-    <!-- <nav>
-      <router-link to="/register">{{ $t('register') }}</router-link> |
-      <router-link to="/login">{{ $t('login') }}</router-link> |
-      <router-link to="/reservation">{{ $t('reservationTitle') }}</router-link> |
-      <router-link to="/checkin">{{ $t('checkInTitle') }}</router-link> |
-      <router-link to="/instant-booking">{{ $t('instantBookingTitle') }}</router-link> |
-      <router-link to="/admin">{{ $t('adminTitle') }}</router-link>
-    </nav> -->
-    
     <!-- Main content (e.g., table, forms, etc.) -->
     <div class="content-container">
       <router-view />
     </div>
-    
-    <!-- Bottom controls: login button and language translation controls -->
+    <notifications position="top center" />
+    <!-- Bottom controls: language translation controls -->
     <div class="bottom-controls">
-      <!-- <el-button type="primary" @click="onLogin">{{ $t('login') }}</el-button> -->
       <div class="translation-controls">
-        <button @click="changeLanguage('en')">English</button>
-        <button @click="changeLanguage('zh')">中文</button>
+        <button @click="changeLanguage('en')" class="lang-btn">English</button>
+        <button @click="changeLanguage('zh')" class="lang-btn">中文</button>
       </div>
     </div>
   </div>
@@ -50,10 +38,6 @@ export default {
   text-align: center;
   min-height: 100vh;
   padding: 20px;
-}
-
-nav a {
-  margin: 0 10px;
 }
 
 .content-container {
@@ -70,13 +54,26 @@ nav a {
   flex-direction: column;
   align-items: center;
   margin-top: 20px;
+  position: fixed;
+  bottom: 20px;
 }
 
 .translation-controls {
   margin-top: 10px;
 }
 
-.translation-controls button {
+.lang-btn {
   margin: 0 5px;
+  padding: 8px 16px;
+  border: none;
+  border-radius: 4px;
+  background: #f8f9fa;
+  color: #495057;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lang-btn:hover {
+  background: #e9ecef;
 }
 </style>

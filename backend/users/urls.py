@@ -1,23 +1,28 @@
 from django.urls import path
-from . import views
+from django.views.decorators.csrf import ensure_csrf_cookie
+from django.views.generic import View
+from django.http import JsonResponse
 from .views import (
     LoginView, 
     RegistrationView, 
     PasswordResetRequestView, 
     PasswordResetConfirmView,
-    EmailVerificationView
+    EmailVerificationView,
+    LogoutView,
+    UserProfileView
 )
 
-urlpatterns = [
-    path('login/', LoginView.as_view(), name='login'),
-    path('register/', RegistrationView.as_view(), name='register'),
-    path('password-reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
-    path('password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
-    path('verify-email/<str:token>/', EmailVerificationView.as_view(), name='email-verification'),
+class GetCSRFToken(View):
+    def get(self, request, *args, **kwargs):
+        return JsonResponse({"detail": "CSRF cookie set"})
 
-    path('api/set-csrf-token', views.set_csrf_token, name='set_csrf_token'),
-    path('api/login', views.login_view, name='login'),
-    path('api/logout', views.logout_view, name='logout'),
-    path('api/user', views.user, name='user'),
-    path('api/register', views.register, name='register'),
+urlpatterns = [
+    path('auth/set-csrf-token/', ensure_csrf_cookie(GetCSRFToken.as_view()), name='set-csrf-token'),
+    path('auth/login/', LoginView.as_view(), name='login'),
+    path('auth/register/', RegistrationView.as_view(), name='register'),
+    path('auth/logout/', LogoutView.as_view(), name='logout'),
+    path('auth/user/', UserProfileView.as_view(), name='user_profile'),
+    path('auth/password-reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
+    path('auth/password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
+    path('auth/verify-email/<str:token>/', EmailVerificationView.as_view(), name='email-verification'),
 ]

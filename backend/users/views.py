@@ -4,9 +4,10 @@ from django.contrib.auth import authenticate
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
-from django.contrib.auth import login
-from django.core.mail import send_mail
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from django.contrib.auth import login, logout
+from django.core.mail import send_mail, BadHeaderError
+from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils import timezone
 from .serializers import (
@@ -16,11 +17,14 @@ from .serializers import (
     PasswordResetRequestSerializer,
     PasswordResetConfirmSerializer
 )
-from .models import User, PasswordResetToken
+from .models import User, PasswordResetToken, EmailVerificationToken
 import uuid
 from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+import logging
+
+logger = logging.getLogger(__name__)
 
 def all_user(request):
     return HttpResponse('Returning all users')
@@ -32,12 +36,14 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data
+            # Comment out email verification check
+            """
             if not user.email_verified_at:
                 return Response(
                     {"error": "Please verify your email before logging in"},
                     status=status.HTTP_403_FORBIDDEN
                 )
-            
+            """
             login(request, user)
             user.last_login = timezone.now()
             user.save()
@@ -48,7 +54,6 @@ class LoginView(APIView):
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(csrf_exempt, name='dispatch')
 class RegistrationView(APIView):
     permission_classes = [AllowAny]
 
@@ -56,12 +61,17 @@ class RegistrationView(APIView):
         serializer = RegistrationSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-            # Send verification email
-            verification_token = self._generate_verification_token(user)
-            verification_url = f"{settings.FRONTEND_URL}/users/verify-email/{verification_token}"
+            # Create verification token but don't send email for now
+            token_obj = EmailVerificationToken.objects.create(user=user)
             
-            # HTML email template
-            html_message = f"""
+            # Automatically verify the email for testing
+            #user.email_verified_at = timezone.now()
+            user.save()
+
+            # Comment out email sending for now
+            
+            verification_url = f"{settings.FRONTEND_URL}/verify-email/{token_obj.token}"
+            html_message = f'''
             <html>
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
                     <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -84,33 +94,27 @@ class RegistrationView(APIView):
                     </div>
                 </body>
             </html>
-            """
+            '''
+            try:
+                send_mail(
+                    subject='Verify your email - Seat Reservation System',
+                    message=f'Please click the following link to verify your email: {verification_url}',
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[user.email],
+                    html_message=html_message,
+                    fail_silently=False,
+                )
+            except Exception as e:
+                # logger.error(f"Failed to send verification email to {user.email}. Error: {str(e)}")
+                return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
             
-            # Send email
-            send_mail(
-                subject='Verify your email - Seat Reservation System',
-                message=f'Please click the following link to verify your email: {verification_url}',
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=html_message,
-                fail_silently=False,
-            )
             
             return Response({
-                "message": "Registration successful. Please check your email to verify your account.",
+                "message": "Registration successful. You can now log in.",
                 "user": UserSerializer(user).data
             }, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-    def _generate_verification_token(self, user):
-        # Generate a secure token using UUID
-        token = uuid.uuid4()
-        # Store the token in cache or database with expiration
-        cache_key = f"email_verification_{token}"
-        cache.set(cache_key, user.id, timeout=86400)  # 24 hours expiration
-        return str(token)
-
-@method_decorator(csrf_exempt, name='dispatch')
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
     authentication_classes = []  # No authentication required for password reset
@@ -166,17 +170,16 @@ class PasswordResetRequestView(APIView):
                 )
                 
                 return Response({
-                    "message": "Password reset email has been sent. Please check your inbox."
+                    "message": "Password reset email has been sent. Please check your inbox/spam folder."
                 }, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 # We return the same message even if the email doesn't exist for security
                 return Response({
-                    "message": "Password reset email has been sent. Please check your inbox."
+                    "message": "Password reset email has been sent. Please check your inbox/spam folder."
                 }, status=status.HTTP_200_OK)
                 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@method_decorator(csrf_exempt, name='dispatch')
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
     
@@ -194,34 +197,36 @@ class EmailVerificationView(APIView):
 
     def get(self, request, token):
         try:
-            # Get user_id from cache
-            cache_key = f"email_verification_{token}"
-            user_id = cache.get(cache_key)
+            # Get token object from database
+            token_obj = EmailVerificationToken.objects.get(token=token)
+            print(token_obj)
             
-            if not user_id:
+            if not token_obj.is_valid():
                 return Response({
-                    "error": "Invalid or expired verification token."
+                    "error": "Verification link has expired. Please request a new one."
                 }, status=status.HTTP_400_BAD_REQUEST)
             
-            user = User.objects.get(id=user_id)
-            
-            # Verify the user
-            if not user.email_verified_at:
-                user.email_verified_at = timezone.now()
-                user.save()
-                # Delete the token from cache
-                cache.delete(cache_key)
+            user = token_obj.user
+            if user.email_verified_at:
                 return Response({
-                    "message": "Email verified successfully. You can now log in."
+                    "message": "Email already verified."
                 }, status=status.HTTP_200_OK)
             
+            # Mark email as verified
+            user.email_verified_at = timezone.now()
+            user.save()
+            
+            # Mark token as used
+            token_obj.is_used = True
+            token_obj.save()
+            
             return Response({
-                "message": "Email already verified."
+                "message": "Email verified successfully. You can now log in."
             }, status=status.HTTP_200_OK)
             
-        except User.DoesNotExist:
+        except EmailVerificationToken.DoesNotExist:
             return Response({
-                "error": "User not found."
+                "error": "Invalid verification link."
             }, status=status.HTTP_400_BAD_REQUEST)
         
 
@@ -288,3 +293,32 @@ def register(request):
     else:
         errors = form.errors.as_json()
         return JsonResponse({'error': errors}, status=400)
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            logout(request)
+            return Response({
+                "message": "Successfully logged out"
+            }, status=status.HTTP_200_OK)
+        except Exception as e:
+            logger.error(f"Logout failed: {str(e)}")
+            return Response({
+                "error": "Failed to logout"
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+    
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+    
+    def patch(self, request):
+        serializer = UserSerializer(request.user, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

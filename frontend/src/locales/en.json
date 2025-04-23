@@ -43,7 +43,8 @@
   "reservationDuration":"Reservation Duration",
   "reserveSeatButton": "Reserve seat button",
   "selectSeatPlaceholder": "Select seat placeholder",
-  "selectRoomPlaceholder": "Select room placeholder"
+  "selectRoomPlaceholder": "Select room placeholder",
+  "sendInstructions": "Send Reset Instructions"
 
 
 
