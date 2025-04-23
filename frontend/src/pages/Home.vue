@@ -13,7 +13,7 @@ export default {
     const buttons = [
         { label: "Book a Seat",       route: "/booking",  icon: "bi-journal-plus" },
         { label: "Check‑in",          route: "/check-in", icon: "bi-clipboard-check" },
-        { label: "Instant Bookings", route: "/instant", icon: "bi-lightning" },
+        { label: "Instant Booking", route: "/instant", icon: "bi-lightning" },
         { label: "Booking History",   route: "/history",  icon: "bi-clock-history" },
     ];
 
