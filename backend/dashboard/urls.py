@@ -14,4 +14,7 @@ urlpatterns = [
     path('admin/classroom/insert/', ClassRoomCreateView.as_view(), name='classroom-create'),
     path('admin/classroom/disable/', ClassRoomDisableView.as_view(), name='classroom-disable'),
     path('admin/classroom/enable/', ClassRoomEnableView.as_view(), name='classroom-enable'),
+    #Nick
+    path('api/reservations/', ReservationCreateView.as_view(), name='reservation-create'),
+    path('api/available/', AvailableRoomsSeatsView.as_view(), name='available-rooms-seats'),
 ]

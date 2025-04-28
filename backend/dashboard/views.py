@@ -11,6 +11,58 @@ from dashboard.models import *
 from users.models import User
 
 # Create your views here.
+#Nick
+from django.core.mail import send_mail
+from django.conf import settings
+from dashboard.models import Reservation, Seat, ClassRoom
+from dashboard.serializers import ReservationSerializer, SeatSerializer, ClassRoomSerializer
+
+class ReservationCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data.copy()
+        data['student'] = request.user.id
+        serializer = ReservationSerializer(data=data)
+        if serializer.is_valid():
+            duration = serializer.validated_data.get('duration', 1)
+            if duration > 4:
+                return Response({'error': 'Duration cannot exceed 4 hours.'}, status=400)
+            reservation = serializer.save()
+            # Send confirmation email (simple example)
+            try:
+                send_mail(
+                    subject='Seat Reservation Confirmation',
+                    message=f"Your reservation for seat {reservation.seat.id} in room {reservation.classroom.id} is confirmed.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[request.user.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                pass  # Optionally log error
+            return Response(ReservationSerializer(reservation).data, status=201)
+        return Response(serializer.errors, status=400)
+
+class AvailableRoomsSeatsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        has_outlet = request.query_params.get('has_outlet')
+        rooms = ClassRoom.objects.filter(is_available=1, is_disable=1)
+        data = []
+        for room in rooms:
+            seats_qs = room.seats.filter(is_available=1, is_disable=1)
+            if has_outlet is not None:
+                seats_qs = seats_qs.filter(has_outlet=(has_outlet.lower() == 'true'))
+            seats = SeatSerializer(seats_qs, many=True).data
+            data.append({
+                'room': ClassRoomSerializer(room).data,
+                'seats': seats
+            })
+        return Response({'rooms': data})
+
+##Nick
+
 class AdminDashboardStatusView(APIView):
     # permission_classes = [IsAdminUser, IsAuthenticated]
 

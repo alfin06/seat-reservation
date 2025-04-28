@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'dashboard',
     'users',
     # 'dashboard',  # Commented out dashboard app
 ]
