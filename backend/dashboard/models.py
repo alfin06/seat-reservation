@@ -24,7 +24,8 @@ class Seat(models.Model):
     name = models.CharField(max_length=200)
     is_available = models.SmallIntegerField(choices=RESERVE_STATE, default=1)
     is_disable = models.SmallIntegerField(choices=IS_DISABLE, default=1)
-    create_at = models.DateTimeField(default=timezone.now())
+    has_outlet = models.BooleanField(default=False)  # New field for outlet info
+    create_at = models.DateTimeField(default=timezone.now)
     update_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
@@ -37,6 +38,23 @@ class Seat(models.Model):
         if is_new and "Seat -" in self.name:
             self.name = f"Seat {self.id} - {self.location}"
             Seat.objects.filter(pk=self.pk).update(name=self.name)
+#Nick   
+class Reservation(models.Model):
+    STATUS_CHOICES = (
+        ('Active', 'Active'),
+        ('Cancelled', 'Cancelled'),
+        ('Completed', 'Completed'),
+    )
+    student = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='reservations')
+    classroom = models.ForeignKey('ClassRoom', on_delete=models.CASCADE, related_name='reservations')
+    seat = models.ForeignKey('Seat', on_delete=models.CASCADE, related_name='reservations')
+    duration = models.PositiveIntegerField(default=1)  # in hours, max 4
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
+    reservation_datetime = models.DateTimeField(default=timezone.now)
+
+    def __str__(self):
+        return f"Reservation by {self.student} for Seat {self.seat.id} in Room {self.classroom.id}"
+
 
 class ClassRoom(models.Model):
     RESERVE_STATE = (
@@ -53,7 +71,7 @@ class ClassRoom(models.Model):
     number_of_seats = models.IntegerField()
     is_available = models.SmallIntegerField(choices=RESERVE_STATE, default=1)
     is_disable = models.SmallIntegerField(choices=IS_DISABLE, default=1)
-    create_at = models.DateTimeField(default=timezone.now())
+    create_at = models.DateTimeField(default=timezone.now)
     update_at = models.DateTimeField(auto_now=True)
         
     def save(self, *args, **kwargs):
