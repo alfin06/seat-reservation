@@ -22,12 +22,11 @@ export default {
     <notifications position="top center" />
     <!-- Bottom controls: language translation controls -->
     <div class="bottom-controls">
-      <div class="translation-controls">
+      <div class="translation-controls mb-2">
         <button @click="changeLanguage('en')" class="lang-btn">English</button>
         <button @click="changeLanguage('zh')" class="lang-btn">中文</button>
       </div>
-      <br/>
-      <footer class="footer"> 
+      <footer class="footer">
         &copy; {{ new Date().getFullYear() }} Seat Reservation App | Developed by Inter Students
       </footer>
     </div>
@@ -38,42 +37,36 @@ export default {
 .app-container {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
-  min-height: 100vh;
+  min-height: 100vh; /* full screen height */
+}
+
+/* Main content takes all available space */
+.content-container {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Center if content is short, optional */
   padding: 20px;
 }
 
-.content-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
-}
-
-/* Bottom controls styling */
+/* Bottom controls always at bottom */
 .bottom-controls {
   width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-  position: fixed;
-  bottom: 20px;
-}
-
-.footer {
-  bottom: 0;
-  color: #67757c;
-  left: 0px;
-  padding: 17px 15px;
-  right: 0;
+  text-align: center;
+  padding: 10px 0;
+  background: #fff;
   border-top: 1px solid rgba(120, 130, 140, 0.13);
-  background: #ffffff; 
 }
 
+/* Footer styling */
+.footer {
+  color: #67757c;
+  font-size: 14px;
+}
+
+/* Language buttons styling */
 .translation-controls {
-  margin-top: 10px;
+  margin-bottom: 10px;
 }
 
 .lang-btn {
