@@ -50,13 +50,12 @@ export default {
                 <p><strong>Account Status:</strong> Active</p>
                 <p><strong>Last Login:</strong> {{ new Date(authStore.user?.last_login).toLocaleString() }}</p>
             </div>
-
-            <div class="actions">
+            <div class="actions"> 
                 <button 
-                    @click="$router.push(authStore.user?.role === 'ADMIN' ? '/admin-dashboard' : '/dashboard')" 
+                    @click="$router.push(authStore.user?.role === 'ADMIN' ? '/admin-dashboard' : '/reservation')"  
                     class="btn primary"
                 >
-                    {{ authStore.user?.role === 'ADMIN' ? 'Admin Dashboard' : 'Make a Reservation' }}
+                    {{ authStore.user?.role === 'ADMIN' ? 'Admin Dashboard' : 'Reserve a Seat' }}
                 </button>
                 <button @click="logout" class="btn secondary">Logout</button>
             </div>
