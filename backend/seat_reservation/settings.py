@@ -90,8 +90,8 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'seat_reservation',
-        'USER': 'admin',
-        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
+        'USER': 'root',
+        'PASSWORD': 'HelloWorld1111',
         'HOST': '127.0.0.1',
         'PORT': '3306',
         'OPTIONS': {
@@ -155,7 +155,9 @@ REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
     ],
+
 }
+
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
