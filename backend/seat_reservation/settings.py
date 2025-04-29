@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'dashboard',
     'users',
+    'rest_framework.authtoken', #Nick
     # 'dashboard',  # Commented out dashboard app
 ]
 
@@ -153,6 +154,14 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
+    ],
+    
+    #Nick
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.TokenAuthentication',
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
