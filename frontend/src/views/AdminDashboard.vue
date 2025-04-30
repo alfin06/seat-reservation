@@ -1,18 +1,9 @@
 <template>
   <div class="admin-dashboard">
     <!-- Header with Language Toggle -->
-    <div class="admin-header">
-      <h1>Study Seat Reservation System</h1>
-      <el-dropdown trigger="click" @command="changeLanguage">
-        <span class="language-toggle">
-          <i class="el-icon-global"></i> {{ currentLanguage.toUpperCase() }} ▼
-        </span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="en">English</el-dropdown-item>
-          <el-dropdown-item command="zh">中文</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
-    </div>
+    <!-- <div class="admin-header">
+      <h1>Admin dashboard</h1>
+    </div> -->
 
     <!-- Urgent Alert -->
     <el-alert 
@@ -63,6 +54,9 @@
       <el-tab-pane label="Rooms" name="rooms">
         <room-management />
       </el-tab-pane>
+      <el-tab-pane label="Seats" name="seats">
+        <seat-management />
+      </el-tab-pane>
       <el-tab-pane label="Users" name="users">
         <user-management />
       </el-tab-pane>
@@ -77,12 +71,14 @@
 import RoomManagement from '../components/admin/RoomManagement.vue'
 import UserManagement from '../components/admin/UserManagement.vue'
 import SystemSettings from '../components/admin/SystemSettings.vue'
+import SeatManagement from '@/components/admin/SeatManagement.vue'
 
 export default {
   components: {
     RoomManagement,
     UserManagement,
-    SystemSettings
+    SystemSettings,
+    SeatManagement
   },
   data() {
     return {

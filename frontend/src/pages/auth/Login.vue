@@ -67,16 +67,6 @@ export default {
             <el-form-item :label="$t('enterPassword')" prop="password" class="form-label">
                 <el-input v-model="password" id="password" type="password" required @input="resetError" :placeholder="$t('enterPassword')"></el-input>
             </el-form-item>
-            <!-- <el-form-item label="Role" prop="role" class="form-label">
-                <el-select v-model="role" placeholder="Select role">
-                    <el-option
-                        v-for="option in roles"
-                        :key="option.value"
-                        :label="option.label"
-                        :value="option.value"
-                    ></el-option>
-                </el-select>
-            </el-form-item> -->
             <br/>
             <el-button type="primary" @click="login">{{ $t('submitLogin') }}</el-button>
             

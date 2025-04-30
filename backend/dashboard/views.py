@@ -4,12 +4,65 @@ from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
 from rest_framework import status, viewsets, permissions, generics
 from rest_framework.decorators import action
 from django.utils import timezone
+from django.http import JsonResponse
 from dashboard.serializers import *
 from users.serializers import UserSerializer
 from dashboard.models import *
 from users.models import User
 
 # Create your views here.
+#Nick
+from django.core.mail import send_mail
+from django.conf import settings
+from dashboard.models import Reservation, Seat, ClassRoom
+from dashboard.serializers import ReservationSerializer, SeatSerializer, ClassRoomSerializer
+
+class ReservationCreateView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data.copy()
+        data['student'] = request.user.id
+        serializer = ReservationSerializer(data=data)
+        if serializer.is_valid():
+            duration = serializer.validated_data.get('duration', 1)
+            if duration > 4:
+                return Response({'error': 'Duration cannot exceed 4 hours.'}, status=400)
+            reservation = serializer.save()
+            # Send confirmation email (simple example)
+            try:
+                send_mail(
+                    subject='Seat Reservation Confirmation',
+                    message=f"Your reservation for seat {reservation.seat.id} in room {reservation.classroom.id} is confirmed.",
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    recipient_list=[request.user.email],
+                    fail_silently=True,
+                )
+            except Exception as e:
+                pass  # Optionally log error
+            return Response(ReservationSerializer(reservation).data, status=201)
+        return Response(serializer.errors, status=400)
+
+class AvailableRoomsSeatsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        has_outlet = request.query_params.get('has_outlet')
+        rooms = ClassRoom.objects.filter(is_available=1, is_disable=1)
+        data = []
+        for room in rooms:
+            seats_qs = room.seats.filter(is_available=1, is_disable=1)
+            if has_outlet is not None:
+                seats_qs = seats_qs.filter(has_outlet=(has_outlet.lower() == 'true'))
+            seats = SeatSerializer(seats_qs, many=True).data
+            data.append({
+                'room': ClassRoomSerializer(room).data,
+                'seats': seats
+            })
+        return Response({'rooms': data})
+
+##Nick
+
 class AdminDashboardStatusView(APIView):
     # permission_classes = [IsAdminUser, IsAuthenticated]
 
@@ -51,8 +104,44 @@ class AdminDashboardUserStats(APIView):
         users = User.objects.all()
         serializer = UserSerializer(users, many=True)
         return Response(serializer.data)
+    
+class SeatGetAll(APIView):
+    # permission_classes = [IsAdminUser, IsAuthenticated]
+    
+    def get(self, request, format=None):
+        try:
+            queryset = Seat.objects.all().order_by('update_at')
+            seats_data = []
+            for seat in queryset:
+                seats_data.append({
+                    'id': seat.id,
+                    'name': seat.name,
+                    'location': seat.location,
+                    'is_available': {
+                        'value': seat.is_available,
+                        'display': seat.get_is_available_display()
+                    },
+                    'classroom': seat.classroom.name,
+                    'is_disable': {
+                        'value': seat.is_disable,
+                        'display': seat.get_is_disable_display()
+                    },
+                    'update_at': seat.update_at.strftime("%Y-%m-%d %H:%M:%S")
+                })
+            
+            return JsonResponse({
+                'status': 'success',
+                'count': len(seats_data),
+                'data': seats_data
+            }, safe=False)
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f"Failed to fetch seats: {str(e)}"
+            }, status=500)
 
-class SeatDisableView(generics.DestroyAPIView):
+class SeatDisableView(APIView):
     # permission_classes = [IsAdminUser, IsAuthenticated]
     queryset = Seat.objects.all()
     serializer_class = SeatSerializer
@@ -99,7 +188,43 @@ class SeatEnableView(generics.DestroyAPIView):
 
         return Response({'message': f'Seat {seat_id} has been enable successfully.'},
                         status=status.HTTP_201_CREATED)
-        
+
+class ClassRoomGetAll(APIView):
+    # permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def get(self, request, format=None):
+        try:
+            queryset = ClassRoom.objects.all().order_by('update_at')
+            classrooms_data = []
+            for classroom in queryset:
+                classrooms_data.append({
+                    'id': classroom.id,
+                    'name': classroom.name,
+                    'location': classroom.location,
+                    'number_of_seat': classroom.number_of_seats,
+                    'is_available': {
+                        'value': classroom.is_available,
+                        'display': classroom.get_is_available_display()
+                    },
+                    'is_disable': {
+                        'value': classroom.is_disable,
+                        'display': classroom.get_is_disable_display()
+                    },
+                    'updated_at': classroom.update_at.strftime("%Y-%m-%d %H:%M:%S")
+                })
+            
+            return JsonResponse({
+                'status': 'success',
+                'count': len(classrooms_data),
+                'data': classrooms_data
+            }, safe=False)
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f"Failed to fetch seats: {str(e)}"
+            }, status=500)
+
 class ClassRoomCreateView(generics.CreateAPIView):
     # permission_classes = [IsAdminUser, IsAuthenticated]
     queryset = ClassRoom.objects.all()
@@ -162,5 +287,5 @@ class ClassRoomEnableView(generics.DestroyAPIView):
 
         classroom.seats.update(is_disable=1)
 
-        return Response({'message': f'ClassRoom {classroom_id} and its seats have been disabled successfully.'},
+        return Response({'message': f'ClassRoom {classroom_id} and its seats have been enable successfully.'},
                         status=status.HTTP_201_CREATED)
