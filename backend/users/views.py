@@ -7,6 +7,7 @@ from rest_framework import status
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.contrib.auth import login, logout
 from django.core.mail import send_mail, BadHeaderError
+from django.template.loader import render_to_string
 from django.conf import settings
 from django.utils import timezone
 from .serializers import (
@@ -64,12 +65,12 @@ class RegistrationView(APIView):
             token_obj = EmailVerificationToken.objects.create(user=user)
             
             # Automatically verify the email for testing
-            user.email_verified_at = timezone.now()
+            #user.email_verified_at = timezone.now()
             user.save()
 
             # Comment out email sending for now
-            """
-            verification_url = f"{settings.FRONTEND_URL}/auth/verify-email/{token_obj.token}"
+            
+            verification_url = f"{settings.FRONTEND_URL}/verify-email/{token_obj.token}"
             html_message = f'''
             <html>
                 <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
@@ -104,8 +105,9 @@ class RegistrationView(APIView):
                     fail_silently=False,
                 )
             except Exception as e:
-                logger.error(f"Failed to send verification email to {user.email}. Error: {str(e)}")
-            """
+                # logger.error(f"Failed to send verification email to {user.email}. Error: {str(e)}")
+                return Response(str(e), status=status.HTTP_400_BAD_REQUEST)
+            
             
             return Response({
                 "message": "Registration successful. You can now log in.",
@@ -168,12 +170,12 @@ class PasswordResetRequestView(APIView):
                 )
                 
                 return Response({
-                    "message": "Password reset email has been sent. Please check your inbox."
+                    "message": "Password reset email has been sent. Please check your inbox/spam folder."
                 }, status=status.HTTP_200_OK)
             except User.DoesNotExist:
                 # We return the same message even if the email doesn't exist for security
                 return Response({
-                    "message": "Password reset email has been sent. Please check your inbox."
+                    "message": "Password reset email has been sent. Please check your inbox/spam folder."
                 }, status=status.HTTP_200_OK)
                 
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
@@ -197,6 +199,7 @@ class EmailVerificationView(APIView):
         try:
             # Get token object from database
             token_obj = EmailVerificationToken.objects.get(token=token)
+            print(token_obj)
             
             if not token_obj.is_valid():
                 return Response({

@@ -15,13 +15,11 @@ export default {
 
 <template>
   <div class="app-container">
-    <notifications />
-    
     <!-- Main content (e.g., table, forms, etc.) -->
     <div class="content-container">
       <router-view />
     </div>
-    
+    <notifications position="top center" />
     <!-- Bottom controls: language translation controls -->
     <div class="bottom-controls">
       <div class="translation-controls">

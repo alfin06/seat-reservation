@@ -97,14 +97,14 @@ export const useAuthStore = defineStore('auth', {
         const data = await response.json()
         this.user = {
           ...data.user,
-          role: credentials.role // Include role in user data
+          role: data.role // Include role in user data
         }
         this.isAuthenticated = true
         this.saveState()
         
         if (router) {
           // Redirect based on role
-          const route = credentials.role === 'ADMIN' ? 'admin-dashboard' : 'home'
+          const route = data.role === 'ADMIN' ? 'admin-dashboard' : 'home'
           await router.push({ name: route })
         }
       } catch (error) {
@@ -176,7 +176,7 @@ export const useAuthStore = defineStore('auth', {
         // First get CSRF token
         await this.setCsrfToken()
 
-        const response = await fetch('http://localhost:8000/users/auth/reset-password/', {
+        const response = await fetch('http://localhost:8000/users/auth/password-reset/', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

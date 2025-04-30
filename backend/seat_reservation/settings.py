@@ -157,18 +157,19 @@ REST_FRAMEWORK = {
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.finicode.com'
-EMAIL_PORT = 587  # Changed to TLS port
-EMAIL_USE_TLS = True  # Use TLS instead of SSL
-EMAIL_USE_SSL = False  # Disable SSL since we're using TLS
-EMAIL_HOST_USER = 'seat-reservation@finicode.com'
-EMAIL_HOST_PASSWORD = 'A^Ld&a?]vHM2'
-DEFAULT_FROM_EMAIL = 'seat-reservation@finicode.com'
-SERVER_EMAIL = 'seat-reservation@finicode.com'
-EMAIL_TIMEOUT = 30  # Add timeout setting
+EMAIL_HOST = 'mail.kinvitation.com'
+EMAIL_USE_TLS = False  # Use TLS instead of SSL
+EMAIL_USE_SSL = True  # Disable SSL since we're using TLS
+EMAIL_PORT = 465  # Changed to TLS port
+EMAIL_HOST_USER = 'no-reply@kinvitation.com'
+EMAIL_HOST_PASSWORD = 'Vf@GPOKe25wL'
+DEFAULT_FROM_EMAIL = 'no-reply@kinvitation.com'
+# SERVER_EMAIL = 'seat-reservation@finicode.com'
+#EMAIL_TIMEOUT = 30  # Add timeout setting
 
 # Frontend URL for email verification
-FRONTEND_URL = 'http://localhost:5174'
+FRONTEND_URL = 'http://localhost:5173'
+BACKEND_URL = 'http://127.0.0.1:8000'
 
 # CORS settings
 CORS_ALLOW_ALL_ORIGINS = True  # For development only
