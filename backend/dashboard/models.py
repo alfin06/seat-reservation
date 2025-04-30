@@ -41,16 +41,18 @@ class Seat(models.Model):
 #Nick   
 class Reservation(models.Model):
     STATUS_CHOICES = (
-        ('Active', 'Active'),
-        ('Cancelled', 'Cancelled'),
-        ('Completed', 'Completed'),
+        (0, 'Active'),
+        (1, 'Completed'),
+        (2, 'Cancelled'),
     )
-    student = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='reservations')
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='reservations')
     classroom = models.ForeignKey('ClassRoom', on_delete=models.CASCADE, related_name='reservations')
     seat = models.ForeignKey('Seat', on_delete=models.CASCADE, related_name='reservations')
     duration = models.PositiveIntegerField(default=1)  # in hours, max 4
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Active')
-    reservation_datetime = models.DateTimeField(default=timezone.now)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=0)
+    reserved_at = models.DateTimeField(default=timezone.now)
+    reserved_end= models.DateTimeField(default=timezone.now)
+    create_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Reservation by {self.student} for Seat {self.seat.id} in Room {self.classroom.id}"

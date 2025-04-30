@@ -22,13 +22,12 @@ class ReservationCreateView(APIView):
 
     def post(self, request):
         data = request.data.copy()
-        data['student'] = request.user.id
         serializer = ReservationSerializer(data=data)
         if serializer.is_valid():
             duration = serializer.validated_data.get('duration', 1)
             if duration > 4:
                 return Response({'error': 'Duration cannot exceed 4 hours.'}, status=400)
-            reservation = serializer.save()
+            reservation = serializer.save(user=request.user)
             # Send confirmation email (simple example)
             try:
                 send_mail(
@@ -50,15 +49,16 @@ class AvailableRoomsSeatsView(APIView):
         has_outlet = request.query_params.get('has_outlet')
         rooms = ClassRoom.objects.filter(is_available=1, is_disable=1)
         data = []
+
         for room in rooms:
             seats_qs = room.seats.filter(is_available=1, is_disable=1)
             if has_outlet is not None:
                 seats_qs = seats_qs.filter(has_outlet=(has_outlet.lower() == 'true'))
-            seats = SeatSerializer(seats_qs, many=True).data
-            data.append({
-                'room': ClassRoomSerializer(room).data,
-                'seats': seats
-            })
+
+            room_data = ClassRoomSerializer(room).data
+            room_data['seats'] = SeatSerializer(seats_qs, many=True).data
+            data.append(room_data)
+
         return Response({'rooms': data})
 
 ##Nick

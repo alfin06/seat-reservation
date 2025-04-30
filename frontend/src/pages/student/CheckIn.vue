@@ -2,12 +2,15 @@
 import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { useRouter } from 'vue-router';
+import { useAuthStore, getCSRFToken } from "../../store/auth.js";
   
 const video = ref(null);
 const scannedValue = ref('');
 const apiResult = ref('');
 const router = useRouter();
+const authStore = useAuthStore();
 let codeReader;
+//await this.authStore.setCsrfToken();
   
 function navigate(route) {
     router.push(route);
@@ -15,9 +18,12 @@ function navigate(route) {
   
 async function callApi(qrValue) {
     try {
-        const response = await fetch('https://your-api.com/check-qr', {
+        const response = await fetch('http://localhost:8000/dashboard/api/check-qr', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCSRFToken(),
+            },
             body: JSON.stringify({ qrCode: qrValue }),
         });
         const data = await response.json();

@@ -1,5 +1,6 @@
 from dashboard.models import *
 from rest_framework import serializers
+from django.utils.timezone import localtime
 
 class SeatSerializer(serializers.ModelSerializer):
     class Meta:
@@ -36,8 +37,8 @@ class SeatSerializer(serializers.ModelSerializer):
 class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
-        fields = ['id', 'student', 'classroom', 'seat', 'duration', 'status', 'reservation_datetime']
-        read_only_fields = ['id', 'status', 'reservation_datetime']
+        fields = ['id', 'classroom', 'seat', 'duration', 'status', 'reserved_at', 'reserved_end']
+        read_only_fields = ['id', 'status']
 
 
 class ClassRoomSerializer(serializers.ModelSerializer):
