@@ -45,7 +45,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'users',
-    # 'dashboard',  # Commented out dashboard app
+    'dashboard',  # Commented out dashboard app
 ]
 
 MIDDLEWARE = [

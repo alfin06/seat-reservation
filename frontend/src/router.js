@@ -5,14 +5,16 @@ import Register from './pages/auth/Register.vue'
 import ForgotPassword from './pages/auth/ForgotPassword.vue'
 import VerifyEmail from './pages/auth/VerifyEmail.vue'
 import ResetPassword from './pages/auth/ResetPassword.vue'
+import AdminDashboard from './pages/admin/AdminDashboard.vue'
 
 const routes = [
-  { path: '/', redirect: '/login' },
+  { path: '/', redirect: '/dashboard' },
   { path: '/login', name: 'login', component: Login, },
   { path: '/register', name: 'register', component: Register, },
   { path: '/forgot-password', name: 'forgot-password', component: ForgotPassword, },
   { path: '/verify-email/:token', name: 'verify-email', component: VerifyEmail, },
   { path: '/reset-password/:token', name: 'reset-password', component: ResetPassword, },
+  { path: '/dashboard', name: 'admin-dashboard', component: AdminDashboard,},
 
   { path: '/home', name: 'home', component: Home, meta: { requiresAuth: true } },
 ]
