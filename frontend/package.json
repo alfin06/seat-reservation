@@ -11,8 +11,11 @@
   "dependencies": {
     "@kyvg/vue3-notification": "^3.4.1",
     "@unhead/vue": "^2.0.5",
+    "@zxing/browser": "^0.1.5",
+    "animate.css": "^4.1.1",
     "axios": "^1.8.4",
     "bootstrap": "^5.3.5",
+    "bootstrap-icons": "^1.11.3",
     "element-plus": "^2.9.7",
     "pinia": "^3.0.2",
     "qrcode": "^1.5.4",

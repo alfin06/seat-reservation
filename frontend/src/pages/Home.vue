@@ -1,177 +1,95 @@
+<!-- Home.vue -->
 <script>
-import {useAuthStore} from '../store/auth.js'
-import {useRouter} from 'vue-router'
+import { useAuthStore } from "../store/auth.js";
+import { useRouter } from "vue-router";
 
 export default {
-    setup() {
-        const authStore = useAuthStore()
-        const router = useRouter()
+  name: "Home",
+  setup() {
+    const authStore = useAuthStore();
+    const router = useRouter();
 
-        return {
-            authStore,
-            router
-        }
+    // quick‑action buttons
+    const buttons = [
+        { label: "Book a Seat",       route: "/booking",  icon: "bi-journal-plus" },
+        { label: "Check‑in",          route: "/check-in", icon: "bi-clipboard-check" },
+        { label: "Instant Booking",   route: "/instant",  icon: "bi-lightning" },
+        { label: "Booking History",   route: "/history",  icon: "bi-clock-history" },
+    ];
+
+    // navigation helper
+    const go = (path) => router.push(path);
+
+    return { authStore, router, buttons, go };
+  },
+
+  methods: {
+    async logout() {
+      try {
+        await this.authStore.logout(this.$router);
+      } catch (err) {
+        console.error(err);
+      }
     },
-    methods: {
-        async logout() {
-            try {
-                await this.authStore.logout(this.$router)
-            } catch (error) {
-                console.error(error)
-            }
-        }
-    },
-    async mounted() {
-        await this.authStore.fetchUser()
-    }
-} 
+  },
+
+  async mounted() {
+    await this.authStore.fetchUser();
+  },
+};
 </script>
 
 <template>
-    <div class="home-container">
-        <h1 class="welcome-title">Study Seat Reservation System</h1>
-        
-        <div class="system-description">
-            <p>Welcome to our smart study space management system. Here you can:</p>
-            <ul>
-                <li>Reserve study seats in advance</li>
-                <li>Find available quiet spaces to study</li>
-                <li>Manage your bookings</li>
-                <li>Get notifications about your reservations</li>
-            </ul>
+  <div class="container-lg py-5">
+    <!-- Profile card -->
+    <section
+      v-if="authStore.isAuthenticated"
+      class="card shadow-sm mb-4 animate__animated animate__fadeIn">
+      <div
+        class="card-body d-flex flex-column flex-md-row align-items-center gap-3">
+        <div class="flex-grow-1">
+          <h2 class="h5 mb-1">
+            {{ $t('welcome') }}, {{ authStore.user?.name || authStore.user?.username }} !
+            <span class="badge bg-light text-secondary fw-normal ms-2 text-uppercase">
+              {{ authStore.user?.role || $t('student') }}
+            </span>
+          </h2>
+          <div class="small text-muted">
+            {{ $t('lastLogin') }}:
+            {{ new Date(authStore.user?.last_login).toLocaleString() }}
+          </div>
         </div>
 
-        <div v-if="authStore.isAuthenticated" class="user-info">
-            <h2>Welcome, {{ authStore.user?.name || authStore.user?.username }}!</h2>
-            
-            <div class="user-details">
-                <p><strong>Email:</strong> {{ authStore.user?.email }}</p>
-                <p><strong>Role:</strong> {{ authStore.user?.role || 'Student' }}</p>
-                <p><strong>Account Status:</strong> Active</p>
-                <p><strong>Last Login:</strong> {{ new Date(authStore.user?.last_login).toLocaleString() }}</p>
-            </div>
+        <button class="btn btn-outline-danger px-4" @click="logout">
+          {{ $t('logout') }}
+        </button>
+      </div>
+    </section>
 
-            <div class="actions">
-                <button 
-                    @click="$router.push(authStore.user?.role === 'ADMIN' ? '/admin-dashboard' : '/dashboard')" 
-                    class="btn primary"
-                >
-                    {{ authStore.user?.role === 'ADMIN' ? 'Admin Dashboard' : 'Make a Reservation' }}
-                </button>
-                <button @click="logout" class="btn secondary">Logout</button>
-            </div>
+    <!-- Action buttons -->
+    <section class="card shadow-sm animate__animated animate__fadeIn">
+      <div class="card-body">
+        <h2 class="h5 mb-4 text-primary">{{ $t('quickAction') }}</h2>
+
+        <div class="row g-3">
+          <div class="col-6 col-md-3" v-for="btn in buttons" :key="btn.label">
+            <button
+              class="w-100 btn btn-outline-primary py-3 d-flex flex-column align-items-center justify-content-center"
+              @click="go(btn.route)">
+              <i :class="`bi ${btn.icon} fs-3 mb-2`"></i>
+              {{ btn.label }}
+            </button>
+          </div>
         </div>
-        
-        <div v-else class="auth-prompt">
-            <p>Please <router-link to="/login">login</router-link> or <router-link to="/register">register</router-link> to make a seat reservation.</p>
-        </div>
-    </div>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>
-.home-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.welcome-title {
-    color: #2c3e50;
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.system-description {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin: 2rem 0;
-    color: #495057;
-}
-
-.system-description ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 1rem 0;
-}
-
-.system-description li {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.system-description li:before {
-    content: "✓";
-    color: #3498db;
-    position: absolute;
-    left: 0;
-}
-
-.user-info {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 2rem;
-    margin-top: 2rem;
-}
-
-.user-details {
-    margin: 1.5rem 0;
-}
-
-.user-details p {
-    margin: 0.5rem 0;
-    color: #495057;
-}
-
-.actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-.btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn.primary {
-    background: #3498db;
-    color: white;
-}
-
-.btn.primary:hover {
-    background: #2980b9;
-}
-
-.btn.secondary {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn.secondary:hover {
-    background: #c0392b;
-}
-
-.auth-prompt {
-    text-align: center;
-    margin-top: 2rem;
-    padding: 2rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.auth-prompt a {
-    color: #3498db;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.auth-prompt a:hover {
-    text-decoration: underline;
+@import "https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css";
+.card:hover {
+  transform: translateY(-2px);
+  transition: transform 0.2s;
 }
 </style>

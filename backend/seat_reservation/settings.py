@@ -44,8 +44,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'dashboard',
     'users',
-    'dashboard',  # Commented out dashboard app
+    'rest_framework.authtoken', #Nick
 ]
 
 MIDDLEWARE = [
@@ -88,7 +89,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'seat_reservation',
-        'USER': 'root',
+        'USER': 'admin',
         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
@@ -149,6 +150,7 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
@@ -157,13 +159,13 @@ REST_FRAMEWORK = {
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.kinvitation.com'
+EMAIL_HOST = 'mail.finicode.com'
 EMAIL_USE_TLS = False  # Use TLS instead of SSL
 EMAIL_USE_SSL = True  # Disable SSL since we're using TLS
 EMAIL_PORT = 465  # Changed to TLS port
-EMAIL_HOST_USER = 'no-reply@kinvitation.com'
-EMAIL_HOST_PASSWORD = 'Vf@GPOKe25wL'
-DEFAULT_FROM_EMAIL = 'no-reply@kinvitation.com'
+EMAIL_HOST_USER = 'seat-reservation@finicode.com'
+EMAIL_HOST_PASSWORD = 'YwlCR9aC}0jP'
+DEFAULT_FROM_EMAIL = 'seat-reservation@finicode.com'
 # SERVER_EMAIL = 'seat-reservation@finicode.com'
 #EMAIL_TIMEOUT = 30  # Add timeout setting
 

@@ -5,7 +5,8 @@ import Register from './pages/auth/Register.vue'
 import ForgotPassword from './pages/auth/ForgotPassword.vue'
 import VerifyEmail from './pages/auth/VerifyEmail.vue'
 import ResetPassword from './pages/auth/ResetPassword.vue'
-import AdminDashboard from './pages/admin/AdminDashboard.vue'
+import CheckIn from './pages/student/CheckIn.vue'
+import Reservation from './pages/student/Reservation.vue'
 
 const routes = [
   { path: '/', redirect: '/dashboard' },
@@ -17,6 +18,10 @@ const routes = [
   { path: '/dashboard', name: 'admin-dashboard', component: AdminDashboard,},
 
   { path: '/home', name: 'home', component: Home, meta: { requiresAuth: true } },
+  { path: '/admin-dashboard', name: 'admin-dashboard', component: Home, meta: { requiresAuth: true } },
+
+  { path: '/check-in', name: 'check-in', component: CheckIn, meta: { requiresAuth: true } },
+  { path: '/booking', name: 'booking', component: Reservation, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({
