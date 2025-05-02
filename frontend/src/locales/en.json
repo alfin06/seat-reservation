@@ -49,8 +49,8 @@
   "lastLogin": "Last login",
   "logout": "Logout",
   "quickAction": "Quick Action",
-  "hour": "Hours"
-
-
-
+  "hour": "Hours",
+  "backToHome": "Back to Home",
+  "qrCodeScanner": "QR Code Scanner",
+  "scanInstruction": "Please scan the QR code on the desk to check-in."
 }

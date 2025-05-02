@@ -3,7 +3,9 @@ import { ref, onMounted, onBeforeUnmount } from 'vue';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { useRouter } from 'vue-router';
 import { useAuthStore, getCSRFToken } from "../../store/auth.js";
-  
+import { notify  } from "@kyvg/vue3-notification";
+
+//const notification = useNotification()
 const video = ref(null);
 const scannedValue = ref('');
 const apiResult = ref('');
@@ -17,19 +19,32 @@ function navigate(route) {
 }
   
 async function callApi(qrValue) {
+    const token = localStorage.getItem('token');
+
     try {
-        const response = await fetch('http://localhost:8000/dashboard/api/check-qr', {
+        const response = await fetch('http://localhost:8000/dashboard/api/check-qr/', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRFToken': getCSRFToken(),
+                'Authorization': `Token ${token}`,
+                'X-CSRFToken': getCSRFToken()
             },
-            body: JSON.stringify({ qrCode: qrValue }),
+            credentials: 'include',
+            body: JSON.stringify({ 
+                user_id: authStore.user.id,
+                qrCode: qrValue 
+            }),
         });
         const data = await response.json();
-        apiResult.value = JSON.stringify(data);
+        if (response.status === 201) {
+            notify({type:"success", text:"Check-in successful!"});
+        }
+        else {
+            notify({type:"error", text:"No valid reservation for check-in found."});
+        }
     } catch (error) {
-        apiResult.value = 'API Error: ' + error.message;
+        notify({type:"error", text:"No valid reservation for check-in found."});
+        console.log('API Error: ' + error);
     }
 }
   
@@ -45,14 +60,16 @@ onMounted(async () => {
                     if (scannedValue.value !== result.getText()) {
                         scannedValue.value = result.getText();
                         callApi(scannedValue.value);
-                        controls.stop();
+                        //controls.stop();
                     }
                 }
             });
         } else {
+            notification.notify({ type: 'error', text: 'No camera found!' });
             console.error('No camera found.');
         }
     } catch (error) {
+        notification.notify({ type: 'error', text: 'Error starting QR scanner!' });
         console.error('Error starting QR scanner:', error);
     }
 });
@@ -75,30 +92,33 @@ onBeforeUnmount(() => {
 
 <template>
     <div class="container py-4 d-flex flex-column min-vh-100">
-        <!-- Scanner Section -->
-        <div class="flex-grow-1 mb-4">
-            <h1 class="h4 fw-bold mb-3 text-center">QR Code Scanner</h1>
-  
-            <!-- Smaller Camera Box -->
-            <div class="mx-auto mb-3" style="width: 300px; height: 225px; overflow: hidden; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
-                <video ref="video" class="w-100 h-100 object-fit-cover"></video>
+        <el-card class="box-card">
+            <!-- Scanner Section -->
+            <div class="flex-grow-1 mb-4 text-center">
+                <h1 class="h4 fw-bold mb-3 text-center">{{ $t('qrCodeScanner') }}</h1>
+                <p>{{ $t('scanInstruction') }}</p>
+    
+                <!-- Smaller Camera Box -->
+                <div class="mx-auto mb-3" style="width: 75%; height: 60%; overflow: hidden; border-radius: 12px; box-shadow: 0 0 10px rgba(0,0,0,0.2);">
+                    <video ref="video" class="w-100 h-100 object-fit-cover"></video>
+                </div>
+    
+                <!-- Status Messages -->
+                <!-- <div v-if="scannedValue" class="alert alert-success text-center">
+                    Scanned QR: {{ scannedValue }}
+                </div> -->
+                <!-- <div v-if="apiResult" class="alert alert-info text-center">
+                    API Response: {{ apiResult }}
+                </div> -->
             </div>
-  
-            <!-- Status Messages -->
-            <div v-if="scannedValue" class="alert alert-success text-center">
-                Scanned QR: {{ scannedValue }}
+    
+            <!-- Back Button -->
+            <div class="mt-auto">
+                <router-link to="/home" class="btn btn-secondary w-100 rounded-3 py-3">
+                    ← {{ $t('backToHome') }}
+                </router-link>
             </div>
-            <div v-if="apiResult" class="alert alert-info text-center">
-                API Response: {{ apiResult }}
-            </div>
-        </div>
-  
-        <!-- Back Button -->
-        <div class="mt-auto">
-            <router-link to="/home" class="btn btn-secondary w-100 rounded-3 py-3">
-             ← Back to Home
-            </router-link>
-        </div>
+        </el-card>
     </div>
 </template>
   

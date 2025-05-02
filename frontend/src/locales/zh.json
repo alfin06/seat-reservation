@@ -48,7 +48,10 @@
     "lastLogin": "上次登录",
     "logout": "登出",
     "quickAction": "快速行动",
-    "hour": "小时"
+    "hour": "小时",
+    "backToHome": "后退",
+    "qrCodeScanner": "二维码扫描器",
+      "scanInstruction": "请扫描桌子上的二维码进行办理登机手续。"
 
   }
   

@@ -55,7 +55,7 @@ class Reservation(models.Model):
     create_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
-        return f"Reservation by {self.student} for Seat {self.seat.id} in Room {self.classroom.id}"
+        return f"Reservation by {self.user} for Seat {self.seat.id} in Room {self.classroom.id}"
 
 
 class ClassRoom(models.Model):
