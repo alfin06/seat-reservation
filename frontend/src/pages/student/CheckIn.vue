@@ -37,13 +37,13 @@ async function callApi(qrValue) {
         });
         const data = await response.json();
         if (response.status === 201) {
-            notify({type:"success", text:"Check-in successful!"});
+            notify({type:"success", title: '<em>SUCCESS</em>', duration: 10000, text:"Check-in successful!"});
         }
         else {
-            notify({type:"error", text:"No valid reservation for check-in found."});
+            notify({type:"error", title: '<em>ERROR</em>', duration: 10000, text:"No valid reservation for check-in found."});
         }
     } catch (error) {
-        notify({type:"error", text:"No valid reservation for check-in found."});
+        notify({type:"error", title: '<em>ERROR</em>', duration: 10000, text:"No valid reservation for check-in found."});
         console.log('API Error: ' + error);
     }
 }
