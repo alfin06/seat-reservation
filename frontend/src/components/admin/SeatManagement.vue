@@ -13,6 +13,8 @@
       <el-table-column prop="name" label="Seat Name" sortable />
       <el-table-column prop="location" label="Location" />
       <el-table-column prop="classroom" label="Classroom" width="120"/>
+
+      <!-- Availability -->
       <el-table-column label="Available" width="90">
         <template #default="{ row }">
           <el-tag :type="row.is_available.value ? 'success' : 'warning'">
@@ -20,6 +22,8 @@
           </el-tag>
         </template>
       </el-table-column>
+
+      <!-- Disabled -->
       <el-table-column label="Status" width="90">
         <template #default="{ row }">
           <el-tag :type="row.is_disable.value ? 'danger' : 'info'">
@@ -27,7 +31,9 @@
           </el-tag>
         </template>
       </el-table-column>
+
       <el-table-column prop="updated_at" label="Last Updated" width="180" />
+      
       <el-table-column label="Actions" width="180">
         <template #default="{ row }">
           <el-button-group>
@@ -120,17 +126,39 @@ export default {
     handlePageChange(newPage) {
       this.currentPage = newPage
     },
+
+    getDefaultSeat() {
+      return {
+        id: null,
+        name: '',
+        location: '',
+        classroom: '',
+        is_available: { value: 1, display: 'Available' },
+        is_disable: { value: 0, display: 'Active' },
+        updated_at: ''
+      }
+    },
+
     async fetchSeats() {
       try {
-        const res = await axios.get('http://127.0.0.1:8000/dashboard/admin/seats/list/')
+        const token = localStorage.getItem('token');
+        const res = await axios.get(
+          'http://127.0.0.1:8000/dashboard/admin/seats/list/',
+          {
+            headers: {
+              'Authorization': `Token ${token}`,
+              'Content-Type': 'application/json' 
+            }
+          }
+        )
         if (res.data.status === 'success') {
-          this.seats = res.data.data.map(c => ({
+          this.seats = res.data.data.map((c, i) => ({
             id: c.id,
             name: 'Seat ' + c.id + '-' + c.location,
             location: c.location,
             classroom: c.classroom,
             is_available: c.is_available,
-            is_disable: c.is_disable,
+            is_disable: c.is_disable, 
             updated_at: c.update_at
           }))
         } else {
@@ -141,10 +169,78 @@ export default {
         this.$message.error('Server error fetching seats')
       }
     },
+
+    async toggleDisable(row) {
+      try {
+        const token = localStorage.getItem('token');
+        const payload = { id: row.id };
+        const res = await axios.post(
+          'http://127.0.0.1:8000/dashboard/admin/seats/disable/',
+          payload,
+          {
+            headers: { 
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json' 
+            } 
+          }
+        );
+
+        if (res.data.message && res.data.message.includes('successfully')) {
+          this.$message({
+            message: res.data.message,
+            type: 'success',
+          });
+          await this.fetchSeats();
+        } else {
+          this.$message({
+            message: res.data.message || 'Failed to disable seat.',
+            type: 'error',
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        this.$message.error('Server error toggling seat.');
+      }
+    },
+
+    async toggleEnable(row) {
+      try {
+        const token = localStorage.getItem('token');
+        const payload = { id: row.id };
+        const res = await axios.post(
+          'http://127.0.0.1:8000/dashboard/admin/seats/enable/',
+          payload,
+          {
+            headers: { 
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json' 
+            } 
+          }
+        );
+
+        if (res.data.message && res.data.message.includes('successfully')) {
+          this.$message({
+            message: res.data.message,
+            type: 'success',
+          });
+          await this.fetchSeats();
+        } else {
+          this.$message({
+            message: res.data.message || 'Failed to enable seat.',
+            type: 'error',
+          });
+        }
+      } catch (err) {
+        console.error(err);
+        this.$message.error('Server error toggling seat.');
+      }
+    },
+
     generateQR(row) {
       this.qrValue = row.id.toString()
       this.showQR = true
     },
+
     downloadQR() {
       const svg = this.$refs.qrCanvas.$el;
       const svgData = new XMLSerializer().serializeToString(svg);
@@ -171,6 +267,17 @@ export default {
   },
   mounted() {
     this.fetchSeats()
+  },
+  watch: {
+    // Watch for room status changes and refresh seats
+    '$parent.activeTab': {
+      handler(newTab) {
+        if (newTab === 'seats') {
+          this.fetchSeats();
+        }
+      },
+      immediate: true
+    }
   }
 }
 </script>

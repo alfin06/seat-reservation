@@ -1,9 +1,16 @@
 <template>
   <div class="admin-dashboard">
-    <!-- Header with Language Toggle -->
-    <!-- <div class="admin-header">
-      <h1>Admin dashboard</h1>
-    </div> -->
+    <!-- Header with Back Button -->
+    <div class="admin-header">
+      <el-button 
+        type="primary" 
+        icon="el-icon-back" 
+        @click="goToHome"
+        class="back-button"
+      >
+        Back to Home
+      </el-button>
+    </div>
 
     <!-- Urgent Alert -->
     <el-alert 
@@ -102,6 +109,10 @@ export default {
       this.$message.success(`Language changed to ${lang === 'en' ? 'English' : 'Chinese'}`)
     },
 
+    goToHome() {
+      this.$router.push({ name: 'home' });
+    },
+
     handleRoomStatusUpdate() {
       const seatManagementComponent = this.$refs.seatManagement;
       if (seatManagementComponent) {
@@ -119,7 +130,14 @@ export default {
     
     async fetchDashboardStats() {
       try {
-        const response = await axios.get('http://127.0.0.1:8000/dashboard/admin/status/');
+        const token = localStorage.getItem('token');
+        const response = await axios.get('http://127.0.0.1:8000/dashboard/admin/status/', {
+          headers: {
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json'
+          },
+          withCredentials: true
+        });
         if (response.data) {
           this.dashboardStats = response.data;
         }
@@ -143,9 +161,12 @@ export default {
 }
 .admin-header {
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
   margin-bottom: 20px;
+}
+.back-button {
+  margin-right: 20px;
 }
 .language-toggle {
   cursor: pointer;

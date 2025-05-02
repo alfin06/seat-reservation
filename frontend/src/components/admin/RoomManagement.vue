@@ -235,6 +235,7 @@ export default {
       try {
         // 1. Validate the form
         await this.$refs.roomForm.validate();
+        const token = localStorage.getItem('token');
 
         this.isSubmitting = true;
 
@@ -249,7 +250,11 @@ export default {
         const response = await axios.post(
           'http://127.0.0.1:8000/dashboard/admin/classroom/insert/',
           payload,
-          { headers: { 'Content-Type': 'application/json' } }
+          { headers: { 
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json' 
+            } 
+          }
         );
 
         // 4. Handle a 201 Created response
@@ -298,7 +303,17 @@ export default {
 
     async fetchRooms() {
       try {
-        const res = await axios.get('http://127.0.0.1:8000/dashboard/admin/classroom/list/')
+        const token = localStorage.getItem('token');
+        const res = await axios.get(
+          'http://127.0.0.1:8000/dashboard/admin/classroom/list/',
+          {
+            headers: {
+              'Authorization': `Token ${token}`,
+              'Content-Type': 'application/json'
+            },
+            withCredentials: true
+          }
+        );
         if (res.data.status === 'success') {
           this.rooms = res.data.data.map((c, i) => ({
             id: c.id,
@@ -318,18 +333,19 @@ export default {
       }
     },
 
-    async saveRoom() {
-      this.dialogVisible = false
-      await this.fetchRooms()
-      this.$emit('room-status-changed');
-    },
-
     async toggleDisable(row) {
       try {
+        const token = localStorage.getItem('token');
         const payload = { id: row.id };
         const res = await axios.post(
           'http://127.0.0.1:8000/dashboard/admin/classroom/disable/',
           payload,
+          {
+            headers: { 
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json' 
+            } 
+          }
         );
 
         if (res.data.message && res.data.message.includes('successfully')) {
@@ -353,10 +369,17 @@ export default {
 
     async toggleEnable(row) {
       try {
+        const token = localStorage.getItem('token');
         const payload = { id: row.id };
         const res = await axios.post(
           'http://127.0.0.1:8000/dashboard/admin/classroom/enable/',
           payload,
+          {
+            headers: { 
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json' 
+            } 
+          }
         );
 
         if (res.data.message && res.data.message.includes('successfully')) {

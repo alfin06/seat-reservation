@@ -1,6 +1,7 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAdminUser, IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 from rest_framework import status, viewsets, permissions, generics
 from rest_framework.decorators import action
 from django.utils import timezone
@@ -46,14 +47,14 @@ class AvailableRoomsSeatsView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        has_outlet = request.query_params.get('has_outlet')
+        # has_outlet = request.query_params.get('has_outlet')
         rooms = ClassRoom.objects.filter(is_available=1, is_disable=1)
         data = []
 
         for room in rooms:
             seats_qs = room.seats.filter(is_available=1, is_disable=1)
-            if has_outlet is not None:
-                seats_qs = seats_qs.filter(has_outlet=(has_outlet.lower() == 'true'))
+            # if has_outlet is not None:
+            #     seats_qs = seats_qs.filter(has_outlet=(has_outlet.lower() == 'true'))
 
             room_data = ClassRoomSerializer(room).data
             room_data['seats'] = SeatSerializer(seats_qs, many=True).data
@@ -64,7 +65,8 @@ class AvailableRoomsSeatsView(APIView):
 ##Nick
 
 class AdminDashboardStatusView(APIView):
-    # permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
         total_seats = Seat.objects.count()
@@ -88,8 +90,8 @@ class AdminDashboardStatusView(APIView):
         return Response(data)
 
 class AdminDashboardRoomsStats(APIView):
-    permission_classes = [AllowAny]  # Temporary for testing
-    # permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
 
     def get(self, request, format=None):
         classrooms = ClassRoom.objects.all()
@@ -97,8 +99,8 @@ class AdminDashboardRoomsStats(APIView):
         return Response(serializer.data)
 
 class AdminDashboardUserStats(APIView):
-    permission_classes = [AllowAny]  # Temporary for testing
-    # permission_classes = [IsAdminUser]    
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
 
     def get(self, request, format=None):
         users = User.objects.all()
@@ -107,6 +109,8 @@ class AdminDashboardUserStats(APIView):
     
 class SeatGetAll(APIView):
     # permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [IsAdminUser, TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
     
     def get(self, request, format=None):
         try:
@@ -143,6 +147,9 @@ class SeatGetAll(APIView):
 
 class SeatDisableView(APIView):
     # permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [IsAdminUser, TokenAuthentication]
+    authentication_classes = [TokenAuthentication]
+
     queryset = Seat.objects.all()
     serializer_class = SeatSerializer
 
@@ -163,7 +170,9 @@ class SeatDisableView(APIView):
                         status=status.HTTP_201_CREATED)
 
 class SeatEnableView(generics.DestroyAPIView):
-    # permission_classes = [IsAdminUser, IsAuthenticated]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
     queryset = Seat.objects.all()
     serializer_class = SeatSerializer
 
@@ -190,7 +199,8 @@ class SeatEnableView(generics.DestroyAPIView):
                         status=status.HTTP_201_CREATED)
 
 class ClassRoomGetAll(APIView):
-    # permission_classes = [IsAdminUser, IsAuthenticated]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
     def get(self, request, format=None):
         try:
@@ -226,7 +236,9 @@ class ClassRoomGetAll(APIView):
             }, status=500)
 
 class ClassRoomCreateView(generics.CreateAPIView):
-    # permission_classes = [IsAdminUser, IsAuthenticated]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
     queryset = ClassRoom.objects.all()
     serializer_class = ClassRoomSerializer
 
@@ -245,7 +257,9 @@ class ClassRoomCreateView(generics.CreateAPIView):
         return Response({"detail": "Use POST to create a seat."}, status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 class ClassRoomDisableView(generics.DestroyAPIView):
-    # permission_classes = [IsAdminUser, IsAuthenticated]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
     queryset = ClassRoom.objects.all()
     serializer_class = ClassRoomSerializer
     
@@ -268,7 +282,9 @@ class ClassRoomDisableView(generics.DestroyAPIView):
                         status=status.HTTP_201_CREATED)
     
 class ClassRoomEnableView(generics.DestroyAPIView):
-    # permission_classes = [IsAdminUser, IsAuthenticated]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+
     queryset = ClassRoom.objects.all()
     serializer_class = ClassRoomSerializer
 

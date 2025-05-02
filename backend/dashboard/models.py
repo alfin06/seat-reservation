@@ -24,7 +24,7 @@ class Seat(models.Model):
     name = models.CharField(max_length=200)
     is_available = models.SmallIntegerField(choices=RESERVE_STATE, default=1)
     is_disable = models.SmallIntegerField(choices=IS_DISABLE, default=1)
-    has_outlet = models.BooleanField(default=False)  # New field for outlet info
+    # has_outlet = models.BooleanField(default=False)  # New field for outlet info
     create_at = models.DateTimeField(default=timezone.now)
     update_at = models.DateTimeField(auto_now=True)
 

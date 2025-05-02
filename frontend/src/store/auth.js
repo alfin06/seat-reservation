@@ -213,6 +213,7 @@ export const useAuthStore = defineStore('auth', {
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken(),
+            'Authorization': `Token ${localStorage.getItem('token')}`
           },
         })
         
@@ -235,6 +236,14 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = false
       }
       this.saveState()
+    },
+
+    getAuthHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken(),
+        'Authorization': `Token ${localStorage.getItem('token')}`
+      }
     },
 
     saveState() {
