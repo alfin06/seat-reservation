@@ -1,5 +1,5 @@
 {
-  "title": "Study Seat Reservation System",
+  "title": "Seat Reservation System",
   "register": "Register",
   "login": "Login",
   "enterUsername": "Enter username",
@@ -52,5 +52,6 @@
   "hour": "Hours",
   "backToHome": "Back to Home",
   "qrCodeScanner": "QR Code Scanner",
-  "scanInstruction": "Please scan the QR code on the desk to check-in."
+  "scanInstruction": "Please scan the QR code on the desk to check-in.",
+  "alreadyHaveAccount": "Already have an account"
 }

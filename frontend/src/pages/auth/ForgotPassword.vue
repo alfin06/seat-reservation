@@ -54,7 +54,7 @@ export default {
     <div class="container my-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <el-card class="box-card card-body" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
+                <el-card class="box-card card-body text-center" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
                     <h2>Reset Password</h2>
                     <p class="description">Enter your email address and we'll send you instructions to reset your password.</p>
                     <p v-if="error" class="error text-danger">{{error}}</p> 
@@ -64,6 +64,7 @@ export default {
                         <br/><br/>
                         <el-button type="primary" @click="resetPassword">{{ $t('sendInstructions') }}</el-button>
                     </el-form>
+                    <br/>
                     <div class="links-container">
                         <p>Remember your password? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
                         <p>Don't have an account? <el-link type="primary" @click="onRegister">{{ $t('register') }}</el-link></p>
@@ -76,55 +77,69 @@ export default {
 
 <style scoped>
 .box-card {
-    max-width: 500px;
-    margin: 50px auto;
-    padding: 20px;
+  padding: 2rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background: #fff;
 }
 
 .description {
-    color: #606266;
-    margin: 1rem 0;
-    text-align: center;
+  color: #606266;
+  margin: 1rem 0;
+  text-align: center;
 }
 
 .error {
-    color: #f56c6c;
-    margin-bottom: 1rem;
+  color: #f56c6c;
+  margin-bottom: 1rem;
 }
 
 .success {
-    color: #67c23a;
-    margin-bottom: 1rem;
+  color: #67c23a;
+  margin-bottom: 1rem;
 }
 
-.form-spacing {
-    margin-top: 1.5rem;
-    text-align: center;
+.form-item {
+  margin-bottom: 1.5rem;
 }
 
-:deep(.el-form-item) {
-    margin-bottom: 1.5rem;
+.input-field {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #dcdfe6;
 }
 
-.links-container {
-    margin-top: 1.5rem;
-    text-align: center;
+.input-field:focus {
+  border-color: #409eff;
+  box-shadow: 0 0 8px rgba(64, 158, 255, 0.3);
+}
+
+.el-form-item__label {
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.el-button {
+  padding: 10px 0;
+  border-radius: 8px;
 }
 
 .links-container p {
-    margin: 0.5rem 0;
+  margin: 0.5rem 0;
+  font-weight: 500;
 }
 
 :deep(.el-link) {
-    font-weight: 600;
-    margin-left: 0.25rem;
+  font-weight: 600;
+  margin-left: 4px;
 }
 
 :deep(.el-button) {
-    min-width: 200px;
+  min-width: 200px;
 }
 
-#email {
-    text-align: center;
+.el-input {
+  width: 100%;
 }
-</style> 
+
+</style>

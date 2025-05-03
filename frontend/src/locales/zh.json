@@ -1,5 +1,5 @@
 {
-    "title": "学习座位预订系统",
+    "title": "座位预订系统",
     "register": "注册",
     "login": "登录",
     "welcome": "你好",
@@ -51,7 +51,8 @@
     "hour": "小时",
     "backToHome": "后退",
     "qrCodeScanner": "二维码扫描器",
-      "scanInstruction": "请扫描桌子上的二维码进行办理登机手续。"
+    "scanInstruction": "请扫描桌子上的二维码进行办理登机手续。",
+    "alreadyHaveAccount": "已有账户"
 
   }
   
