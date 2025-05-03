@@ -52,8 +52,8 @@ const makeReservation = async () => {
         'X-CSRFToken': getCSRFToken(),
       },
     });
-    message.value = 'Reservation successful!';
-    fetchAvailable();
+    // Redirect to success landing page
+    router.push({ name: 'booking-success' });
   } catch (err) {
     message.value = err.response?.data?.detail || 'Reservation failed.';
   } finally {

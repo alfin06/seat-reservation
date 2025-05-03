@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from './pages/Home.vue'
+import BookingSuccess from './pages/BookingSuccess.vue'
 import Login from './pages/auth/Login.vue'
 import Register from './pages/auth/Register.vue'
 import ForgotPassword from './pages/auth/ForgotPassword.vue'
@@ -20,6 +21,7 @@ const routes = [
   { path: '/admin-dashboard', name: 'admin-dashboard', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true }},
   { path: '/check-in', name: 'check-in', component: CheckIn, meta: { requiresAuth: true } },
   { path: '/booking', name: 'booking', component: Reservation, meta: { requiresAuth: true } },
+  { path: '/booking-success', name: 'booking-success', component: BookingSuccess, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({
