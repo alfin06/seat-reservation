@@ -47,7 +47,6 @@ INSTALLED_APPS = [
     'dashboard',
     'users',
     'rest_framework.authtoken', #Nick
-    # 'dashboard',  # Commented out dashboard app
 ]
 
 MIDDLEWARE = [
@@ -90,7 +89,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'seat_reservation',
-        'USER': 'admin',
+        'USER': 'root',
         'PASSWORD': os.getenv('MYSQL_PASSWORD'),
         'HOST': '127.0.0.1',
         'PORT': '3306',
@@ -151,9 +150,11 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
 }
 
@@ -194,6 +195,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'token',
 ]
 
 # CSRF Settings

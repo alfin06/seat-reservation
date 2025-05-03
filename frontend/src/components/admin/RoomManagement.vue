@@ -12,69 +12,72 @@
       />
     </div>
 
-    
-    <!-- Add Room Dialog -->
-    <el-dialog
-      title="Add New Room"
-      :visible.sync="addRoomDialogVisible"
-      width="40%"
-    >
-      <el-form 
-        :model="newRoom" 
-        :rules="roomRules" 
-        ref="roomForm"
-        label-width="120px"
-      >
-        <el-form-item label="Room Name" prop="name">
-          <el-input v-model="newRoom.name" placeholder="e.g., Conference Room A" />
-        </el-form-item>
+    <!-- Add Room Popup Form Dialog -->
+    <div v-if="addRoomDialogVisible" class="custom-modal-overlay" @click.self="addRoomDialogVisible = false">
+      <div class="custom-modal">
+        <div class="modal-header">
+          <h3>Add New Room</h3>
+        </div>
+        
+        <div class="modal-body">
+          <el-form
+            :model="newRoom"
+            :rules="roomRules"
+            ref="roomForm"
+            label-position="top"
+          >
+            <!-- <el-form-item label="Room Name" prop="name">
+              <el-input
+                v-model="newRoom.name"
+                placeholder="e.g., Conference Room A"
+                clearable
+              />
+            </el-form-item> -->
 
-        <el-form-item label="Location" prop="location">
-          <el-input v-model="newRoom.location" placeholder="e.g., Building 2, Floor 3" />
-        </el-form-item>
+            <el-form-item label="Location" prop="location">
+              <el-input
+                v-model="newRoom.location"
+                placeholder="e.g., Building 2, Floor 3"
+                clearable
+              />
+            </el-form-item>
+            
+            <el-form-item label="Capacity" prop="capacity">
+              <el-input-number
+                v-model="newRoom.capacity"
+                :min="1"
+                :max="1000"
+                controls-position="right"
+                style="width: 100%"
+              />
+            </el-form-item>
+          </el-form>
+        </div>
 
-        <el-form-item label="Capacity" prop="capacity">
-          <el-input-number 
-            v-model="newRoom.capacity" 
-            :min="1" 
-            :max="100"
-            placeholder="Number of seats"
-          />
-        </el-form-item>
-
-        <el-form-item label="Description">
-          <el-input
-            v-model="newRoom.description"
-            type="textarea"
-            :rows="2"
-            placeholder="Optional room description"
-          />
-        </el-form-item>
-      </el-form>
-
-      <span slot="footer">
-        <el-button @click="addRoomDialogVisible = false">Cancel</el-button>
-        <el-button 
-          type="primary" 
-          @click="submitRoomForm"
-          :loading="isSubmitting"
-        >
-          Create Room
-        </el-button>
-      </span>
-    </el-dialog>
+        <div class="modal-footer">
+          <el-button @click="addRoomDialogVisible = false">Cancel</el-button>
+          <el-button 
+            type="primary" 
+            @click="submitRoomForm"
+            :loading="isSubmitting"
+          >
+            Create Room
+          </el-button>
+        </div>
+      </div>
+    </div>
 
     <el-table :data="displayedRooms" border>
       <!-- Name -->
-      <el-table-column prop="name" label="Classroom Name" sortable />
+      <el-table-column prop="name" label="Classroom Name" width="120" sortable />
 
       <!-- Location -->
-      <el-table-column prop="location" label="Location" />
+      <el-table-column prop="location" label="Location" sortable />
 
       <el-table-column prop="number_of_seat" label="Number of Seat" />
 
       <!-- Availability -->
-      <el-table-column label="Available" width="120">
+      <el-table-column label="Available" width="90">
         <template #default="{ row }">
           <el-tag :type="row.is_available.value ? 'success' : 'warning'">
             {{ row.is_available.display }}
@@ -83,7 +86,7 @@
       </el-table-column>
 
       <!-- Disabled -->
-      <el-table-column label="Status" width="120">
+      <el-table-column label="Status" width="90">
         <template #default="{ row }">
           <el-tag :type="row.is_disable.value ? 'danger' : 'info'">
             {{ row.is_disable.display }}
@@ -93,68 +96,60 @@
 
       <!-- Updated At -->
       <el-table-column prop="updated_at" label="Last Updated" width="180" />
+      
 
       <!-- Actions -->
-      <el-table-column label="Actions" width="200">
+      <el-table-column label="Actions" width="180">
+          <template #default="{ row }">
+            <el-button-group>
+                <!-- <el-button
+                size="mini"
+                @click="showDialog('edit', row)"
+              >
+                Edit
+                <i class="el-icon-edit" style="margin-left:4px;"></i>
+              </el-button> -->
+              <el-button
+                type="warning"
+                size="mini"
+                @click="toggleEnable(row)"
+              >
+                Enable
+              </el-button>
+              <el-button
+                type="danger"
+                size="mini"
+                @click="toggleDisable (row)"
+                >
+                Disable
+              </el-button>
+            </el-button-group>
+          </template>
+        </el-table-column>
+        <el-table-column label="QR Code" width="140">
         <template #default="{ row }">
           <el-button
             size="mini"
-            @click="showDialog('edit', row)"
+            @click="generateQR(row)"
+            class="open-btn"
           >
-            Edit
-            <i class="el-icon-edit" style="margin-left:4px;"></i>
-          </el-button>
-          <el-button
-            type="warning"
-            size="mini"
-            @click="toggleEnable(row)"
-          >
-          Enable
-          </el-button>
-          <el-button
-            type="danger"
-            size="mini"
-            @click="toggleDisable(row)"
-            >
-            Disable
+            Generate QR
           </el-button>
         </template>
       </el-table-column>
     </el-table>
 
-    <!-- Add / Edit Dialog -->
-    <el-dialog
-      :title="dialogTitle"
-      :visible.sync="dialogVisible"
-      width="40%"
-    >
-      <el-form :model="currentRoom" label-width="120px">
-        <el-form-item label="Classroom Name" required>
-          <el-input v-model="currentRoom.name" />
-        </el-form-item>
-        <el-form-item label="Location">
-          <el-input v-model="currentRoom.location" />
-        </el-form-item>
-        <el-form-item label="Available">
-          <el-switch
-            v-model="currentRoom.is_available.value"
-            active-text="Available"
-            inactive-text="Reserved"
-          />
-        </el-form-item>
-        <el-form-item label="Disabled">
-          <el-switch
-            v-model="currentRoom.is_disable.value"
-            active-text="Disabled"
-            inactive-text="Active"
-          />
-        </el-form-item>
-      </el-form>
-      <span slot="footer">
-        <el-button @click="dialogVisible = false">Cancel</el-button>
-        <el-button type="primary" @click="saveRoom">Save</el-button>
-      </span>
-    </el-dialog>
+    <!-- QR Modal (single instance) -->
+    <div v-if="showQR" class="modal-overlay" @click="closeModal">
+      <div class="modal-content" @click.stop>
+        <qrcode-vue ref="qrCanvas" :value="qrValue" :size="size" level="H" render-as="svg" />
+        <div class="qr-text">ID: {{ qrValue }}</div>
+        <div class="button-group">
+          <el-button size="mini" @click="downloadQR">Download</el-button>
+          <el-button size="mini" @click="closeModal">Close</el-button>
+        </div>
+      </div>
+    </div>
 
     <!-- Pagination Controls -->
     <div class="pagination">
@@ -172,23 +167,19 @@
 
 <script>
 import axios from 'axios'
+//import QrcodeVue from 'qrcode.vue'
 
 export default {
+  components: {
+    //QrcodeVue
+  },
   data() {
     return {
-      addRoomDialogVisible: false,
-      isSubmitting: false,
       newRoom: {
-        name: '',
         location: '',
         capacity: null,
-        description: ''
       },
       roomRules: {
-        name: [
-          { required: true, message: 'Please enter room name', trigger: 'blur' },
-          { min: 3, max: 50, message: 'Length should be 3 to 50', trigger: 'blur' }
-        ],
         location: [
           { required: true, message: 'Please enter room location', trigger: 'blur' }
         ],
@@ -198,6 +189,8 @@ export default {
         ]
       },
 
+      addRoomDialogVisible: false,
+      isSubmitting: false,
       currentPage: 1,
       pageSize: 15,
       rooms: [],          // fetched from API
@@ -205,6 +198,9 @@ export default {
       dialogVisible: false,
       dialogMode: 'add',
       currentRoom: this.getDefaultRoom(),
+      showQR: false,
+      qrValue: '',
+      size: 200           // QR code pixel size
     }
   },
   computed: {
@@ -225,47 +221,69 @@ export default {
   methods: {
     showAddRoomForm() {
       this.addRoomDialogVisible = true
-      this.resetRoomForm()
     },
 
     resetRoomForm() {
       this.newRoom = {
-        name: '',
         location: '',
         capacity: null,
-        description: ''
       }
-      if (this.$refs.roomForm) {
-        this.$refs.roomForm.resetFields()
-      }
+      this.$refs.roomForm?.resetFields()
     },
 
     async submitRoomForm() {
-      this.$refs.roomForm.validate(async (valid) => {
-        if (valid) {
-          this.isSubmitting = true
-          try {
-            const response = await axios.post('/api/rooms', {
-              name: this.newRoom.name,
-              location: this.newRoom.location,
-              capacity: this.newRoom.capacity,
-              description: this.newRoom.description
-            })
+      try {
+        // 1. Validate the form
+        await this.$refs.roomForm.validate();
+        const token = localStorage.getItem('token');
 
-            if (response.data.success) {
-              this.$message.success('Room created successfully!')
-              this.addRoomDialogVisible = false
-              // Optionally refresh room list if needed
-            }
-          } catch (error) {
-            console.error('Room creation failed:', error)
-            this.$message.error(error.response?.data?.message || 'Failed to create room')
-          } finally {
-            this.isSubmitting = false
+        this.isSubmitting = true;
+
+        // 2. Build the flat JSON payload
+        const payload = {
+          location: this.newRoom.location,
+          number_of_seats: Number(this.newRoom.capacity)
+        };
+        console.log('Sending payload:', payload);
+
+        // 3. Post it to your insert endpoint
+        const response = await axios.post(
+          'http://127.0.0.1:8000/dashboard/admin/classroom/insert/',
+          payload,
+          { headers: { 
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json' 
+            } 
           }
+        );
+
+        // 4. Handle a 201 Created response
+        if (response.status === 201) {
+          this.$message.success('Room created successfully!');
+          this.addRoomDialogVisible = false;
+          await this.fetchRooms();
+          this.$emit('room-status-changed');
+          this.resetRoomForm();
+        } else {
+          this.$message.error(response.data.message || 'Unexpected response');
         }
-      })
+
+      } catch (err) {
+        if (err.name === 'ValidationError') return;
+
+        let msg = 'Failed to create room';
+        if (err.response) {
+          msg = err.response.data.message
+            || err.response.data.error
+            || `Server error: ${err.response.status}`;
+        }
+        this.$message.error(msg);
+
+      } finally {
+        this.isSubmitting = false;
+      }
     },
+
 
     handlePageChange(newPage) {
         this.currentPage = newPage
@@ -285,7 +303,17 @@ export default {
 
     async fetchRooms() {
       try {
-        const res = await axios.get('http://127.0.0.1:8000/dashboard/admin/classroom/list/')
+        const token = localStorage.getItem('token');
+        const res = await axios.get(
+          'http://127.0.0.1:8000/dashboard/admin/classroom/list/',
+          {
+            headers: {
+              'Authorization': `Token ${token}`,
+              'Content-Type': 'application/json'
+            },
+            withCredentials: true
+          }
+        );
         if (res.data.status === 'success') {
           this.rooms = res.data.data.map((c, i) => ({
             id: c.id,
@@ -305,38 +333,34 @@ export default {
       }
     },
 
-    showDialog(mode, room = null) {
-      this.dialogMode = mode
-      this.currentRoom = room
-        ? JSON.parse(JSON.stringify(room))
-        : this.getDefaultRoom()
-      this.dialogVisible = true
-    },
-
-    async saveRoom() {
-      // stub: wire up to your create/update API as needed
-      this.dialogVisible = false
-      await this.fetchRooms()
-    },
-
     async toggleDisable(row) {
-      // stub: call your disable API
-              // stub: call your disable API
       try {
+        const token = localStorage.getItem('token');
         const payload = { id: row.id };
         const res = await axios.post(
           'http://127.0.0.1:8000/dashboard/admin/classroom/disable/',
           payload,
+          {
+            headers: { 
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json' 
+            } 
+          }
         );
 
-        if (res.data.status === 'success') {
-          this.$message.success('Classroom status toggled.');
+        if (res.data.message && res.data.message.includes('successfully')) {
+          this.$message({
+            message: res.data.message,
+            type: 'success',
+          });
+          await this.fetchRooms();
+          this.$emit('room-status-changed');
         } else {
-          this.$message.error(res.data.message || 'Failed to toggle classroom.');
+          this.$message({
+            message: res.data.message || 'Failed to disable classroom.',
+            type: 'error',
+          });
         }
-        
-        // refresh list
-        await this.fetchRooms();
       } catch (err) {
         console.error(err);
         this.$message.error('Server error toggling classroom.');
@@ -344,32 +368,64 @@ export default {
     },
 
     async toggleEnable(row) {
-      // stub: call your disable API
-              // stub: call your disable API
       try {
-        const payload = { id: row.id};
+        const token = localStorage.getItem('token');
+        const payload = { id: row.id };
         const res = await axios.post(
           'http://127.0.0.1:8000/dashboard/admin/classroom/enable/',
-          payload
+          payload,
+          {
+            headers: { 
+            'Authorization': `Token ${token}`,
+            'Content-Type': 'application/json' 
+            } 
+          }
         );
 
-        if (res.data.status === 'success') {
-          this.$message.success('Classroom status toggled.');
+        if (res.data.message && res.data.message.includes('successfully')) {
+          this.$message({
+            message: res.data.message,
+            type: 'success',
+          });
+          await this.fetchRooms();
+          this.$emit('room-status-changed');
         } else {
-          this.$message.error(res.data.message || 'Failed to toggle classroom.');
+          this.$message({
+            message: res.data.message || 'Failed to enable classroom.',
+            type: 'error',
+          });
         }
-        
-        // refresh list
-        await this.fetchRooms();
       } catch (err) {
         console.error(err);
-        this.$message.error('Server error toggling classroom. ');
+        this.$message.error('Server error toggling classroom.');
       }
     },
 
-    async deleteRoom(row) {
-      // stub: call your delete API
-      await this.fetchRooms()
+    generateQR(row) {
+      this.qrValue = row.id.toString()
+      this.showQR = true
+    },
+    downloadQR() {
+      const svg = this.$refs.qrCanvas.$el;
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = this.size;
+      canvas.height = this.size;
+      
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `qr_${this.qrValue}.png`;
+        link.click();
+      };
+      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    },
+    closeModal() {
+      this.showQR = false
     }
   },
   mounted() {
@@ -383,5 +439,75 @@ export default {
   display: flex;
   margin-bottom: 20px;
   align-items: center;
+}
+
+.el-dialog__wrapper {
+  z-index: 2000 !important;
+}
+
+.el-form-item__label {
+  font-weight: bold;
+}
+
+.el-textarea__inner {
+  resize: vertical;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: calc(var(--qr-size) + 40px); 
+}
+
+.modal-content {
+  --qr-size: 200px;
+}
+.close-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+.open-btn {
+  padding: 0.3rem 0.6rem;
+  background: #409eff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+.qr-text {
+  margin-top: 10px;
+  font-weight: bold;
+  text-align: center;
+}
+.button-group {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+.modal-content svg {
+  width: var(--qr-size);
+  height: var(--qr-size);
 }
 </style>

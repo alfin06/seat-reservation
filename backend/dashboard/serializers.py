@@ -1,11 +1,12 @@
 from dashboard.models import *
 from rest_framework import serializers
+from django.utils.timezone import localtime
 
 class SeatSerializer(serializers.ModelSerializer):
     class Meta:
         model = Seat
         #Nick
-        fields = ['id', 'classroom', 'location', 'name', 'is_available', 'is_disable', 'has_outlet', 'create_at', 'update_at']
+        fields = ['id', 'classroom', 'location', 'name', 'is_available', 'is_disable', 'create_at', 'update_at']
         read_only_fields = ['id', 'name', 'created_at', 'updated_at']
         extra_kwargs = {
             'is_available': {'required': False, 'default': 1},
@@ -36,8 +37,8 @@ class SeatSerializer(serializers.ModelSerializer):
 class ReservationSerializer(serializers.ModelSerializer):
     class Meta:
         model = Reservation
-        fields = ['id', 'student', 'classroom', 'seat', 'duration', 'status', 'reservation_datetime']
-        read_only_fields = ['id', 'status', 'reservation_datetime']
+        fields = ['id', 'classroom', 'seat', 'duration', 'status', 'reserved_at', 'reserved_end']
+        read_only_fields = ['id', 'status']
 
 
 class ClassRoomSerializer(serializers.ModelSerializer):

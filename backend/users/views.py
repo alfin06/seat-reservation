@@ -23,6 +23,7 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import logging
+from rest_framework.authtoken.models import Token
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +48,14 @@ class LoginView(APIView):
             login(request, user)
             user.last_login = timezone.now()
             user.save()
+
+            # get or create token
+            token, created = Token.objects.get_or_create(user=user)
             
             return Response({
                 "message": "Login successful",
-                "user": UserSerializer(user).data
+                "user": UserSerializer(user).data,
+                "token": token.key
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -228,7 +233,6 @@ class EmailVerificationView(APIView):
             return Response({
                 "error": "Invalid verification link."
             }, status=status.HTTP_400_BAD_REQUEST)
-        
 
 ##############################
 from django.shortcuts import render
