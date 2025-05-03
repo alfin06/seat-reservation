@@ -167,11 +167,11 @@
 
 <script>
 import axios from 'axios'
-//import QrcodeVue from 'qrcode.vue'
+import QrcodeVue from 'qrcode.vue'
 
 export default {
   components: {
-    //QrcodeVue
+    QrcodeVue
   },
   data() {
     return {
