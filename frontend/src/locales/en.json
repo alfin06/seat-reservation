@@ -2,7 +2,6 @@
   "title": "Study Seat Reservation System",
   "register": "Register",
   "login": "Login",
-  "welcome": "Welcome to our system!",
   "enterUsername": "Enter username",
   "enterEmail": "Enter email",
   "enterPassword": "Enter password",
@@ -44,8 +43,14 @@
   "reserveSeatButton": "Reserve seat button",
   "selectSeatPlaceholder": "Select seat placeholder",
   "selectRoomPlaceholder": "Select room placeholder",
-  "sendInstructions": "Send Reset Instructions"
-
-
-
+  "sendInstructions": "Send Reset Instructions",
+  "welcome": "Hello",
+  "student": "Student",
+  "lastLogin": "Last login",
+  "logout": "Logout",
+  "quickAction": "Quick Action",
+  "hour": "Hours",
+  "backToHome": "Back to Home",
+  "qrCodeScanner": "QR Code Scanner",
+  "scanInstruction": "Please scan the QR code on the desk to check-in."
 }

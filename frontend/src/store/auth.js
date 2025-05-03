@@ -100,6 +100,7 @@ export const useAuthStore = defineStore('auth', {
           role: data.role // Include role in user data
         }
         this.isAuthenticated = true
+        localStorage.setItem("token", data.token);
         this.saveState()
         
         if (router) {
@@ -148,6 +149,7 @@ export const useAuthStore = defineStore('auth', {
         this.saveState()
         
         // Clear any stored tokens or session data
+        localStorage.removeItem('token')
         localStorage.removeItem('authState')
         
         // Redirect to login page
@@ -211,6 +213,7 @@ export const useAuthStore = defineStore('auth', {
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken(),
+            'Authorization': `Token ${localStorage.getItem('token')}`
           },
         })
         
@@ -233,6 +236,14 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = false
       }
       this.saveState()
+    },
+
+    getAuthHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken(),
+        'Authorization': `Token ${localStorage.getItem('token')}`
+      }
     },
 
     saveState() {
