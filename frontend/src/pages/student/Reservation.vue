@@ -16,7 +16,8 @@ export default {
         seat: '',
         duration: 1,
         date: '',      // ✅ new field
-        time: ''       // ✅ new field
+        time: '',      // ✅ new field
+        outlet: 'any'  // 'any', 'with', 'without'
       },
       error: '',
       success: ''
@@ -24,14 +25,10 @@ export default {
   },
   watch: {
     'reservationForm.room'(roomId) {
-      const selectedRoom = this.rooms.find(r => r.id === roomId);
-      this.seats = selectedRoom
-        ? selectedRoom.seats.map(seat => ({
-            label: seat.name || `Seat ${seat.id}`,
-            value: seat.id
-          }))
-        : [];
-      this.reservationForm.seat = '';
+      this.filterSeats();
+    },
+    'reservationForm.outlet'(val) {
+      this.filterSeats();
     }
   },
   mounted() {
@@ -43,8 +40,31 @@ export default {
         const res = await fetch('http://127.0.0.1:8000/dashboard/api/available/');
         const data = await res.json();
         this.rooms = data.rooms || [];
+        this.filterSeats();
       } catch (err) {
         this.error = 'Failed to fetch rooms ' + err;
+      }
+    },
+    filterSeats() {
+      const selectedRoom = this.rooms.find(r => r.id === this.reservationForm.room);
+      if (!selectedRoom) {
+        this.seats = [];
+        this.reservationForm.seat = '';
+        return;
+      }
+      let filteredSeats = selectedRoom.seats;
+      if (this.reservationForm.outlet === 'with') {
+        filteredSeats = filteredSeats.filter(seat => seat.has_outlet);
+      } else if (this.reservationForm.outlet === 'without') {
+        filteredSeats = filteredSeats.filter(seat => !seat.has_outlet);
+      }
+      this.seats = filteredSeats.map(seat => ({
+        label: seat.name || `Seat ${seat.id}`,
+        value: seat.id
+      }));
+      // Reset seat selection if not in filtered list
+      if (!this.seats.find(s => s.value === this.reservationForm.seat)) {
+        this.reservationForm.seat = '';
       }
     },
     async onSubmit() {
@@ -127,6 +147,15 @@ export default {
       </el-form-item>
 
       <!-- Seat -->
+      <!-- Outlet Filter -->
+      <el-form-item label="Outlet Preference" prop="outlet">
+        <el-radio-group v-model="reservationForm.outlet">
+          <el-radio label="any">Any</el-radio>
+          <el-radio label="with">With Outlet</el-radio>
+          <el-radio label="without">Without Outlet</el-radio>
+        </el-radio-group>
+      </el-form-item>
+
       <el-form-item :label="$t('selectSeat')" prop="seat">
         <el-select v-model="reservationForm.seat" :placeholder="$t('selectSeatPlaceholder')">
           <el-option
