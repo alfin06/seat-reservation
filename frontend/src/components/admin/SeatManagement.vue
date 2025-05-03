@@ -14,6 +14,15 @@
       <el-table-column prop="location" label="Location" />
       <el-table-column prop="classroom" label="Classroom" width="120"/>
 
+      <!-- Outlet Status -->
+      <el-table-column label="Outlet" width="90">
+        <template #default="{ row }">
+          <el-tag :type="row.has_outlet.value ? 'success' : 'info'">
+            {{ row.has_outlet.display }}
+          </el-tag>
+        </template>
+      </el-table-column>
+
       <!-- Availability -->
       <el-table-column label="Available" width="90">
         <template #default="{ row }">
@@ -159,6 +168,7 @@ export default {
             classroom: c.classroom,
             is_available: c.is_available,
             is_disable: c.is_disable, 
+            has_outlet: c.has_outlet,
             updated_at: c.update_at
           }))
         } else {

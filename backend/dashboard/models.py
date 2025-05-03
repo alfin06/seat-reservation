@@ -12,6 +12,11 @@ class Seat(models.Model):
         (0, 'Disable'),
         (1, 'Active')
     )
+    HAS_OUTLET = (
+        (0, 'No'),
+        (1, 'Yes')
+    )
+
     id = models.AutoField(primary_key=True)
     classroom = models.ForeignKey(
         'ClassRoom',
@@ -20,11 +25,12 @@ class Seat(models.Model):
         null=True,
         blank=True
     )
+
     location = models.CharField(max_length=100)
     name = models.CharField(max_length=200)
     is_available = models.SmallIntegerField(choices=RESERVE_STATE, default=1)
     is_disable = models.SmallIntegerField(choices=IS_DISABLE, default=1)
-    # has_outlet = models.BooleanField(default=False)  # New field for outlet info
+    has_outlet = models.SmallIntegerField(choices=HAS_OUTLET, default=1)
     create_at = models.DateTimeField(default=timezone.now)
     update_at = models.DateTimeField(auto_now=True)
 

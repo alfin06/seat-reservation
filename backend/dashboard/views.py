@@ -129,6 +129,10 @@ class SeatGetAll(APIView):
                         'display': seat.get_is_available_display()
                     },
                     'classroom': seat.classroom.name,
+                    'has_outlet': {
+                        'value': seat.has_outlet,
+                        'display': seat.get_has_outlet_display()
+                    },
                     'is_disable': {
                         'value': seat.is_disable,
                         'display': seat.get_is_disable_display()
