@@ -50,6 +50,7 @@ class Reservation(models.Model):
         (0, 'Active'),
         (1, 'Completed'),
         (2, 'Cancelled'),
+        (3, 'Checked-In'),
     )
     user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='reservations')
     classroom = models.ForeignKey('ClassRoom', on_delete=models.CASCADE, related_name='reservations')
@@ -57,12 +58,17 @@ class Reservation(models.Model):
     duration = models.PositiveIntegerField(default=1)  # in hours, max 4
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=0)
     reserved_at = models.DateTimeField(default=timezone.now)
-    reserved_end= models.DateTimeField(default=timezone.now)
+    reserved_end = models.DateTimeField(default=timezone.now)
     create_at = models.DateTimeField(default=timezone.now)
+    checked_in_at = models.DateTimeField(null=True, blank=True)
 
     def __str__(self):
         return f"Reservation by {self.user} for Seat {self.seat.id} in Room {self.classroom.id}"
 
+    def save(self, *args, **kwargs):
+        if self.status == '3' and not self.checked_in_at:  # Checked-In
+            self.checked_in_at = timezone.now()
+        super().save(*args, **kwargs)
 
 class ClassRoom(models.Model):
     RESERVE_STATE = (

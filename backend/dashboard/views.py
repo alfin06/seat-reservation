@@ -5,7 +5,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework import status, viewsets, permissions, generics
 from rest_framework.decorators import action
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from dashboard.serializers import *
 from users.serializers import UserSerializer
 from dashboard.models import *
@@ -20,6 +20,8 @@ from dashboard.serializers import ReservationSerializer, SeatSerializer, ClassRo
 
 from datetime import timedelta
 import pytz
+# import qrcode
+# from io import BytesIO
 
 class ReservationCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -313,39 +315,117 @@ class ClassRoomEnableView(generics.DestroyAPIView):
         return Response({'message': f'ClassRoom {classroom_id} and its seats have been enable successfully.'},
                         status=status.HTTP_201_CREATED)
     
+class InstantBookingView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        seat_id = request.data.get('seat_id')
+        try:
+            duration = int(request.data.get('duration', 1))
+        except (TypeError, ValueError):
+            return Response({'error': 'Invalid duration'}, status=400)
+
+        # 1. Validate seat
+        try:
+            seat = Seat.objects.get(id=seat_id)
+        except Seat.DoesNotExist:
+            return Response({'error': 'Seat not found'}, status=404)
+        if not seat.is_available or seat.is_disable == 0:
+            return Response({'error': 'Seat is not available'}, status=400)
+
+        # 2. Validate duration
+        if duration < 1 or duration > 4:
+            return Response({'error': 'Duration must be between 1 and 4 hours'}, status=400)
+
+        # 3. Check for overlapping reservations
+        now = timezone.now()
+        end_time = now + timedelta(hours=duration)
+        overlapping = Reservation.objects.filter(
+            seat=seat,
+            status__in=['0', '3'],  # Active or Checked-In
+            reserved_at__lt=end_time,
+            reserved_end__gt=now
+        ).exists()
+        if overlapping:
+            return Response({'error': 'Seat is already reserved for this time period'}, status=400)
+
+        # 4. Create reservation
+        reservation = Reservation.objects.create(
+            user=request.user,
+            classroom=seat.classroom,
+            seat=seat,
+            duration=duration,
+            reserved_at=now,
+            reserved_end=end_time,
+            status='3'  # Checked-In
+        )
+
+        # 5. Update seat status
+        seat.is_available = 0
+        seat.save()
+
+        # 6. Return reservation details
+        return Response({
+            'reservation_id': reservation.id,
+            'seat_id': seat.id,
+            'seat_name': seat.name,
+            'classroom': seat.classroom.name,
+            'location': seat.location,
+            'duration': reservation.duration,
+            'status': 'CHECKED-IN',
+            'reserved_at': reservation.reserved_at,
+            'reserved_end': reservation.reserved_end
+        }, status=201)
+
 class QRCodeCheckView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        user_id = request.data.get('user_id')
-        seat_id = request.data.get('qrCode')  # Assuming QR code carries seat ID
+        seat_id = request.data.get('seat_id')
+        try:
+            seat = Seat.objects.get(id=seat_id)
+        except Seat.DoesNotExist:
+            return Response({'error': 'Seat not found'}, status=404)
 
-        if not user_id or not seat_id:
-            return Response({"detail": "Missing user_id or qrCode"}, status=status.HTTP_400_BAD_REQUEST)
+        if not seat.is_available or seat.is_disable == 0:
+            return Response({'error': 'Seat is not available'}, status=400)
 
-        # Get current time in UTC and convert it to Shanghai time
-        shanghai_tz = pytz.timezone('Asia/Shanghai')
-        now_utc = timezone.now()
-        now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
+        return Response({
+            'seat_id': seat.id,
+            'seat_name': seat.name,
+            'classroom': seat.classroom.name,
+            'location': seat.location
+        })
 
-        # Remove timezone info from 'now' for comparison
-        now_naive = now.replace(tzinfo=None)
-
-        # Filter potential matching reservations
-        reservations = Reservation.objects.filter(
-            user__id=user_id,
-            seat__id=seat_id,
-            status=0  # Only active reservations
-        )
-
-        for reservation in reservations:
-            reserved_at_naive = reservation.reserved_at.replace(tzinfo=None)
-            reserved_end_naive = reservation.reserved_end.replace(tzinfo=None)
-            checkin_window_start = reserved_at_naive - timedelta(minutes=10)
-
-            if checkin_window_start <= now_naive <= reserved_end_naive:
-                reservation.status = 1  # Checked-In
-                reservation.save()
-                return Response({"detail": "Checked in successfully. "}, status=201)
-
-        return Response({"detail": "No valid reservation for check-in found."}, status=400)
+# Commenting out QR code generation since we're not using it
+# class GenerateQRCodeView(APIView):
+#     permission_classes = [IsAuthenticated]
+# 
+#     def get(self, request, seat_id):
+#         try:
+#             seat = Seat.objects.get(id=seat_id)
+#         except Seat.DoesNotExist:
+#             return Response({'error': 'Seat not found'}, status=404)
+# 
+#         # Create QR code
+#         qr = qrcode.QRCode(
+#             version=1,
+#             error_correction=qrcode.constants.ERROR_CORRECT_L,
+#             box_size=10,
+#             border=4,
+#         )
+#         qr.add_data(str(seat.id))
+#         qr.make(fit=True)
+# 
+#         # Create image
+#         img = qr.make_image(fill_color="black", back_color="white")
+#         
+#         # Save to BytesIO
+#         buffer = BytesIO()
+#         img.save(buffer, format='PNG')
+#         buffer.seek(0)
+# 
+#         # Return as response
+#         response = HttpResponse(buffer.getvalue(), content_type='image/png')
+#         response['Content-Disposition'] = f'attachment; filename="seat_{seat_id}_qr.png"'
+#         return response
