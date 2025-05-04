@@ -52,8 +52,6 @@ python manage.py createsuperuser
 python manage.py runserver
 ```
 
----
-
 ### ⚙️ Frontend Setup (Vue)
 ```bash
 cd ../frontend
