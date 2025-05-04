@@ -74,7 +74,7 @@
 </template>
 
 <script>
-import { QrcodeStream } from 'vue-qrcode-reader'
+//import { QrcodeStream } from 'vue-qrcode-reader'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import axios from 'axios'
@@ -82,7 +82,7 @@ import axios from 'axios'
 export default {
   name: 'InstantBooking',
   components: {
-    QrcodeStream
+    //QrcodeStream
   },
   setup() {
     const router = useRouter()
