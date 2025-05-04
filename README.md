@@ -50,8 +50,12 @@ python manage.py createsuperuser
 
 # Run the server
 python manage.py runserver
+```
+
+---
 
 ### ⚙️ Frontend Setup (Vue)
+```bash
 cd ../frontend
 
 # Install dependencies
@@ -59,3 +63,4 @@ npm install
 
 # Run the development server
 npm run dev
+```
