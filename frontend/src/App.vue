@@ -14,6 +14,9 @@
         <router-link to="/instant-booking" class="nav-link">{{ $t('instantBookingTitle') }}</router-link>
         <span class="nav-divider">|</span>
         <router-link to="/admin" class="nav-link">{{ $t('adminTitle') }}</router-link>
+        <span class="nav-divider">|</span>
+        <!-- General Settings link -->
+        <router-link to="/settings" class="nav-link">{{ $t('generalSettingsTitle') }}</router-link>
       </nav>
     </header>
 

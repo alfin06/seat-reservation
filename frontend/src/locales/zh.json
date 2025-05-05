@@ -125,6 +125,17 @@
     "loginWithCredentials": "邮箱登录",
     "loginWithQR": "扫码登录",
     "scanQRCodeToLogin": "请使用手机应用扫描二维码登录",
-    "qrHint": "请确保您已在手机设备中登录"
+    "qrHint": "请确保您已在手机设备中登录",
+
+
+
+    "generalSettingsTitle":    "常规设置",
+    "maxHoursPerBooking":      "每次预订最多小时数",
+    "maxBookingsPerAccount":   "每个账户最多预订次数",
+    "openingHours":            "营业时间",
+    "addTimeRange":            "添加时间段",
+    "otherSettings":           "其他设置",
+    "saveSettings":            "保存设置",
+    "settingsSavedMessage":    "设置已成功保存！"
   }
   

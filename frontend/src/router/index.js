@@ -6,6 +6,8 @@ import CheckIn from '../views/CheckIn.vue'
 import InstantBooking from '../views/InstantBooking.vue'
 import AdminDashboard from '../views/AdminDashboard.vue'
 import ForgotPassword from '../views/ForgotPassword.vue' // NEW IMPORT
+import GeneralSettings from '../views/GeneralSettings.vue'
+
 
 const routes = [
   { path: '/register', component: Register },
@@ -15,7 +17,9 @@ const routes = [
   { path: '/instant-booking', component: InstantBooking },
   { path: '/admin', component: AdminDashboard },
   { path: '/forgot-password', component: ForgotPassword }, // NEW ROUTE
+  { path: '/settings',        component: GeneralSettings }, // NEW ROUTE
   { path: '/', redirect: '/register' }
+  
 ]
 
 export default createRouter({

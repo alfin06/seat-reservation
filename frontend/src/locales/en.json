@@ -125,7 +125,16 @@
     "loginWithCredentials": "Email Login",
     "loginWithQR": "QR Code Login",
     "scanQRCodeToLogin": "Scan the QR code with your mobile app",
-    "qrHint": "Make sure you're signed in on your mobile device"
+    "qrHint": "Make sure you're signed in on your mobile device",
+
+    "generalSettingsTitle":    "General Settings",
+    "maxHoursPerBooking":      "Max hours per booking",
+    "maxBookingsPerAccount":   "Max bookings per account",
+    "openingHours":            "Opening hours",
+    "addTimeRange":            "Add time range",
+    "otherSettings":           "Other settings",
+    "saveSettings":            "Save settings",
+    "settingsSavedMessage":    "Settings saved successfully!"
 
   
 
