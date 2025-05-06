@@ -39,12 +39,12 @@ async function callApi(qrValue) {
 
     const data = await response.json();
     if (response.status === 201) {
-      notify({ type: "success", title: 'SUCCESS', duration: 10000, text: "Check-in successful!" });
+      notify({ type: "success", title: 'SUCCESS', duration: 3000, text: "Check-in successful!" });
     } else {
-      notify({ type: "error", title: 'ERROR', duration: 10000, text: "No valid reservation for check-in found." });
+      notify({ type: "error", title: 'ERROR', duration: 3000, text: "No valid reservation for check-in found." });
     }
   } catch (error) {
-    notify({ type: "error", title: 'ERROR', duration: 10000, text: "No valid reservation for check-in found." });
+    notify({ type: "error", title: 'ERROR', duration: 3000, text: "No valid reservation for check-in found." });
     console.log('API Error: ' + error);
   }
 }
@@ -58,6 +58,9 @@ onMounted(async () => {
     if (devices.length > 0) {
       await codeReader.decodeFromVideoDevice(devices[0].deviceId, previewVideoElement, (result, error, controls) => {
         cameraReady.value = true;
+        setTimeout(() => {
+          scannedValue.value = "";
+        }, 5000); // 5 seconds cooldown
         if (result && scannedValue.value !== result.getText()) {
           scannedValue.value = result.getText();
           callApi(scannedValue.value);
@@ -92,7 +95,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="container-fluid px-3 px-md-5 py-4 d-flex flex-column align-items-center min-vh-100">
+  <div class="container-fluid px-3 px-md-5 py-4 d-flex flex-column align-items-center min-vh-100 check-in">
     <!-- Card -->
     <div class="card shadow-sm border-0 rounded-4 w-100 w-md-75 w-lg-50 animate__animated animate__fadeIn">
       <div class="card-body d-flex flex-column">
@@ -138,6 +141,13 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+.check-in {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  position: relative;
+}
+
 video {
   object-fit: cover;
 }

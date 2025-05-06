@@ -376,8 +376,46 @@ class InstantBookingView(APIView):
             'reserved_at': reservation.reserved_at,
             'reserved_end': reservation.reserved_end
         }, status=201)
-
+    
 class QRCodeCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        seat_id = request.data.get('qrCode')  # Assuming QR code carries seat ID
+
+        if not user_id or not seat_id:
+            return Response({"detail": "Missing user_id or qrCode"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get current time in UTC and convert it to Shanghai time
+        shanghai_tz = pytz.timezone('Asia/Shanghai')
+        now_utc = timezone.now()
+        now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
+
+        # Remove timezone info from 'now' for comparison
+        now_naive = now.replace(tzinfo=None)
+
+        # Filter potential matching reservations
+        reservations = Reservation.objects.filter(
+            user__id=user_id,
+            seat__id=seat_id,
+            status=0  # Only active reservations
+        )
+
+        for reservation in reservations:
+            reserved_at_naive = reservation.reserved_at.replace(tzinfo=None)
+            reserved_end_naive = reservation.reserved_end.replace(tzinfo=None)
+            checkin_window_start = reserved_at_naive - timedelta(minutes=10)
+
+            if checkin_window_start <= now_naive <= reserved_end_naive:
+                reservation.status = 1  # Checked-In
+                reservation.checked_in_at = now_naive
+                reservation.save()
+                return Response({"detail": "Checked in successfully. "}, status=201)
+
+        return Response({"detail": "No valid reservation for check-in found."}, status=400)
+
+class QRCodeCheckView2(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
