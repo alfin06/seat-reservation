@@ -4,7 +4,6 @@ import mockApi from './mockAdminApi'
 const API_BASE_URL = 'http://127.0.0.1:8000/dashboard/admin/'
 
 const realApi = {
-  // Existing methods remain unchanged
   fetchRoomData() {
     return axios.get(`${API_BASE_URL}status/room/`)
   },
@@ -26,13 +25,17 @@ const realApi = {
   getUsers() {
     return axios.get(`${API_BASE_URL}status/user/`)
   },
-
-  // NEW METHODS ADDED AT THE BOTTOM
   getBookings() {
     return axios.get(`${API_BASE_URL}bookings/user`)
   },
   cancelBooking(bookingId) {
     return axios.delete(`${API_BASE_URL}bookings/${bookingId}`)
+  },
+  getSystemSettings() {
+    return axios.get(`${API_BASE_URL}system/settings`)
+  },
+  updateSystemSettings(settings) {
+    return axios.post(`${API_BASE_URL}system/settings/update`, settings)
   }
 }
 

@@ -1,14 +1,22 @@
 <template>
   <div class="auth-form">
-    <h2>Reset Password</h2>
+    <h2>{{ $t('resetPasswordTitle') }}</h2>
     <form @submit.prevent="handleSubmit">
       <div class="form-group">
-        <input v-model="email" type="email" placeholder="your@email.com" required>
+        <input 
+          v-model="email" 
+          type="email" 
+          :placeholder="$t('emailPlaceholder')" 
+          required 
+        />
       </div>
-      <button type="submit" class="auth-button">Send Reset Link</button>
+      <button type="submit" class="auth-button">
+        {{ $t('sendResetLink') }}
+      </button>
     </form>
     <p class="auth-link">
-      Remember your password? <router-link to="/login">Login here</router-link>
+      {{ $t('rememberPassword') }}
+      <router-link to="/login">{{ $t('loginHere') }}</router-link>
     </p>
   </div>
 </template>
@@ -22,15 +30,14 @@ export default {
   },
   methods: {
     handleSubmit() {
-      // Add your password reset logic here
       console.log('Reset requested for:', this.email)
+      // Your reset logic here
     }
   }
 }
 </script>
 
 <style scoped>
-/* Copied exactly from Login.vue to maintain identical styling */
 .auth-form {
   max-width: 400px;
   margin: 0 auto;

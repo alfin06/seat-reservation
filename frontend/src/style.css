@@ -8,6 +8,18 @@
   --text-regular: #606266;
   --text-secondary: #909399;
   --border-color: #DCDFE6;
+  
+  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  color-scheme: light dark;
+  color: rgba(255, 255, 255, 0.87);
+  background-color: #242424;
 }
 
 body {
@@ -25,7 +37,7 @@ body {
 }
 
 button {
-  border-radius: 4px;
+  border-radius: 8px;
   border: 1px solid transparent;
   padding: 0.6em 1.2em;
   font-size: 1em;
@@ -85,14 +97,7 @@ button:focus-visible {
   background-color: var(--danger-color);
 }
 
-/* Responsive adjustments */
-@media (max-width: 768px) {
-  .stats-grid {
-    flex-direction: column;
-  }
-}
-
-/* ===== ENHANCED NAVIGATION TABS (NEW ADDITION) ===== */
+/* Navigation Tabs */
 .nav-tabs {
   display: flex;
   gap: 0;
@@ -109,7 +114,7 @@ button:focus-visible {
   cursor: pointer;
   transition: all 0.2s;
   border-bottom: 3px solid transparent;
-  margin-bottom: -1px; /* Aligns with border */
+  margin-bottom: -1px;
 }
 
 .nav-tab:hover {
@@ -121,15 +126,7 @@ button:focus-visible {
   border-bottom-color: var(--primary-color);
 }
 
-/* Optional icon styles (uncomment if using icons) */
-/*
-.nav-tab i {
-  margin-right: 8px;
-  font-size: 0.9em;
-}
-*/
-
-/* Mobile responsive tabs */
+/* Responsive adjustments */
 @media (max-width: 768px) {
   .nav-tabs {
     overflow-x: auto;
@@ -140,5 +137,20 @@ button:focus-visible {
   .nav-tab {
     white-space: nowrap;
     padding: 12px 16px;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    color: #213547;
+    background-color: #ffffff;
+  }
+  
+  a:hover {
+    color: #747bff;
+  }
+  
+  button {
+    background-color: #f9f9f9;
   }
 }

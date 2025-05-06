@@ -66,7 +66,7 @@ export default {
   },
 
   // ======================
-  // NEW Booking Management
+  // Booking Management
   // ======================
   getBookings() {
     return Promise.resolve({
@@ -107,6 +107,35 @@ export default {
           cancelledId: bookingId 
         } 
       }), 300)
+    })
+  },
+
+  // ======================
+  // NEW System Settings
+  // ======================
+  getSystemSettings() {
+    return new Promise((resolve) => {
+      setTimeout(() => resolve({
+        data: {
+          status: "online",
+          max_hours: 4,
+          no_show_strikes: 3,
+          maintenance_message: "System under scheduled maintenance",
+          last_updated: new Date().toISOString()
+        }
+      }), 200)
+    })
+  },
+  updateSystemSettings(settings) {
+    console.log("[MOCK] Updating system settings:", settings)
+    return new Promise((resolve) => {
+      setTimeout(() => resolve({
+        data: {
+          ...settings,
+          last_updated: new Date().toISOString(),
+          updated_by: "mock-admin@uni.edu"
+        }
+      }), 400)
     })
   }
 }
