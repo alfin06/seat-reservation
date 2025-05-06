@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from './pages/Home.vue'
+import BookingSuccess from './pages/BookingSuccess.vue'
 import Login from './pages/auth/Login.vue'
 import Register from './pages/auth/Register.vue'
 import ForgotPassword from './pages/auth/ForgotPassword.vue'
@@ -23,6 +24,7 @@ const routes = [
   { path: '/booking', name: 'booking', component: Reservation, meta: { requiresAuth: true } },
   { path: '/student/instant-booking', name: 'instant-booking', component: InstantBooking, meta: { requiresAuth: true } },
   { path: '/instant', redirect: '/student/instant-booking' },
+  { path: '/booking-success', name: 'booking-success', component: BookingSuccess, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({

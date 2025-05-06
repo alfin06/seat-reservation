@@ -88,11 +88,11 @@ WSGI_APPLICATION = 'seat_reservation.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'seat_reservation',
-        'USER': 'root',
-        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'NAME': os.getenv('NAME', 'seat_reservation'),
+        'USER': os.getenv('USER', 'root'),
+        'PASSWORD': os.getenv('MYSQL_PASSWORD', ''),
+        'HOST': os.getenv('HOST', '127.0.0.1'),
+        'PORT': os.getenv('PORT', '3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }
@@ -156,7 +156,9 @@ REST_FRAMEWORK = {
         'rest_framework.permissions.AllowAny',
         'rest_framework.permissions.IsAuthenticated',
     ],
+
 }
+
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
