@@ -2,36 +2,26 @@
   <div class="instant-booking">
     <h2>Instant Booking</h2>
     <div class="booking-methods">
-      <button :class="{active: method === 'qr'}" @click="method = 'qr'">
+      <button class="active">
         <span>📷</span> Scan QR Code
-      </button>
-      <button :class="{active: method === 'manual'}" @click="method = 'manual'">
-        <span>🔢</span> Enter Seat ID
       </button>
     </div>
 
     <!-- QR Scanner -->
-    <div v-if="method === 'qr' && !scannedSeat" class="scanner-section">
-      <h3>Scan QR Code</h3>
-      <div v-if="loadingCamera" class="loading-spinner">
-        <span class="spinner"></span>
-        <p>Initializing camera...</p>
-      </div>
-      <div v-else class="scanner-container">
-        <qrcode-stream @decode="onDecode" @init="onInit">
-          <div class="scanner-overlay">
-            <div class="scanner-line"></div>
+    <div v-if="!scannedSeat" class="scanner-section">
+      
+      <div class="scanner-container">
+        <video ref="videoElement" class="scanner-video" :class="{ 'd-none': !cameraReady }"></video>
+        <div class="scanner-overlay">
+          
+        </div>
+        <div v-if="!cameraReady" class="d-flex justify-content-center align-items-center h-100 bg-light">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading camera...</span>
           </div>
-        </qrcode-stream>
+        </div>
       </div>
       <p class="scanner-hint">Point your camera at the seat's QR code</p>
-    </div>
-
-    <!-- Manual Entry -->
-    <div v-if="method === 'manual' && !scannedSeat" class="manual-section">
-      <h3>Enter Seat ID</h3>
-      <input v-model="manualSeatId" placeholder="Enter seat ID" />
-      <button @click="onDecode(manualSeatId)" class="btn-primary">Book with Seat ID</button>
     </div>
 
     <!-- Booking Form -->
@@ -69,280 +59,340 @@
     <div v-if="success" class="success-message">
       <span>✅</span> {{ success }}
     </div>
-    <button class="back-home-bottom" @click="goHome">🏠 Back to Home</button>
+
+    <!-- Back to Home Button -->
+    <div class="text-center mt-4">
+      <button class="btn btn-primary w-100 py-3 rounded-3" @click="goHome">
+        🏠 Back to Home
+      </button>
+    </div>
   </div>
 </template>
 
-<script>
-//import { QrcodeStream } from 'vue-qrcode-reader'
-import { ref } from 'vue'
+<script setup>
+import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue'
+import { BrowserQRCodeReader } from '@zxing/browser'
 import { useRouter } from 'vue-router'
+import { useAuthStore, getCSRFToken } from "../../store/auth.js"
+import { notify } from "@kyvg/vue3-notification"
 import axios from 'axios'
 
-export default {
-  name: 'InstantBooking',
-  components: {
-    //QrcodeStream
-  },
-  setup() {
-    const router = useRouter()
-    const scannedSeat = ref(null)
-    const duration = ref(1)
-    const error = ref('')
-    const success = ref('')
-    const booking = ref(false)
-    const manualSeatId = ref('')
-    const method = ref('qr')
-    const loadingCamera = ref(false)
+const router = useRouter()
+const authStore = useAuthStore()
+const videoElement = ref(null)
+const scannedSeat = ref(null)
+const duration = ref(1)
+const error = ref('')
+const success = ref('')
+const booking = ref(false)
+const cameraReady = ref(false)
+const scannedValue = ref('')
+const scanningStopped = ref(false)
+let codeReader = null
 
-    const onDecode = async (decodedString) => {
-      error.value = ''
-      success.value = ''
-      if (!decodedString) return
-      try {
-        const response = await axios.post('/dashboard/api/qr-check/', {
-          seat_id: decodedString
-        })
-        scannedSeat.value = response.data
-      } catch (err) {
-        error.value = err.response?.data?.error || 'Failed to scan or find seat'
-      }
+const startScanning = async () => {
+  if (!videoElement.value) return
+  
+  cameraReady.value = false
+  error.value = ''
+  scannedValue.value = ''
+  
+  try {
+    codeReader = new BrowserQRCodeReader()
+    const devices = await BrowserQRCodeReader.listVideoInputDevices()
+    if (devices.length > 0) {
+      await codeReader.decodeFromVideoDevice(
+        devices[0].deviceId,
+        videoElement.value,
+        (result, error, controls) => {
+          cameraReady.value = true;
+          if (result && scannedValue.value !== result.getText()) {
+            scannedValue.value = result.getText();
+            onDecode(scannedValue.value);
+          }
+        }
+      )
+    } else {
+      notify({ type: 'error', title: '<em>ERROR</em>', duration: 10000, text: 'No camera found!' })
     }
-
-    const onInit = (promise) => {
-      loadingCamera.value = true
-      promise.then(() => {
-        loadingCamera.value = false
-      }).catch(errorObj => {
-        loadingCamera.value = false
-        error.value = 'Failed to initialize camera'
-        console.error('Camera initialization failed:', errorObj)
-      })
-    }
-
-    const cancelScan = () => {
-      scannedSeat.value = null
-      error.value = ''
-      success.value = ''
-      manualSeatId.value = ''
-      method.value = 'qr'
-    }
-
-    const bookSeat = async () => {
-      if (!scannedSeat.value) return
-      booking.value = true
-      error.value = ''
-      success.value = ''
-      try {
-        const response = await axios.post('/dashboard/api/instant-booking/', {
-          seat_id: scannedSeat.value.seat_id,
-          duration: duration.value
-        })
-        success.value = 'Seat booked and checked in! Reservation ID: ' + response.data.reservation_id
-        setTimeout(() => {
-          router.push('/checkin')
-        }, 1500)
-      } catch (err) {
-        error.value = err.response?.data?.error || 'Failed to book seat'
-      } finally {
-        booking.value = false
-      }
-    }
-
-    const goHome = () => {
-      router.push('/home')
-    }
-
-    return {
-      scannedSeat,
-      duration,
-      error,
-      success,
-      booking,
-      manualSeatId,
-      method,
-      loadingCamera,
-      onDecode,
-      onInit,
-      cancelScan,
-      bookSeat,
-      goHome
-    }
+  } catch (err) {
+    error.value = 'Failed to initialize camera'
+    console.error('Camera initialization failed:', err)
   }
 }
+
+const stopScanning = () => {
+  cameraReady.value = false
+  scannedValue.value = ''
+  if (codeReader) {
+    codeReader.reset()
+    codeReader = null
+  }
+
+  // Stop the video stream if it's running
+  if (videoElement.value && videoElement.value.srcObject) {
+    const stream = videoElement.value.srcObject
+    const tracks = stream.getTracks()
+    tracks.forEach(track => track.stop())
+    videoElement.value.srcObject = null
+  }
+}
+
+const onDecode = async (decodedString) => {
+  if (!decodedString || scannedSeat.value || scanningStopped.value) return; // Prevent multiple scans
+  error.value = '';
+  success.value = '';
+  try {
+    const response = await axios.post('http://localhost:8000/dashboard/api/qr-check/', {
+      seat_id: decodedString
+    }, {
+      headers: {
+        'Authorization': `Token ${localStorage.getItem('token')}`,
+        'X-CSRFToken': getCSRFToken()
+      }
+    });
+    scannedSeat.value = response.data;
+    error.value = '';
+    scanningStopped.value = true;
+    notify({ type: 'success', title: '<em>SUCCESS</em>', duration: 10000, text: 'Seat found and ready to book!' });
+    stopScanning();
+  } catch (err) {
+    if (!scanningStopped.value) {
+      error.value = err.response?.data?.error || 'Failed to scan or find seat';
+      notify({ type: 'error', title: '<em>ERROR</em>', duration: 10000, text: error.value });
+      scanningStopped.value = true;
+      stopScanning();
+    }
+  }
+};
+
+const cancelScan = () => {
+  scannedSeat.value = null
+  error.value = ''
+  success.value = ''
+  startScanning()
+}
+
+const bookSeat = async () => {
+  if (!scannedSeat.value) return
+  booking.value = true
+  error.value = ''
+  success.value = ''
+  try {
+    const response = await axios.post('http://localhost:8000/dashboard/api/instant-booking/', {
+      seat_id: scannedSeat.value.seat_id,
+      duration: duration.value
+    }, {
+      headers: {
+        'Authorization': `Token ${localStorage.getItem('token')}`,
+        'X-CSRFToken': getCSRFToken()
+      }
+    })
+    success.value = 'Seat booked and checked in! Reservation ID: ' + response.data.reservation_id
+    notify({ type: 'success', title: '<em>SUCCESS</em>', duration: 10000, text: success.value })
+    setTimeout(() => {
+      router.push('/checkin')
+    }, 1500)
+  } catch (err) {
+    error.value = err.response?.data?.error || 'Failed to book seat'
+    notify({ type: 'error', title: '<em>ERROR</em>', duration: 10000, text: error.value })
+  } finally {
+    booking.value = false
+  }
+}
+
+const goHome = () => {
+  router.push('/home')
+}
+
+watch(videoElement, async (newVal) => {
+  if (newVal) {
+    await nextTick();
+    startScanning();
+  } else {
+    stopScanning();
+  }
+});
+
+onMounted(async () => {
+  if (videoElement.value) {
+    await nextTick();
+    startScanning();
+  }
+});
+
+onBeforeUnmount(() => {
+  stopScanning()
+})
 </script>
 
 <style scoped>
 .instant-booking {
   max-width: 600px;
   margin: 0 auto;
-  padding: 20px;
-  position: relative;
+  padding: 2rem;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
 }
-.back-home-bottom {
-  display: block;
-  margin: 40px auto 0 auto;
-  background: #f5f5f5;
-  color: #333;
-  border: none;
-  border-radius: 4px;
-  padding: 12px 28px;
-  font-size: 18px;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
-  z-index: 10;
-}
-.back-home-bottom:hover {
-  background: #4CAF50;
-  color: white;
-}
+
 .booking-methods {
   display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin-bottom: 20px;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
+
 .booking-methods button {
-  padding: 10px 20px;
+  flex: 1;
+  padding: 1rem;
   border: none;
-  border-radius: 4px;
-  background: #f5f5f5;
-  color: #333;
-  cursor: pointer;
-  font-size: 16px;
-  transition: background 0.2s, color 0.2s;
-}
-.booking-methods button.active {
-  background: #4CAF50;
-  color: white;
-}
-.loading-spinner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin: 30px 0;
-}
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #4CAF50;
-  border-top: 4px solid #eee;
-  border-radius: 50%;
-  animation: spin 1s linear infinite;
-  margin-bottom: 10px;
-}
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-.scanner-section {
-  text-align: center;
-}
-.scanner-container {
-  width: 100%;
-  max-width: 400px;
-  margin: 20px auto;
-  position: relative;
-  aspect-ratio: 1;
-  background: #f5f5f5;
   border-radius: 8px;
-  overflow: hidden;
+  background: #f8f9fa;
+  color: #495057;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
+.booking-methods button.active {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+.scanner-section {
+  margin-bottom: 2rem;
+}
+
+.scanner-section h3 {
+  margin-bottom: 1rem;
+  color: #343a40;
+  font-weight: 600;
+}
+
+.scanner-container {
+  position: relative;
+  width: 100%;
+  height: 300px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.scanner-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
 .scanner-overlay {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
-  bottom: 0;
-  border: 2px solid #4CAF50;
-  border-radius: 8px;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
+
 .scanner-line {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
+  width: 80%;
   height: 2px;
-  background: #4CAF50;
+  background: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.5);
   animation: scan 2s linear infinite;
 }
+
 @keyframes scan {
-  0% { top: 0; }
-  50% { top: 100%; }
-  100% { top: 0; }
+  0% { transform: translateY(-50%); }
+  50% { transform: translateY(50%); }
+  100% { transform: translateY(-50%); }
 }
+
 .scanner-hint {
-  color: #666;
-  margin-top: 10px;
-}
-.manual-section {
+  margin-top: 1rem;
+  color: #6c757d;
+  font-size: 0.9rem;
   text-align: center;
-  margin: 30px 0;
 }
-.manual-section input {
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  width: 200px;
-  margin-right: 10px;
-}
-.booking-form {
-  background: #fff;
-  padding: 20px;
+
+.seat-details {
+  background: #f8f9fa;
+  padding: 1.5rem;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  margin-top: 30px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
+.seat-details h3 {
+  margin-bottom: 1rem;
+  color: #343a40;
+  font-weight: 600;
+}
+
 .seat-info {
-  margin: 20px 0;
-  padding: 15px;
-  background: #f5f5f5;
-  border-radius: 4px;
-}
-.duration-selector {
-  margin: 20px 0;
-}
-.duration-selector select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin-top: 5px;
-}
-.actions {
   display: flex;
-  gap: 10px;
-  margin-top: 20px;
+  flex-direction: column;
+  gap: 0.5rem;
 }
-.btn-primary, .btn-secondary {
-  padding: 10px 20px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
+
+.seat-info p {
+  margin: 0;
+  color: #495057;
+}
+
+.seat-info p strong {
+  color: #343a40;
+}
+
+.booking-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.booking-actions button {
   flex: 1;
+  padding: 1rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
-.btn-primary {
-  background: #4CAF50;
+
+.booking-actions button:first-child {
+  background: #dc3545;
   color: white;
 }
-.btn-primary:disabled {
-  background: #ccc;
-  cursor: not-allowed;
+
+.booking-actions button:last-child {
+  background: #28a745;
+  color: white;
 }
-.btn-secondary {
-  background: #f5f5f5;
-  color: #333;
+
+.booking-actions button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
+
 .error-message {
-  color: #f44336;
-  margin-top: 10px;
-  text-align: center;
-  font-size: 16px;
+  background: #f8d7da;
+  color: #721c24;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
+
 .success-message {
-  color: #4CAF50;
-  margin-top: 10px;
-  text-align: center;
-  font-size: 16px;
+  background: #d4edda;
+  color: #155724;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 </style> 
