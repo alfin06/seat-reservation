@@ -53,5 +53,8 @@
   "backToHome": "Back to Home",
   "qrCodeScanner": "QR Code Scanner",
   "scanInstruction": "Please scan the QR code on the desk to check-in.",
-  "alreadyHaveAccount": "Already have an account"
+  "scanInstruction2": "Please scan the QR code on the desk to reserve and check-in.",
+  "alreadyHaveAccount": "Already have an account",
+  "instantBooking": "Instant Booking",
+  "bookYourSeat": "Book Your Seat"
 }

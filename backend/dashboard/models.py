@@ -60,7 +60,7 @@ class Reservation(models.Model):
     reserved_at = models.DateTimeField(default=timezone.now)
     reserved_end = models.DateTimeField(default=timezone.now)
     create_at = models.DateTimeField(default=timezone.now)
-    checked_in_at = models.DateTimeField(null=True, blank=True)
+    checked_in_at = models.DateTimeField(default=timezone.now)
 
     def __str__(self):
         return f"Reservation by {self.user} for Seat {self.seat.id} in Room {self.classroom.id}"

@@ -338,8 +338,13 @@ class InstantBookingView(APIView):
             return Response({'error': 'Duration must be between 1 and 4 hours'}, status=400)
 
         # 3. Check for overlapping reservations
-        now = timezone.now()
+        # Get current time in UTC and convert it to Shanghai time
+        shanghai_tz = pytz.timezone('Asia/Shanghai')
+        now_utc = timezone.now()
+        now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
+
         end_time = now + timedelta(hours=duration)
+
         overlapping = Reservation.objects.filter(
             seat=seat,
             status__in=['0', '3'],  # Active or Checked-In
@@ -376,8 +381,41 @@ class InstantBookingView(APIView):
             'reserved_at': reservation.reserved_at,
             'reserved_end': reservation.reserved_end
         }, status=201)
-
+    
 class QRCodeCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        seat_id = request.data.get('qrCode')  # Assuming QR code carries seat ID
+
+        if not user_id or not seat_id:
+            return Response({"detail": "Missing user_id or qrCode"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get current time in UTC and convert it to Shanghai time
+        shanghai_tz = pytz.timezone('Asia/Shanghai')
+        now_utc = timezone.now()
+        now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
+
+        # Filter potential matching reservations
+        reservations = Reservation.objects.filter(
+            user__id=user_id,
+            seat__id=seat_id,
+            status=0  # Only active reservations
+        )
+
+        for reservation in reservations:
+            checkin_window_start = reservation.reserved_at - timedelta(minutes=10)
+
+            if checkin_window_start <= now <= reservation.reserved_end:
+                reservation.status = 3  # Checked-In
+                reservation.checked_in_at = now
+                reservation.save()
+                return Response({"detail": "Checked in successfully. "}, status=201)
+
+        return Response({"detail": "No valid reservation for check-in found."}, status=400)
+
+class QRCodeCheckView2(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):

@@ -15,6 +15,7 @@ urlpatterns = [
     #Nick
     path('api/reservations/', ReservationCreateView.as_view(), name='reservation-create'),
     path('api/available/', AvailableRoomsSeatsView.as_view(), name='available-rooms-seats'),
-    path('api/qr-check/', QRCodeCheckView.as_view(), name='qr-check'),
+    path('api/check-qr/', QRCodeCheckView.as_view(), name='check-qr'),
+    path('api/qr-check/', QRCodeCheckView2.as_view(), name='qr-check'),
     path('api/instant-booking/', InstantBookingView.as_view(), name='instant-booking'),
 ]
