@@ -13,7 +13,7 @@ import InstantBooking from './pages/student/InstantBooking.vue'
 
 const routes = [
   { path: '/', redirect: '/home' },
-  { path: '/login', name: 'login', component: Login, },
+  { path: '/login', name: 'login', component: Login, meta: { hideSidebar: true }},
   { path: '/register', name: 'register', component: Register, },
   { path: '/forgot-password', name: 'forgot-password', component: ForgotPassword, },
   { path: '/verify-email/:token', name: 'verify-email', component: VerifyEmail, },

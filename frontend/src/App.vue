@@ -22,7 +22,7 @@ const buttons = computed(() => {
 <template>
   <div class="container-fluid g-0">
     <div class="row flex-nowrap">
-      <SidebarMenu :buttons="buttons" class="col-auto" />
+      <SidebarMenu :buttons="buttons" class="col-auto" v-if="!$route.meta.hideSidebar" />
 
       <main class="col ps-0 pe-0">
         <button
