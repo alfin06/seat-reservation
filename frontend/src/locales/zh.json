@@ -52,7 +52,10 @@
     "backToHome": "后退",
     "qrCodeScanner": "二维码扫描器",
     "scanInstruction": "请扫描桌子上的二维码进行办理登机手续。",
-    "alreadyHaveAccount": "已有账户"
+    "scanInstruction2": "请扫描桌上的二维码进行预约及办理入住。",
+    "alreadyHaveAccount": "已有账户",
+    "instantBooking": "即时预订",
+    "bookYourSeat": "预订座位"
 
   }
   

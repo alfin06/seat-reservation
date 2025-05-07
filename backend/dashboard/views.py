@@ -338,8 +338,13 @@ class InstantBookingView(APIView):
             return Response({'error': 'Duration must be between 1 and 4 hours'}, status=400)
 
         # 3. Check for overlapping reservations
-        now = timezone.now()
+        # Get current time in UTC and convert it to Shanghai time
+        shanghai_tz = pytz.timezone('Asia/Shanghai')
+        now_utc = timezone.now()
+        now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
+
         end_time = now + timedelta(hours=duration)
+
         overlapping = Reservation.objects.filter(
             seat=seat,
             status__in=['0', '3'],  # Active or Checked-In
@@ -392,9 +397,6 @@ class QRCodeCheckView(APIView):
         now_utc = timezone.now()
         now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
 
-        # Remove timezone info from 'now' for comparison
-        now_naive = now.replace(tzinfo=None)
-
         # Filter potential matching reservations
         reservations = Reservation.objects.filter(
             user__id=user_id,
@@ -403,13 +405,11 @@ class QRCodeCheckView(APIView):
         )
 
         for reservation in reservations:
-            reserved_at_naive = reservation.reserved_at.replace(tzinfo=None)
-            reserved_end_naive = reservation.reserved_end.replace(tzinfo=None)
-            checkin_window_start = reserved_at_naive - timedelta(minutes=10)
+            checkin_window_start = reservation.reserved_at - timedelta(minutes=10)
 
-            if checkin_window_start <= now_naive <= reserved_end_naive:
-                reservation.status = 1  # Checked-In
-                reservation.checked_in_at = now_naive
+            if checkin_window_start <= now <= reservation.reserved_end:
+                reservation.status = 3  # Checked-In
+                reservation.checked_in_at = now
                 reservation.save()
                 return Response({"detail": "Checked in successfully. "}, status=201)
 
