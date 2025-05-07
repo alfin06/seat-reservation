@@ -1,6 +1,6 @@
 <script>
 import { getCSRFToken } from '../../store/auth';
-import logo from '@/assets/app_logo.jpg';
+import logo from '@/assets/app_logo.png';
 
 export default {
   data() {
@@ -89,7 +89,7 @@ export default {
           <el-card class="box-card" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
             <div class="text-center mb-4">
               <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 150px;" />
-              <h4 class="fw-bold text-primary text-center mb-3">{{ $t('register') }}</h4>
+              <!-- <h4 class="fw-bold text-primary text-center mb-3">{{ $t('register') }}</h4> -->
             </div>
   
             <p v-if="error" class="error text-danger text-center">{{ error }}</p>

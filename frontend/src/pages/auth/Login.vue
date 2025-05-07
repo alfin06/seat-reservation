@@ -1,6 +1,6 @@
 <script>
 import { useAuthStore } from '../../store/auth';
-import logo from '@/assets/app_logo.jpg';
+import logo from '@/assets/app_logo.png';
 
 export default {
   setup() {

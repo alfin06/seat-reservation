@@ -27,7 +27,7 @@ export default {
         <button @click="changeLanguage('zh')" class="lang-btn">中文</button>
       </div>
       <footer class="footer">
-        &copy; {{ new Date().getFullYear() }} Seat Reservation App | Developed by Inter Students
+        &copy; {{ new Date().getFullYear() }} Seat Reservation App | Developed by International Students
       </footer>
     </div>
   </div>
