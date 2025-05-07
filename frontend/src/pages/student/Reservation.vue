@@ -90,7 +90,8 @@ export default {
 
         const data = await res.json();
         if (res.status === 201) {
-          this.$notify({type:"success", text:"Reservation successful!"});
+          this.$router.push({ name: 'booking-success' });
+          return;
         } else {
           this.$notify({type:"error", text:"Reservation failed!"});
           console.log(data.detail || JSON.stringify(data));
