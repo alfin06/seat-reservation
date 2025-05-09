@@ -28,7 +28,7 @@
           this.loading = false;
           setTimeout(() => {
             this.$router.push({ name: "login" });
-          }, 5000);
+          }, 10000);
         });
     },
   };

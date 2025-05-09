@@ -1,34 +1,6 @@
-<template>
-    <div class="container my-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <el-card class="box-card card-body" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
-                    <h2>Create a new Password</h2>
-                    <p v-if="error" class="error text-danger">{{error}}</p> 
-                    <p v-if="success" class="success text-success">{{success}}</p>
-                    <br/>
-                    <el-form :model="form" ref="resetForm" label-width="120px" @submit.prevent="resetPassword" class="form-horizontal form-material">
-                        <el-form-item :label="$t('enterPassword')" prop="password" class="form-label">
-                            <el-input v-model="password" id="password" type="password" required :placeholder="$t('enterPassword')"></el-input>
-                        </el-form-item>
-                        <el-form-item :label="$t('confirmPassword')" prop="password2" class="form-label">
-                            <el-input v-model="password2" id="password2" type="password" required :placeholder="$t('confirmPassword')"></el-input>
-                        </el-form-item>
-                        <br/><br/>
-                        <el-button type="primary" @click="resetPassword">Submit</el-button>
-                    </el-form>
-                    <div class="links-container">
-                        <p>Remember your password? <el-link type="primary" @click="onLogin">Login</el-link></p>
-                        <p>Don't have an account? <el-link type="primary" @click="onRegister">Register</el-link></p>
-                    </div>
-                </el-card>
-            </div>
-        </div>
-    </div>
-</template>
-
 <script>
-import {getCSRFToken} from '../../store/auth'
+import {getCSRFToken} from '../../store/auth';
+import logo from '@/assets/app_logo.png';
 
 export default {
     name: 'ResetPassword',
@@ -37,6 +9,7 @@ export default {
             token: '',
             password: '',
             password2: '',
+            logo,
             loading: false,
             success: false,
         }
@@ -69,6 +42,8 @@ export default {
 
                 if (!response.ok) {
                     this.$notify({
+                        title: "ERROR",
+                        duration: 5000,
                         type: "error",
                         text: "Something wrong! Please wait for 5 minute and reset your password again."
                     })
@@ -76,6 +51,8 @@ export default {
                 else {
                     //this.success = 'Password reset instructions have been sent to your email.'
                     this.$notify({
+                        title: "SUCCESS",
+                        duration: 5000,
                         type: "success",
                         text: "Password has been changed! You can login now."
                     })
@@ -87,7 +64,9 @@ export default {
             } catch (error) {
                 //this.error = error.message || 'Failed to send reset instructions'
                 this.$notify({
+                    title: "ERROR",
                     type: "error",
+                    duration: 5000,
                     text: this.error
                 })
             } finally {
@@ -104,6 +83,55 @@ export default {
 }
 </script>
 
+<template>
+    <div class="container justify-content-center align-items-center forgot">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <el-card class="box-card card-body" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
+                    <div class="text-center mb-4">
+                      <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 150px;" />
+                    </div>
+                    <p class="description">{{ $t('forgotInstruction2') }}</p>
+
+                    <el-form :model="form" ref="resetForm" @submit.prevent="resetPassword" label-position="top" class="p-3">
+                        <el-form-item :label="$t('enterPassword')">
+                            <el-input
+                            v-model="password"
+                            type="password"
+                            required
+                            :placeholder="$t('enterPassword')"
+                            show-password
+                            clearable
+                            class="underline-input" />
+                        </el-form-item>
+
+                        <el-form-item :label="$t('confirmPassword')">
+                            <el-input
+                            v-model="password2"
+                            type="password"
+                            required
+                            :placeholder="$t('confirmPassword')"
+                            show-password
+                            clearable
+                            class="underline-input" />
+                        </el-form-item>
+                        <br/>
+                        <el-form-item class="mb-0">
+                            <el-button type="primary" @click="resetPassword" class="w-100">
+                            {{ $t('submit') }}
+                            </el-button>
+                        </el-form-item>
+                    </el-form>
+                    <div class="links-container">
+                        <p>Remember your password? <el-link type="primary" @click="onLogin">Login</el-link></p>
+                        <!-- <p>Don't have an account? <el-link type="primary" @click="onRegister">Register</el-link></p> -->
+                    </div>
+                </el-card>
+            </div>
+        </div>
+    </div>
+</template>
+
 <style scoped>
 .box-card {
     max-width: 500px;
@@ -112,19 +140,10 @@ export default {
 }
 
 .description {
-    color: #606266;
-    margin: 1rem 0;
-    text-align: center;
-}
-
-.error {
-    color: #f56c6c;
-    margin-bottom: 1rem;
-}
-
-.success {
-    color: #67c23a;
-    margin-bottom: 1rem;
+  color: #606266;
+  margin: 1rem 0;
+  text-align: center;
+  font-weight: bold;
 }
 
 .form-spacing {
@@ -152,5 +171,14 @@ export default {
 
 :deep(.el-button) {
     min-width: 200px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: bold;
+}
+
+.forgot {
+  margin-top:5%;
+  padding: 15px;
 }
 </style> 

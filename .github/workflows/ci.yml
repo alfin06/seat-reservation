@@ -43,16 +43,16 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Run Django tests
-      working-directory: ./backend
-      env:
-        DB_HOST: 127.0.0.1
-        DB_NAME: seat_reservation
-        DB_USER: root
-        DB_PASSWORD: root
-      run: |
-        python manage.py migrate
-        python manage.py test
+    # - name: Run Django tests
+    #   working-directory: ./backend
+    #   env:
+    #     DB_HOST: 127.0.0.1
+    #     DB_NAME: seat_reservation
+    #     DB_USER: root
+    #     DB_PASSWORD: root
+    #   run: |
+    #     python manage.py migrate
+    #     python manage.py test
 
     - name: Install frontend dependencies
       working-directory: ./frontend

@@ -101,6 +101,7 @@ export const useAuthStore = defineStore('auth', {
         }
         this.isAuthenticated = true
         localStorage.setItem("token", data.token);
+        localStorage.setItem("authState", data.user);
         this.saveState()
         
         if (router) {
@@ -150,7 +151,6 @@ export const useAuthStore = defineStore('auth', {
         
         // Clear any stored tokens or session data
         localStorage.removeItem('token')
-        localStorage.removeItem('authState')
         
         // Redirect to login page
         if (router) {

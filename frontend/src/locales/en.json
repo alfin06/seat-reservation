@@ -2,11 +2,12 @@
   "title": "Seat Reservation System",
   "register": "Register",
   "login": "Login",
-  "enterUsername": "Enter username",
-  "enterEmail": "Enter email",
-  "enterPassword": "Enter password",
+  "enterName": "Name",
+  "enterEmail": "E-mail Address",
+  "enterPassword": "Password",
   "confirmPassword": "Confirm password",
   "submitRegister": "Register Now",
+  "submit": "Submit",
   "submitLogin": "Login Now",
   "generateReports": "Generate and view reports on seat utilization and no-show rates.",
   "forgetPassword": "Forget Password",
@@ -56,5 +57,8 @@
   "scanInstruction2": "Please scan the QR code on the desk to reserve and check-in.",
   "alreadyHaveAccount": "Already have an account",
   "instantBooking": "Instant Booking",
-  "bookYourSeat": "Book Your Seat"
+  "bookYourSeat": "Book Your Seat",
+  "forgotInstruction": "Enter your email address and we'll send you instructions to reset your password.",
+  "forgotInstruction2": "Please enter your new password.",
+  "rememberPwd": "Remember your password"
 }

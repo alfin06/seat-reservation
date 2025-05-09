@@ -20,32 +20,31 @@ const buttons = computed(() => {
 </script>
 
 <template>
-  <div class="container-fluid g-0">
-    <div class="row flex-nowrap">
-      <SidebarMenu :buttons="buttons" class="col-auto" v-if="!$route.meta.hideSidebar" />
-
-      <main class="col ps-0 pe-0">
+  <div class="d-flex flex-column vh-100">
+    <div class="flex-grow-1 d-flex overflow-hidden">
+      <SidebarMenu :buttons="buttons" class="d-none d-md-block" v-if="!$route.meta.hideSidebar" />
+      <main class="flex-grow-1 overflow-auto">
         <button
-          class="btn btn-primary d-md-none m-3"
+          v-if="!$route.meta.hideSidebar"
+          class="btn d-md-none m-3"
           type="button"
           data-bs-toggle="offcanvas"
           data-bs-target="#mobileSidebar"
           aria-controls="mobileSidebar">
-          <i class="bi bi-list"></i> Menu
+          <i class="bi bi-list"></i>
         </button>
-
         <router-view />
       </main>
     </div>
 
-    <notifications position="top center" />
+    <notifications position="top center" class="notif" />
 
-    <footer class="text-center py-3 border-top mt-auto bg-white">
-      <div class="translation-controls mb-2">
+    <footer class="text-center border-top bg-white py-2">
+      <div class="translation-controls mb-1">
         <button @click="$i18n.locale = 'en'" class="lang-btn">English</button>
         <button @click="$i18n.locale = 'zh'" class="lang-btn">中文</button>
       </div>
-      <div class="footer text-muted">
+      <div class="footer text-muted small">
         &copy; {{ new Date().getFullYear() }} Seat Reservation App | Developed by International Students
       </div>
     </footer>
@@ -53,6 +52,13 @@ const buttons = computed(() => {
 </template>
 
 <style scoped>
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
 .lang-btn {
   margin: 0 5px;
   padding: 8px 16px;
@@ -66,5 +72,9 @@ const buttons = computed(() => {
 
 .lang-btn:hover {
   background: #e9ecef;
+}
+
+.notif {
+  font-size: 20pt;
 }
 </style>

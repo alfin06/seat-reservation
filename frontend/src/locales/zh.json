@@ -3,12 +3,13 @@
     "register": "注册",
     "login": "登录",
     "welcome": "你好",
-    "enterUsername": "请输入用户名",
+    "enterName": "请输入您的姓名",
     "enterEmail": "请输入邮箱",
     "enterPassword": "请输入密码",
     "confirmPassword": "确认密码",
     "submitRegister": "立即注册",
     "submitLogin": "立即登录",
+    "submit": "提交",
     "reservationTitle": "学习室与座位预订",
     "reservationDescription": "选择一个学习室，并预订座位以进行您的学习。",
     "checkInTitle": "签到与缺席管理",
@@ -55,7 +56,10 @@
     "scanInstruction2": "请扫描桌上的二维码进行预约及办理入住。",
     "alreadyHaveAccount": "已有账户",
     "instantBooking": "即时预订",
-    "bookYourSeat": "预订座位"
+    "bookYourSeat": "预订座位",
+    "forgotInstruction": "输入您的电子邮件地址，我们将向您发送重置密码的说明。",
+    "forgotInstruction2": "请输入您的新密码。",
+    "rememberPwd": "记住你的密码"
 
   }
   

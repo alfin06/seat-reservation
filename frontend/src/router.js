@@ -12,12 +12,13 @@ import AdminDashboard from './pages/admin/AdminDashboard.vue'
 import InstantBooking from './pages/student/InstantBooking.vue'
 
 const routes = [
-  { path: '/', redirect: '/home' },
+  { path: '/', redirect: '/login' },
   { path: '/login', name: 'login', component: Login, meta: { hideSidebar: true }},
-  { path: '/register', name: 'register', component: Register, },
-  { path: '/forgot-password', name: 'forgot-password', component: ForgotPassword, },
-  { path: '/verify-email/:token', name: 'verify-email', component: VerifyEmail, },
-  { path: '/reset-password/:token', name: 'reset-password', component: ResetPassword, },
+  { path: '/register', name: 'register', component: Register, meta: { hideSidebar: true }},
+  { path: '/forgot-password', name: 'forgot-password', component: ForgotPassword, meta: { hideSidebar: true }},
+  { path: '/verify-email/:token', name: 'verify-email', component: VerifyEmail, meta: { hideSidebar: true }},
+  { path: '/reset-password/:token', name: 'reset-password', component: ResetPassword, meta: { hideSidebar: true }},
+  
   { path: '/home', name: 'home', component: Home, meta: { requiresAuth: true } },
   { path: '/admin-dashboard', name: 'admin-dashboard', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true }},
   { path: '/check-in', name: 'check-in', component: CheckIn, meta: { requiresAuth: true } },
@@ -38,24 +39,25 @@ router.beforeEach((to, from, next) => {
   const isAuthenticated = storedState?.isAuthenticated
   const userRole = storedState?.user?.role
 
+  console.log('Navigating to:', to.path);
+  console.log('Route name:', to.name);
+  console.log('Auth:', isAuthenticated);
+  
+  const publicRoutes = ['reset-password', 'verify-email'];
+  if (publicRoutes.includes(to.name)) {
+    next();
+    return;
+  }
+
   // Redirect authenticated users away from login/register/forgot-password
   if ((to.name === 'login' || to.name === 'register' || to.name === 'forgot-password') && isAuthenticated) {
-    next({ name: 'home' })
-  }
-
-  // Check for admin role requirement
-  else if (to.meta.requiresAdmin && (!isAuthenticated || userRole !== 'ADMIN')) {
-    next({ name: 'home' })
-  }
-
-  // Redirect unauthenticated users trying to access protected pages
-  else if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'login' })
-  }
-
-  // Allow navigation
-  else {
-    next()
+    next({ name: 'home' });
+  } else if (to.meta.requiresAdmin && (!isAuthenticated || userRole !== 'ADMIN')) {
+    next({ name: 'home' });
+  } else if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'login' });
+  } else {
+    next();
   }
 })
 
