@@ -24,8 +24,7 @@ const buttons = computed(() => {
     <div class="flex-grow-1 d-flex overflow-hidden">
       <SidebarMenu :buttons="buttons" class="d-none d-md-block" v-if="!$route.meta.hideSidebar" />
       <main class="flex-grow-1 overflow-auto">
-        <button
-          v-if="!$route.meta.hideSidebar"
+        <button v-if="!$route.meta.hideSidebar"
           class="btn d-md-none m-3"
           type="button"
           data-bs-toggle="offcanvas"
