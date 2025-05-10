@@ -62,5 +62,6 @@
   "forgotInstruction": "Enter your email address and we'll send you instructions to reset your password.",
   "forgotInstruction2": "Please enter your new password.",
   "rememberPwd": "Remember your password",
-  "dashboard": "Dashboard"
+  "dashboard": "Dashboard",
+  "activeReservation": "Upcoming Reservation"
 }

@@ -539,6 +539,7 @@ class ActiveReservationsView(APIView):
             active_reservations = [
                 {
                     "id": reservation.id,
+                    "classroom": reservation.classroom.name,
                     "seat_id": reservation.seat.id,
                     "reserved_start_time": reservation.reserved_at,
                     "reserved_end_time": reservation.reserved_end,

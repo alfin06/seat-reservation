@@ -9,6 +9,24 @@ export default {
     const authStore = useAuthStore();
     const router = useRouter();
 
+    const isToday = (date) => {
+      const d = new Date(date);
+      const now = new Date();
+      return (
+        d.getDate() === now.getDate() &&
+        d.getMonth() === now.getMonth() &&
+        d.getFullYear() === now.getFullYear()
+      );
+    };
+
+    const getLabel = (date) => (isToday(date) ? "Today" : "Upcoming");
+
+    const getBadgeClass = (date) =>
+      isToday(date) ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning";
+
+    const getCardClass = (date) =>
+      isToday(date) ? "bg-success bg-opacity-10" : "bg-warning bg-opacity-10";
+
     const buttons = computed(() => {
       const baseButtons = [
         { label: "Book", route: "/booking", icon: "bi-journal-plus" },
@@ -83,21 +101,26 @@ export default {
         if (!activeRes.ok) throw new Error("Failed to fetch active reservations");
 
         const data = await activeRes.json();
-        console.log(data)
 
-        if (data.length > 0) {
-          const next = data[0];
-          activeReservations.value = {
-            seat: `Seat ${next.seat}`,
-            time: `${new Date(next.reserved_at).toLocaleString()} - ${new Date(next.reserved_end).toLocaleString()}`
-          };
+        if (Array.isArray(data)) {
+          activeReservations.value = data;
         }
       } catch (error) {
         console.error("Error loading dashboard:", error);
       }
     });
 
-    return { authStore, router, buttons, stats, activeReservations, go };
+    return {
+      authStore,
+      router,
+      buttons,
+      stats,
+      activeReservations,
+      go,
+      getCardClass,
+      getBadgeClass,
+      getLabel
+    };
   }
 };
 </script>
@@ -120,8 +143,8 @@ export default {
                 {{ $t('lastLogin') }}: {{ new Date(authStore.user?.last_login).toLocaleString() }}
               </p>
 
-              <!-- Small action buttons -->
-              <!-- <div class="d-flex flex-wrap gap-2">
+              <!-- Small action buttons: only visible on small screens -->
+              <div class="d-flex flex-wrap gap-2 d-md-none">
                 <button
                   v-for="btn in buttons"
                   :key="btn.route"
@@ -129,7 +152,7 @@ export default {
                   @click="go(btn.route)">
                   <i :class="`bi ${btn.icon} me-2`"></i> {{ btn.label }}
                 </button>
-              </div> -->
+              </div>
             </div>
           </div>
         </section>
@@ -167,11 +190,46 @@ export default {
             </div>
           </div>
 
-          <!-- Active reservation -->
-          <div v-if="activeReservation" class="bg-white p-3 rounded border">
-            <h6 class="fw-semibold mb-1">Active Reservation</h6>
-            <p class="mb-0 small text-muted">Seat: {{ activeReservations.seat }}</p>
-            <p class="mb-0 small text-muted">Time: {{ activeReservations.time }}</p>
+          <!-- Active reservations -->
+          <div v-if="activeReservations.length" class="bg-white p-3 rounded border">
+            <h6 class="fw-semibold mb-3">Active Reservations</h6>
+            <div class="row">
+              <div v-for="reservation in activeReservations"
+                :key="reservation.id"
+                class="col-12 col-sm-6 col-md-4 col-lg-3 mb-3">
+                <div class="card h-100 border-0 shadow-sm rounded-3"
+                  :class="getCardClass(reservation.reserved_start_time)">
+                  <div class="card-body p-3">
+                    <div class="d-flex justify-content-between align-items-start mb-2">
+                      <h6 class="fw-bold text-primary mb-0">{{ reservation.classroom }}</h6>
+                      <span class="badge rounded-pill" :class="getBadgeClass(reservation.reserved_start_time)">
+                        {{ getLabel(reservation.reserved_start_time) }}
+                      </span>
+                    </div>
+                    <p class="mb-1 small text-muted">
+                      <i class="bi bi-chair me-1"></i><strong>Seat {{ reservation.seat_id }}</strong>
+                    </p>
+                    <p class="mb-0 small text-muted">
+                      <i class="bi bi-clock me-1"></i>
+                      {{
+                        new Date(reservation.reserved_start_time).toLocaleString('en-US', {
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true})
+                      }} –
+                      {{
+                        new Date(reservation.reserved_end_time).toLocaleString('en-US', {
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true})
+                      }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </section>
       </main>
