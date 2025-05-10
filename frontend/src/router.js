@@ -38,10 +38,6 @@ router.beforeEach((to, from, next) => {
   const storedState = JSON.parse(localStorage.getItem('authState'))
   const isAuthenticated = storedState?.isAuthenticated
   const userRole = storedState?.user?.role
-
-  console.log('Navigating to:', to.path);
-  console.log('Route name:', to.name);
-  console.log('Auth:', isAuthenticated);
   
   const publicRoutes = ['reset-password', 'verify-email'];
   if (publicRoutes.includes(to.name)) {

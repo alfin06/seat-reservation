@@ -30,7 +30,7 @@
   "roomColumnLabel": "Room",
   "seatColumnLabel": "Seat",
   "actionColumnLabel": "Action",
-  "bookButton": "Book",
+  "bookButton": "Book Now",
  
   "roomNameColumn": "Room Name",
   "capacityColumn": "Capacity",
@@ -41,9 +41,10 @@
   "selectStudyRoom": "Select a study room",
   "selectSeat": "Select seat",
   "reservationDuration":"Reservation Duration",
-  "reserveSeatButton": "Reserve seat button",
-  "selectSeatPlaceholder": "Select seat placeholder",
-  "selectRoomPlaceholder": "Select room placeholder",
+  "reserveSeatButton": "Reserve Seat",
+  "reserving": "Reserving ...",
+  "selectSeatPlaceholder": "Select seat",
+  "selectRoomPlaceholder": "Select room",
   "sendInstructions": "Send Reset Instructions",
   "welcome": "Hello",
   "student": "Student",
@@ -60,5 +61,6 @@
   "bookYourSeat": "Book Your Seat",
   "forgotInstruction": "Enter your email address and we'll send you instructions to reset your password.",
   "forgotInstruction2": "Please enter your new password.",
-  "rememberPwd": "Remember your password"
+  "rememberPwd": "Remember your password",
+  "dashboard": "Dashboard"
 }

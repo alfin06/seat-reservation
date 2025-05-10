@@ -29,6 +29,7 @@
     "selectSeatPlaceholder": "请选择座位",
     "reservationDuration": "预订时长（小时）",
     "reserveSeatButton": "预订座位",
+    "reserving": "保留...",
     "reservationCodeLabel": "预约码",
     "reservationCodePlaceholder": "请输入预约码",
     "checkInButton": "签到",
@@ -59,7 +60,8 @@
     "bookYourSeat": "预订座位",
     "forgotInstruction": "输入您的电子邮件地址，我们将向您发送重置密码的说明。",
     "forgotInstruction2": "请输入您的新密码。",
-    "rememberPwd": "记住你的密码"
+    "rememberPwd": "记住你的密码",
+    "dashboard": "仪表板"
 
   }
   

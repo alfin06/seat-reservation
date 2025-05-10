@@ -19,6 +19,7 @@ from dashboard.models import Reservation, Seat, ClassRoom
 from dashboard.serializers import ReservationSerializer, SeatSerializer, ClassRoomSerializer
 
 from datetime import timedelta
+from django.utils import timezone
 import pytz
 # import qrcode
 # from io import BytesIO
@@ -34,17 +35,40 @@ class ReservationCreateView(APIView):
             if duration > 4:
                 return Response({'error': 'Duration cannot exceed 4 hours.'}, status=400)
             reservation = serializer.save(user=request.user)
-            # Send confirmation email (simple example)
+            # Send confirmation email
+            # Convert UTC to Shanghai time
+            
+            html_message = f'''
+            <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <h2 style="color: #2c3e50;">Your Seat Reservation Has Been Confirmed!</h2>
+                        <p>Hello {request.user.name},</p>
+                        <p>Your seat reservation has been confirmed. Here is the detail of your reservation:</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <p><strong>Classroom:</strong> {reservation.classroom.name}</p>
+                            <p><strong>Seat:</strong> Seat {reservation.seat.id}</p>
+                            <p><strong>Start time:</strong> {reservation.reserved_at}</p>
+                            <p><strong>End time:</strong> {reservation.reserved_end}</p>
+                        </div>
+                        <p><i>Disclaimer: This is an automated email. Please do not reply to this email.</i></p>
+                        <p>Best regards,<br>Seat Reservation Team</p>
+                    </div>
+                </body>
+            </html>
+            '''
+
             try:
                 send_mail(
                     subject='Seat Reservation Confirmation',
                     message=f"Your reservation for seat {reservation.seat.id} in room {reservation.classroom.id} is confirmed.",
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[request.user.email],
+                    html_message=html_message,
                     fail_silently=True,
                 )
             except Exception as e:
-                pass  # Optionally log error
+                return Response({'error': 'Reservation failed!'}, status=status.HTTP_400_BAD_REQUEST)
             return Response(ReservationSerializer(reservation).data, status=201)
         return Response(serializer.errors, status=400)
 
