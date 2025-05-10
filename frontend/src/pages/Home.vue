@@ -1,25 +1,24 @@
 <script>
-import { useAuthStore } from "../store/auth.js";
+import { useAuthStore, getCSRFToken } from "../store/auth.js";
 import { useRouter } from "vue-router";
-import { computed, onMounted  } from 'vue';
-import SidebarMenu from "../components/SideBarMenu.vue";
+import { computed, onMounted, ref } from 'vue';
 
 export default {
-  name: "Home", 
+  name: "Home",
   setup() {
     const authStore = useAuthStore();
     const router = useRouter();
 
     const buttons = computed(() => {
       const baseButtons = [
-        { label: "Book a Seat", route: "/booking", icon: "bi-journal-plus" },
+        { label: "Book", route: "/booking", icon: "bi-journal-plus" },
         { label: "Check‑in", route: "/check-in", icon: "bi-clipboard-check" },
-        { label: "Instant Booking", route: "/instant", icon: "bi-lightning" },
+        { label: "Instant", route: "/instant", icon: "bi-lightning" },
       ];
 
       if (authStore.user?.role === 'ADMIN') {
         return [
-          { label: "Admin Dashboard", route: "/admin-dashboard", icon: "bi-speedometer2" },
+          { label: "Admin", route: "/admin-dashboard", icon: "bi-speedometer2" },
           ...baseButtons
         ];
       }
@@ -27,77 +26,152 @@ export default {
       return baseButtons;
     });
 
+    const stats = ref({
+      total: 0,
+      active: 0,
+      completed: 0,
+      cancelled: 0,
+    });
+    
+    const activeReservations = ref([]);
+
     const go = (path) => router.push(path);
 
-    return { authStore, router, buttons, go };
-  },
+    onMounted(async () => {
+      await authStore.fetchUser();
+      const token = localStorage.getItem('token');
 
-  methods: {
-    async logout() {
       try {
-        await this.authStore.logout(this.$router);
-      } catch (err) {
-        console.error(err);
+        const res = await fetch("http://localhost:8000/dashboard/api/reservations/stats/", {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({ user_id: authStore.user?.id }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          console.log(err);
+          console.log(err.text());
+          throw new Error("Failed to fetch reservation stats");
+        }
+
+        const data = await res.json();
+        stats.value.total = data.total_reservations;
+        stats.value.active = data.active_reservations;
+        stats.value.completed = data.completed_reservations;
+        stats.value.cancelled = data.cancelled_reservations;
+      } catch (error) {
+        console.error("Error fetching stats:", error);
       }
-    },
-  },
 
-  async mounted() {
-    await this.authStore.fetchUser();
+      try {
+        // Fetch active reservations
+        const activeRes = await fetch("http://localhost:8000/dashboard/api/reservations/active/", {
+          method: "POST",
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({ user_id: authStore.user?.id }),
+        });
 
-  },
+        if (!activeRes.ok) throw new Error("Failed to fetch active reservations");
+
+        const data = await activeRes.json();
+        console.log(data)
+
+        if (data.length > 0) {
+          const next = data[0];
+          activeReservations.value = {
+            seat: `Seat ${next.seat}`,
+            time: `${new Date(next.reserved_at).toLocaleString()} - ${new Date(next.reserved_end).toLocaleString()}`
+          };
+        }
+      } catch (error) {
+        console.error("Error loading dashboard:", error);
+      }
+    });
+
+    return { authStore, router, buttons, stats, activeReservations, go };
+  }
 };
 </script>
 
 <template>
   <div class="container-fluid">
     <div class="row flex-nowrap">
-      <!-- Sidebar on medium+ screens -->
-      <SidebarMenu :buttons="buttons" class="col-auto" />
-
-      <!-- Main content -->
       <main class="col py-4">
-        <!-- Your content here -->
-        <section v-if="authStore.isAuthenticated" class="card shadow-sm mb-4">
-          <!-- User welcome content... -->
-          <div class="card-body d-flex flex-column flex-md-row align-items-center gap-3">
+        <!-- Welcome & Actions -->
+        <section v-if="authStore.isAuthenticated" class="card shadow-sm mb-4 p-4">
+          <div class="d-flex flex-column flex-md-row align-items-center gap-3">
             <div class="flex-grow-1 text-center text-md-start">
-              <h2 class="h5 mb-1 fw-semibold text-dark">
+              <h2 class="h5 fw-semibold text-dark">
                 {{ $t('welcome') }}, {{ authStore.user?.name || authStore.user?.username }}!
-                <span class="badge bg-secondary-subtle text-dark fw-normal ms-2 text-uppercase">
+                <span class="badge bg-secondary-subtle text-dark ms-2 text-uppercase">
                   {{ authStore.user?.role || $t('student') }}
                 </span>
               </h2>
-              <p class="small text-muted mb-0">
-                {{ $t('lastLogin') }}:
-                {{ new Date(authStore.user?.last_login).toLocaleString() }}
+              <p class="small text-muted mb-3">
+                {{ $t('lastLogin') }}: {{ new Date(authStore.user?.last_login).toLocaleString() }}
               </p>
-            </div>
 
-            <button class="btn btn-danger px-4" @click="logout">
-              <i class="bi bi-box-arrow-right me-2"></i>
-              {{ $t('logout') }}
-            </button>
+              <!-- Small action buttons -->
+              <!-- <div class="d-flex flex-wrap gap-2">
+                <button
+                  v-for="btn in buttons"
+                  :key="btn.route"
+                  class="btn btn-outline-primary btn-sm d-flex align-items-center"
+                  @click="go(btn.route)">
+                  <i :class="`bi ${btn.icon} me-2`"></i> {{ btn.label }}
+                </button>
+              </div> -->
+            </div>
           </div>
         </section>
 
-        <section class="card shadow-sm">
-          <!-- Quick actions... -->
-          <div class="card-body">
-            <h2 class="h5 mb-4 text-primary fw-semibold text-center text-md-start">
-              {{ $t('quickAction') }}
-            </h2>
+        <!-- Dashboard & Active Reservation -->
+        <section class="card shadow-sm mb-4 p-4">
+          <h2 class="h5 fw-semibold mb-4">
+            {{ $t('dashboard') }}
+          </h2>
 
-            <div class="row g-3">
-              <div
-                class="col-5 col-sm-4 col-md-4" v-for="btn in buttons" :key="btn.route">
-                <div class="action-tile text-center bg-white border rounded-4 p-4 h-100 d-flex flex-column align-items-center justify-content-center shadow-sm" @click="go(btn.route)"
-                  role="button">
-                  <i :class="`bi ${btn.icon} text-primary fs-2 mb-2`"></i>
-                  <div class="fw-semibold text-dark">{{ btn.label }}</div>
-                </div>
+          <div class="row text-center mb-4">
+            <div class="col-3">
+              <div class="p-3 bg-light rounded">
+                <div class="fs-4 fw-bold">{{ stats.total }}</div>
+                <div class="small text-muted">Total</div>
               </div>
             </div>
+            <div class="col-3">
+              <div class="p-3 bg-light rounded">
+                <div class="fs-4 fw-bold text-warning">{{ stats.active }}</div>
+                <div class="small text-muted">Active</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="p-3 bg-light rounded">
+                <div class="fs-4 fw-bold text-success">{{ stats.completed }}</div>
+                <div class="small text-muted">Completed</div>
+              </div>
+            </div>
+            <div class="col-3">
+              <div class="p-3 bg-light rounded">
+                <div class="fs-4 fw-bold text-danger">{{ stats.cancelled }}</div>
+                <div class="small text-muted">Cancelled</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Active reservation -->
+          <div v-if="activeReservation" class="bg-white p-3 rounded border">
+            <h6 class="fw-semibold mb-1">Active Reservation</h6>
+            <p class="mb-0 small text-muted">Seat: {{ activeReservations.seat }}</p>
+            <p class="mb-0 small text-muted">Time: {{ activeReservations.time }}</p>
           </div>
         </section>
       </main>
@@ -113,8 +187,16 @@ export default {
 }
 
 .card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 0.75rem 1.5rem rgba(0, 0, 0, 0.05);
+  transform: translateY(-2px);
+  box-shadow: 0 1rem 1.5rem rgba(0, 0, 0, 0.05);
+}
+
+button.btn-sm {
+  min-width: 100px;
+}
+
+.bg-light {
+  background-color: #f8f9fa !important;
 }
 
 button.btn:hover {

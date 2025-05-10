@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from './pages/Home.vue'
-import BookingSuccess from './pages/BookingSuccess.vue'
+import BookingSuccess from './pages/student/BookingSuccess.vue'
 import Login from './pages/auth/Login.vue'
 import Register from './pages/auth/Register.vue'
 import ForgotPassword from './pages/auth/ForgotPassword.vue'

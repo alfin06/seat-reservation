@@ -18,4 +18,6 @@ urlpatterns = [
     path('api/check-qr/', QRCodeCheckView.as_view(), name='check-qr'),
     path('api/qr-check/', QRCodeCheckView2.as_view(), name='qr-check'),
     path('api/instant-booking/', InstantBookingView.as_view(), name='instant-booking'),
+    path('api/reservations/stats/', UserReservationStatsView.as_view(), name='reservation-stats'),
+    path('api/reservations/active/', ActiveReservationsView.as_view(), name='active-reservations'),
 ]

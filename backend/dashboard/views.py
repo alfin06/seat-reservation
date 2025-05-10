@@ -491,3 +491,65 @@ class QRCodeCheckView2(APIView):
 #         response = HttpResponse(buffer.getvalue(), content_type='image/png')
 #         response['Content-Disposition'] = f'attachment; filename="seat_{seat_id}_qr.png"'
 #         return response
+
+class UserReservationStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = User.objects.get(id=user_id)
+
+            total = Reservation.objects.filter(user=user).count()
+            active = Reservation.objects.filter(user=user, status='0').count()
+            completed = Reservation.objects.filter(user=user, status='1').count()
+            cancelled = Reservation.objects.filter(user=user, status='2').count()
+
+            return Response({
+                "total_reservations": total,
+                "active_reservations": active,
+                "completed_reservations": completed,
+                "cancelled_reservations": cancelled,
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+class ActiveReservationsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = User.objects.get(id=user_id)
+
+            # Get the active reservations for the user, ordered by reserved_at
+            reservations = Reservation.objects.filter(user=user, status='0').order_by('reserved_at')
+
+            # Manually prepare the data to return
+            active_reservations = [
+                {
+                    "id": reservation.id,
+                    "seat_id": reservation.seat.id,
+                    "reserved_start_time": reservation.reserved_at,
+                    "reserved_end_time": reservation.reserved_end,
+                    "status": reservation.status,
+                }
+                for reservation in reservations
+            ]
+
+            return Response(active_reservations, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
