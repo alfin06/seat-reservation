@@ -1,65 +1,61 @@
-<script>
-export default {
-  name: 'App',
-  methods: {
-    changeLanguage(lang) {
-      this.$i18n.locale = lang;
-    },
-    onLogin() {
-      // For example, redirect to the login page.
-      this.$router.push('/login');
-    }
-  }
-}
+<script setup>
+import SidebarMenu from './components/SideBarMenu.vue';
+import { useAuthStore } from './store/auth';
+import { computed } from 'vue';
+
+const authStore = useAuthStore();
+
+const buttons = computed(() => {
+  const base = [
+    { label: "Home", route: "/home", icon: "bi-house" },  
+    { label: "Book a Seat", route: "/booking", icon: "bi-journal-plus" },
+    { label: "Check‑in", route: "/check-in", icon: "bi-clipboard-check" },
+    { label: "Instant Booking", route: "/instant", icon: "bi-lightning" },
+    { label: "Booking History", route: "/history", icon: "bi-clock-history" },
+  ];
+  return authStore.user?.role === 'ADMIN'
+    ? [{ label: "Admin Dashboard", route: "/admin-dashboard", icon: "bi-speedometer2" }, ...base]
+    : base;
+});
 </script>
 
 <template>
-  <div class="app-container">
-    <!-- Main content (e.g., table, forms, etc.) -->
-    <div class="content-container">
-      <router-view />
+  <div class="d-flex flex-column vh-100">
+    <div class="flex-grow-1 d-flex overflow-hidden">
+      <SidebarMenu :buttons="buttons" class="d-none d-md-block" v-if="!$route.meta.hideSidebar" />
+      <main class="flex-grow-1 overflow-auto">
+        <button v-if="!$route.meta.hideSidebar"
+          class="btn d-md-none m-3"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#mobileSidebar"
+          aria-controls="mobileSidebar">
+          <i class="bi bi-list"></i>
+        </button>
+        <router-view />
+      </main>
     </div>
-    <notifications position="top center" />
-    <!-- Bottom controls: language translation controls -->
-    <div class="bottom-controls">
-      <div class="translation-controls">
-        <button @click="changeLanguage('en')" class="lang-btn">English</button>
-        <button @click="changeLanguage('zh')" class="lang-btn">中文</button>
+
+    <notifications position="top center" class="notif" />
+
+    <footer class="text-center border-top bg-white py-2">
+      <div class="translation-controls mb-1">
+        <button @click="$i18n.locale = 'en'" class="lang-btn">English</button>
+        <button @click="$i18n.locale = 'zh'" class="lang-btn">中文</button>
       </div>
-    </div>
+      <div class="footer text-muted small">
+        &copy; {{ new Date().getFullYear() }} Seat Reservation App | Developed by International Students
+      </div>
+    </footer>
   </div>
 </template>
 
 <style scoped>
-.app-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-  min-height: 100vh;
-  padding: 20px;
-}
-
-.content-container {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin: 20px 0;
-}
-
-/* Bottom controls styling */
-.bottom-controls {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  margin-top: 20px;
-  position: fixed;
-  bottom: 20px;
-}
-
-.translation-controls {
-  margin-top: 10px;
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
 .lang-btn {
@@ -75,5 +71,9 @@ export default {
 
 .lang-btn:hover {
   background: #e9ecef;
+}
+
+.notif {
+  font-size: 20pt;
 }
 </style>

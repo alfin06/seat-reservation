@@ -33,7 +33,7 @@ app.use(i18n)
 app.use(ElementPlus)
 app.use(Notifications)
 
+app.mount('#app')
+
 const authStore = useAuthStore()
 authStore.setCsrfToken()
-
-app.mount('#app')
