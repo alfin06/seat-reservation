@@ -1,6 +1,7 @@
 from dashboard.models import *
 from rest_framework import serializers
 from django.utils.timezone import localtime
+import datetime
 
 class SeatSerializer(serializers.ModelSerializer):
     class Meta:
@@ -40,6 +41,21 @@ class ReservationSerializer(serializers.ModelSerializer):
         fields = ['id', 'classroom', 'seat', 'duration', 'status', 'reserved_at', 'reserved_end']
         read_only_fields = ['id', 'status']
 
+class ReservationResetSettingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ReservationSetting
+        fields = ['max_booking_duration', 'reset_time']
+        extra_kwargs = {
+            'max_booking_duration': {'required': False},
+            'reset_time': {'required': False},
+        }
+    
+    def validate(self, attrs):
+        if not attrs:
+            raise serializers.ValidationError(
+                "You must provide at least one of: max_booking_duration or reset_time."
+            )
+        return attrs
 
 class ClassRoomSerializer(serializers.ModelSerializer):
     class Meta:
@@ -51,15 +67,15 @@ class ClassRoomSerializer(serializers.ModelSerializer):
             'is_disable': {'required': False, 'default': 1},
         }
 
-        def get_seat_count(self, obj):
-            return obj.seats.count()
+    def get_seat_count(self, obj):
+        return obj.seats.count()
+
+    def validate_number_of_seats(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Number of seats must be greater than zero.")
+        return value
     
-        def validate_number_of_seats(self, value):
-            if value <= 0:
-                raise serializers.ValidationError("Number of seats must be greater than zero.")
-            return value
-        
-        def validate_location(self, value):
-            if len(value.strip()) == 0:
-                raise serializers.ValidationError("Location cannot be empty.")
-            return value
+    def validate_location(self, value):
+        if len(value.strip()) == 0:
+            raise serializers.ValidationError("Location cannot be empty.")
+        return value

@@ -5,6 +5,7 @@ from rest_framework.authentication import TokenAuthentication
 from rest_framework import status, viewsets, permissions, generics
 from rest_framework.decorators import action
 from django.utils import timezone
+from django.db import transaction
 from django.http import JsonResponse, HttpResponse
 from dashboard.serializers import *
 from users.serializers import UserSerializer
@@ -314,7 +315,45 @@ class ClassRoomEnableView(generics.DestroyAPIView):
 
         return Response({'message': f'ClassRoom {classroom_id} and its seats have been enable successfully.'},
                         status=status.HTTP_201_CREATED)
+
+class ReservationSettingUpdateView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    serializer_class = ReservationResetSettingSerializer
+
+    def get_object(self):
+        return ReservationSetting.get_solo()
+
     
+    def update(self, request, *args, **kwargs):
+        # Treat PUT just like PATCH → only the provided fields get updated.
+        kwargs['partial'] = True
+        return super().update(request, *args, **kwargs)
+
+class ReservationSettingView(generics.UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReservationResetSettingSerializer
+
+    def get(self, request, format=None):
+        try:
+            queryset = ReservationSetting.objects.all()
+            setting_data = []
+            for data in queryset:
+                setting_data.append({
+                    'max_booking_duration': data.max_booking_duration,
+                    'reset_time': data.reset_time
+                })
+            
+            return JsonResponse({
+                'status': 'success',
+                'data': setting_data
+            }, safe=False)
+            
+        except Exception as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': f"Failed to fetch settings: {str(e)}"
+            }, status=500)
+
 class InstantBookingView(APIView):
     permission_classes = [IsAuthenticated]
 

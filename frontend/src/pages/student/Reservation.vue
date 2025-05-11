@@ -1,5 +1,7 @@
 <script>
+import { useSettingsStore } from "@/store/setting.js";
 import { useAuthStore, getCSRFToken } from "../../store/auth.js";
+import { mapState } from 'pinia';
 
 export default {
   name: 'Reservation',
@@ -22,6 +24,12 @@ export default {
       success: ''
     };
   },
+  computed:{
+    ...mapState(useSettingsStore, ['maxBookingDuration', 'isLoading']),
+    effectiveMaxBookingDuration() {
+      return this.maxBookingDuration > 0 ? this.maxBookingDuration : 1;
+    }
+  },
   watch: {
     'reservationForm.room'(roomId) {
       const selectedRoom = this.rooms.find(r => r.id === roomId);
@@ -32,10 +40,23 @@ export default {
           }))
         : [];
       this.reservationForm.seat = '';
+    },
+    maxBookingDuration(newMax) {
+      const currentMax = newMax > 0 ? newMax : 1;
+      if (this.reservationForm.duration > currentMax) {
+        this.reservationForm.duration = currentMax;
+      }
     }
   },
-  mounted() {
+  async mounted() {
     this.fetchRooms();
+    await this.authStore.fetchUser();
+    const initialMax = this.maxBookingDuration > 0 ? this.maxBookingDuration : 1;
+    if (this.reservationForm.duration > initialMax) {
+        this.reservationForm.duration = initialMax;
+    } else if (this.reservationForm.duration < 1 ) {
+        this.reservationForm.duration = 1;
+    }
   },
   methods: {
     async fetchRooms() {
@@ -160,7 +181,7 @@ export default {
 
       <!-- Duration -->
       <el-form-item :label="$t('reservationDuration')" prop="duration">
-        <el-input-number v-model="reservationForm.duration" :min="1" :max="4" /> 
+        <el-input-number v-model="reservationForm.duration" :min="1" :max="effectiveMaxBookingDuration" /> 
         &nbsp;&nbsp;<label>{{ $t('hour') }}</label>
       </el-form-item>
 
