@@ -50,7 +50,7 @@ class Reservation(models.Model):
         (0, 'Active'),
         (1, 'Completed'),
         (2, 'Cancelled'),
-        (3, 'Checked-In'),
+        # (3, 'Checked-In'),
     )
     user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='reservations')
     classroom = models.ForeignKey('ClassRoom', on_delete=models.CASCADE, related_name='reservations')

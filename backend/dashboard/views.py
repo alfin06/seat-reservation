@@ -371,7 +371,7 @@ class InstantBookingView(APIView):
 
         overlapping = Reservation.objects.filter(
             seat=seat,
-            status__in=['0', '3'],  # Active or Checked-In
+            status__in=['0', '1'],  # Active or Checked-In
             reserved_at__lt=end_time,
             reserved_end__gt=now
         ).exists()
@@ -386,7 +386,7 @@ class InstantBookingView(APIView):
             duration=duration,
             reserved_at=now,
             reserved_end=end_time,
-            status='3'  # Checked-In
+            status='1'  # Checked-In
         )
 
         # 5. Update seat status
@@ -432,7 +432,7 @@ class QRCodeCheckView(APIView):
             checkin_window_start = reservation.reserved_at - timedelta(minutes=10)
 
             if checkin_window_start <= now <= reservation.reserved_end:
-                reservation.status = 3  # Checked-In
+                reservation.status = 1  # Checked-In
                 reservation.checked_in_at = now
                 reservation.save()
                 return Response({"detail": "Checked in successfully. "}, status=201)
