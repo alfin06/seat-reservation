@@ -213,25 +213,25 @@ export default {
             <div class="col-3">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold">{{ stats.total }}</div>
-                <div class="small text-muted">{{ $t('total') }}</div>
+                <div class="small text-muted"><strong>{{ $t('total') }}</strong></div>
               </div>
             </div>
             <div class="col-3">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold text-warning">{{ stats.active }}</div>
-                <div class="small text-muted">{{ $t('active') }}</div>
+                <div class="small text-muted"><strong>{{ $t('active') }}</strong></div>
               </div>
             </div>
             <div class="col-3">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold text-success">{{ stats.completed }}</div>
-                <div class="small text-muted">{{ $t('completed') }}</div>
+                <div class="small text-muted"><strong>{{ $t('completed') }}</strong></div>
               </div>
             </div>
             <div class="col-3">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold text-danger">{{ stats.cancelled }}</div>
-                <div class="small text-muted">{{ $t('cancelled') }}</div>
+                <div class="small text-muted"><strong>{{ $t('cancelled') }}</strong></div>
               </div>
             </div>
           </div>
@@ -272,6 +272,9 @@ export default {
                           hour12: true})
                       }}
                     </p>
+                    <button class="btn btn-sm btn-outline-success mt-2 w-100" @click="$router.push('/check-in')">
+                      <i class="bi bi-clipboard-check me-2"></i> {{ $t('checkInButton') }}
+                    </button>
                     <button class="btn btn-sm btn-outline-danger mt-2 w-100"
                       @click="cancelReservation(reservation.id)">
                       <i class="bi bi-x-circle me-1"></i> {{ $t('cancel') }}
