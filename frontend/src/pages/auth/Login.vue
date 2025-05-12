@@ -120,7 +120,6 @@ export default {
 }
 
 .login {
-  margin-top:10%;
   font-size: 14pt;
   padding: 15px;
 }
