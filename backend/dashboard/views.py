@@ -554,3 +554,26 @@ class ActiveReservationsView(APIView):
             return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
         except Exception as e:
             return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CancelReservationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, reservation_id):
+        user = request.user
+
+        try:
+            reservation = Reservation.objects.get(id=reservation_id)
+
+            # if reservation.user != user and not user.is_staff:
+            #     return Response({"error": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+
+            # if reservation.status == "CANCELLED":
+            #     return Response({"message": "Reservation already cancelled."}, status=status.HTTP_200_OK)
+
+            reservation.status = 2
+            reservation.save()
+
+            return Response({"message": "Reservation cancelled successfully."}, status=status.HTTP_200_OK)
+
+        except Reservation.DoesNotExist:
+            return Response({"error": "Reservation not found."}, status=status.HTTP_404_NOT_FOUND)

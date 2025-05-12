@@ -2,6 +2,7 @@
 import { useAuthStore, getCSRFToken } from "../store/auth.js";
 import { useRouter } from "vue-router";
 import { computed, onMounted, ref } from 'vue';
+import { notify } from "@kyvg/vue3-notification";
 
 export default {
   name: "Home",
@@ -50,16 +51,64 @@ export default {
       completed: 0,
       cancelled: 0,
     });
+
+    const cancelReservation = async (reservationId) => {
+      const confirmCancel = window.confirm("Are you sure you want to cancel this reservation?");
+      if (!confirmCancel) 
+        return;
+      
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch(`http://localhost:8000/dashboard/api/reservations/${reservationId}/cancel/`, {
+          method: "POST", // or "PATCH" depending on your backend
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+            'X-CSRFToken': getCSRFToken()
+          },
+          body: JSON.stringify({ user_id: authStore.user?.id }),
+        });
+
+        if (!res.ok)
+        {
+          notify({
+            type: "error",
+            title: "ERROR",
+            text: "Failed to cancel reservation. Please try again in 5 minutes",
+            duration: 3000
+          });
+          throw new Error("Failed to cancel reservation");
+        }
+          
+        // Refresh stats and active reservations
+        notify({
+          type: "success",
+          title: "Reservation Cancelled",
+          text: "The reservation was successfully cancelled.",
+          duration: 3000
+        });
+
+        await fetchStatsAndReservations();
+      } catch (error) {
+        notify({
+          type: "error",
+          title: "ERROR",
+          text: "Failed to cancel reservation. Please try again in 5 minutes",
+          duration: 3000
+        });
+        console.error("Cancel failed:", error);
+      }
+    };
     
     const activeReservations = ref([]);
 
     const go = (path) => router.push(path);
 
-    onMounted(async () => {
-      await authStore.fetchUser();
+    const fetchStatsAndReservations = async () => {
       const token = localStorage.getItem('token');
 
       try {
+        // Fetch stats
         const res = await fetch("http://localhost:8000/dashboard/api/reservations/stats/", {
           method: "POST",
           headers: {
@@ -70,23 +119,16 @@ export default {
           body: JSON.stringify({ user_id: authStore.user?.id }),
         });
 
-        if (!res.ok) {
-          const err = await res.json();
-          console.log(err);
-          console.log(err.text());
-          throw new Error("Failed to fetch reservation stats");
-        }
+        if (!res.ok) throw new Error("Failed to fetch stats");
 
-        const data = await res.json();
-        stats.value.total = data.total_reservations;
-        stats.value.active = data.active_reservations;
-        stats.value.completed = data.completed_reservations;
-        stats.value.cancelled = data.cancelled_reservations;
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-      }
+        const statsData = await res.json();
+        stats.value = {
+          total: statsData.total_reservations,
+          active: statsData.active_reservations,
+          completed: statsData.completed_reservations,
+          cancelled: statsData.cancelled_reservations
+        };
 
-      try {
         // Fetch active reservations
         const activeRes = await fetch("http://localhost:8000/dashboard/api/reservations/active/", {
           method: "POST",
@@ -100,14 +142,17 @@ export default {
 
         if (!activeRes.ok) throw new Error("Failed to fetch active reservations");
 
-        const data = await activeRes.json();
+        const activeData = await activeRes.json();
+        if (Array.isArray(activeData)) activeReservations.value = activeData;
 
-        if (Array.isArray(data)) {
-          activeReservations.value = data;
-        }
       } catch (error) {
-        console.error("Error loading dashboard:", error);
+        console.error("Error fetching dashboard data:", error);
       }
+    };
+
+    onMounted(async () => {
+      await authStore.fetchUser();
+      await fetchStatsAndReservations();
     });
 
     return {
@@ -119,7 +164,8 @@ export default {
       go,
       getCardClass,
       getBadgeClass,
-      getLabel
+      getLabel,
+      cancelReservation
     };
   }
 };
@@ -226,6 +272,10 @@ export default {
                           hour12: true})
                       }}
                     </p>
+                    <button class="btn btn-sm btn-outline-danger mt-2 w-100"
+                      @click="cancelReservation(reservation.id)">
+                      <i class="bi bi-x-circle me-1"></i> Cancel
+                    </button>
                   </div>
                 </div>
               </div>
