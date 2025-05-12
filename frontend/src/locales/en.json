@@ -63,5 +63,11 @@
   "forgotInstruction2": "Please enter your new password.",
   "rememberPwd": "Remember your password",
   "dashboard": "Dashboard",
-  "activeReservation": "Upcoming Reservation"
+  "activeReservation": "Upcoming Reservation",
+  "total": "Total",
+  "active": "Active",
+  "completed": "Completed",
+  "cancelled": "Cancelled",
+  "cancel": "Cancel",
+  "upcoming": "Upcoming Reservation"
 }

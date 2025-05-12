@@ -62,6 +62,12 @@
     "forgotInstruction2": "请输入您的新密码。",
     "rememberPwd": "记住你的密码",
     "dashboard": "仪表板",
-    "activeReservation": "即将预订"
+    "activeReservation": "即将预订",
+    "total": "全部的",
+    "active": "积极的",
+    "completed": "完全的",
+    "cancelled": "取消",
+    "cancel": "取消",
+    "upcoming": "即将预订"
   }
   

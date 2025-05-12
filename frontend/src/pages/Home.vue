@@ -213,32 +213,32 @@ export default {
             <div class="col-3">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold">{{ stats.total }}</div>
-                <div class="small text-muted">Total</div>
+                <div class="small text-muted">{{ $t('total') }}</div>
               </div>
             </div>
             <div class="col-3">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold text-warning">{{ stats.active }}</div>
-                <div class="small text-muted">Active</div>
+                <div class="small text-muted">{{ $t('active') }}</div>
               </div>
             </div>
             <div class="col-3">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold text-success">{{ stats.completed }}</div>
-                <div class="small text-muted">Completed</div>
+                <div class="small text-muted">{{ $t('completed') }}</div>
               </div>
             </div>
             <div class="col-3">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold text-danger">{{ stats.cancelled }}</div>
-                <div class="small text-muted">Cancelled</div>
+                <div class="small text-muted">{{ $t('cancelled') }}</div>
               </div>
             </div>
           </div>
 
           <!-- Active reservations -->
           <div v-if="activeReservations.length" class="bg-white p-3 rounded border">
-            <h6 class="fw-semibold mb-3">Active Reservations</h6>
+            <h6 class="fw-semibold mb-3">{{ $t('upcoming') }}</h6>
             <div class="row">
               <div v-for="reservation in activeReservations"
                 :key="reservation.id"
@@ -274,7 +274,7 @@ export default {
                     </p>
                     <button class="btn btn-sm btn-outline-danger mt-2 w-100"
                       @click="cancelReservation(reservation.id)">
-                      <i class="bi bi-x-circle me-1"></i> Cancel
+                      <i class="bi bi-x-circle me-1"></i> {{ $t('cancel') }}
                     </button>
                   </div>
                 </div>
