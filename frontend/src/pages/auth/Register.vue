@@ -208,7 +208,6 @@ export default {
 }
 
 .register {
-  margin-top:5%;
   padding: 15px;
 }
 

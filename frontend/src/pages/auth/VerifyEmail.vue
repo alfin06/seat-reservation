@@ -51,7 +51,6 @@
   <style scoped>
   .verify-email {
     text-align: center;
-    margin-top: 50px;
     font-size: 18px;
   }
   .success-message {

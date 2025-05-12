@@ -146,7 +146,6 @@ export default {
 }
 
 .forgot {
-  margin-top:10%;
   padding: 15px;
 }
 
