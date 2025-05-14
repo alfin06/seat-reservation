@@ -1,11 +1,12 @@
 <script>
 import { getCSRFToken } from '../../store/auth';
-import logo from '@/assets/app_logo.jpg';
+import logo from '@/assets/app_logo.png';
 
 export default {
   data() {
     return {
       logo,
+      name: '',
       email: '',
       password: '',
       password2: '',
@@ -28,9 +29,9 @@ export default {
         this.loading = true;
 
         if (!emailRegex.test(this.email)) {
-          this.error = 'Invalid email address!';
+          notify({ type: "error", title: 'ERROR', duration: 3000, text: "Invalid email address!" });
         } else if (this.password !== this.password2) {
-          this.error = 'Passwords do not match!';
+          notify({ type: "error", title: 'ERROR', duration: 3000, text: "Passwords do not match!" });
         } else {
           const response = await fetch('http://localhost:8000/users/auth/register/', {
             method: 'POST',
@@ -41,7 +42,7 @@ export default {
             credentials: 'include',
             body: JSON.stringify({
               email: this.email,
-              name: this.email,
+              name: this.name,
               password: this.password,
               confirm_password: this.password2,
               role: this.role
@@ -52,22 +53,40 @@ export default {
             const contentType = response.headers.get("content-type");
             if (contentType && contentType.includes("application/json")) {
               const data = await response.json();
-              this.error = 'Registration failed: ' + JSON.stringify(data.email);
+              this.$notify({
+                title: "ERROR",
+                type: "error",
+                duration: 3000,
+                text: 'Registration failed: ' + data.email
+              });
             } else {
-              this.error = 'Registration failed: Please contact the administrator.';
+              this.$notify({
+                title: "ERROR",
+                type: "error",
+                duration: 3000,
+                text: "Registration failed: Please contact the administrator."
+              });
             }
             return;
           }
 
           this.$notify({
+            title: "SUCCESS",
             type: "success",
-            text: "Registration successful! Please check your email and verify your account."
+            duration: 3000,
+            text: "Registration successful! Please check your inbox/spam and verify your account."
           });
 
           setTimeout(() => this.$router.push('/login'), 1500);
         }
       } catch (err) {
-        this.error = 'An error occurred during registration: ' + err;
+        this.$notify({
+            title: "ERROR",
+            type: "error",
+            duration: 3000,
+            text: "An error occurred during registration. Please reload the page and try to register again. If the error is still persisting, please contact the admin."
+        });
+        console.log('An error occurred during registration: ' + err);
       } finally {
         this.loading = false;
       }
@@ -83,50 +102,74 @@ export default {
 </script>
 
 <template>
-    <div class="container my-5">
+    <div class="container justify-content-center align-items-center register">
       <div class="row justify-content-center">
         <div class="col-md-8 col-lg-6">
-          <el-card class="box-card" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
+          <div class="box-card" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
             <div class="text-center mb-4">
               <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 150px;" />
-              <h4 class="fw-bold text-primary text-center mb-3">{{ $t('register') }}</h4>
             </div>
   
             <p v-if="error" class="error text-danger text-center">{{ error }}</p>
             <p v-if="success" class="success text-success text-center">{{ success }}</p>
   
-            <el-form @submit.prevent="register" class="form-horizontal">
-              <el-form-item :label="$t('enterEmail')" class="form-label">
-                <el-input v-model="email" type="email" required :placeholder="$t('enterEmail')" />
+            <el-form @submit.prevent="register" label-position="top" class="p-3">
+              <el-form-item :label="$t('enterName')">
+                <el-input
+                  v-model="name"
+                  type="text"
+                  required
+                  :placeholder="$t('enterName')"
+                  clearable
+                  class="underline-input"/>
               </el-form-item>
-  
-              <el-form-item :label="$t('enterPassword')" class="form-label">
-                <el-input v-model="password" type="password" required :placeholder="$t('enterPassword')" />
+
+              <el-form-item :label="$t('enterEmail')">
+                <el-input
+                  v-model="email"
+                  type="email"
+                  required
+                  :placeholder="$t('enterEmail')"
+                  clearable
+                  class="underline-input"/>
               </el-form-item>
-  
-              <el-form-item :label="$t('confirmPassword')" class="form-label">
-                <el-input v-model="password2" type="password" required :placeholder="$t('confirmPassword')" />
+
+              <el-form-item :label="$t('enterPassword')">
+                <el-input
+                  v-model="password"
+                  type="password"
+                  required
+                  :placeholder="$t('enterPassword')"
+                  show-password
+                  clearable
+                  class="underline-input" />
               </el-form-item>
-  
-              <!-- Future: Role selection -->
-              <!--
-              <el-form-item label="Role" class="form-label">
-                <el-select v-model="role" placeholder="Select role">
-                  <el-option v-for="role in roles" :key="role.value" :label="role.label" :value="role.value" />
-                </el-select>
+
+              <el-form-item :label="$t('confirmPassword')">
+                <el-input
+                  v-model="password2"
+                  type="password"
+                  required
+                  :placeholder="$t('confirmPassword')"
+                  show-password
+                  clearable
+                  class="underline-input" />
               </el-form-item>
-              -->
-  
-              <el-button type="primary" class="w-100 mt-3" @click="register">{{ $t('submitRegister') }}</el-button>
+
+              <el-form-item class="mb-0">
+                <el-button type="primary" class="w-100" @click="register">
+                  {{ $t('submitRegister') }}
+                </el-button>
+              </el-form-item>
             </el-form>
-  
+
             <div class="links-container mt-4 text-center">
               <p>
                 {{ $t('alreadyHaveAccount') }}?
                 <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link>
               </p>
             </div>
-          </el-card>
+          </div>
         </div>
       </div>
     </div>
@@ -162,5 +205,26 @@ export default {
 
 :deep(.el-form-item) {
   margin-bottom: 1.5rem;
+}
+
+.register {
+  padding: 15px;
+}
+
+:deep(.el-form-item__label) {
+  font-weight: bold;
+}
+
+.underline-input .el-input__inner {
+  border: none;
+  border-bottom: 2px solid #ccc;
+  border-radius: 0;
+  box-shadow: none;
+  padding-left: 0;
+  padding-right: 0;
+}
+
+.underline-input .el-input__inner:focus {
+  border-bottom-color: #409eff; /* Element Plus primary color */
 }
 </style>

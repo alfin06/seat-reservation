@@ -1,6 +1,7 @@
 <script>
 import { useAuthStore } from '../../store/auth';
-import logo from '@/assets/app_logo.jpg';
+import logo from '@/assets/app_logo.png';
+import { notify } from "@kyvg/vue3-notification";
 
 export default {
   setup() {
@@ -24,7 +25,7 @@ export default {
     async login() {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(this.email)) {
-        this.error = "Invalid email address!";
+        notify({ type: "error", title: 'ERROR', duration: 3000, text: "Invalid email address!" });
         return;
       }
 
@@ -37,7 +38,7 @@ export default {
           this.$router
         );
       } catch (error) {
-        this.error = "Login failed: Please check your credentials!";
+        notify({ type: "error", title: 'LOGIN FAILED', duration: 3000, text: "Please check your credentials!" });
       }
     },
     resetError() {
@@ -54,16 +55,16 @@ export default {
 </script>
 
 <template>
-  <div class="container d-flex justify-content-center align-items-center min-vh-100">
-    <div class="card shadow-lg p-4 w-100" style="max-width: 480px; border-radius: 1rem;">
-      <div class="text-center mb-4">
-        <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 150px;" />
+  <div class="container d-flex justify-content-center align-items-center login">
+    <div class="card shadow p-4 w-100" style="max-width: 400px; border-radius: 1rem;">
+      <div class="text-center mb-3">
+        <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 180px;" />
       </div>
+      <br/>
+      <p v-if="error" class="alert alert-danger text-center py-2 mb-2">{{ error }}</p>
 
-      <p v-if="error" class="alert alert-danger text-center py-2">{{ error }}</p>
-
-      <el-form @submit.prevent="login" class="mb-3">
-        <el-form-item>
+      <el-form @submit.prevent="login" class="mb-2">
+        <el-form-item class="mb-3">
           <el-input
             v-model="email"
             type="text"
@@ -74,32 +75,31 @@ export default {
           />
         </el-form-item>
 
-        <el-form-item>
+        <el-form-item class="mb-3">
           <el-input
             v-model="password"
             type="password"
             placeholder="Password"
             required
+            show-password
+            clearable
             @input="resetError"
             prefix-icon="el-icon-lock"
           />
         </el-form-item>
+        <br/>
 
-        <el-form-item class="d-grid">
+        <el-form-item class="mb-2">
           <el-button type="primary" size="large" class="w-100" @click="login">
             {{ $t('submitLogin') }}
           </el-button>
         </el-form-item>
       </el-form>
 
-      <div class="text-center">
-        <p class="small">
-          <el-link type="info" @click="onForgotPassword">{{ $t('forgetPassword') }}?</el-link>
-        </p>
-        <p class="small">
-          {{ $t('noAccount') }}?
-          <el-link type="primary" @click="onRegister">{{ $t('register') }}</el-link>
-        </p>
+      <div class="text-center small bottom">
+        <el-link type="primary" @click="onForgotPassword">{{ $t('forgetPassword') }}?</el-link><br />
+        {{ $t('noAccount') }}?
+        <el-link type="primary" @click="onRegister">{{ $t('register') }}</el-link>
       </div>
     </div>
   </div>
@@ -119,7 +119,14 @@ export default {
   border-radius: 0.5rem;
 }
 
-.el-form-item {
-  margin-bottom: 1rem;
+.login {
+  font-size: 14pt;
+  padding: 15px;
+}
+
+.bottom {
+  margin-top: 15px;
+  padding-top:5px;
+  padding-bottom: 5px;
 }
 </style>

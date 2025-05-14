@@ -1,5 +1,6 @@
 <script>
 import { useAuthStore } from '../../store/auth'
+import logo from '@/assets/app_logo.png';
 
 export default {
     name: 'ForgotPassword',
@@ -8,6 +9,7 @@ export default {
             email: '',
             error: '',
             success: '',
+            logo,
             loading: false, // Loader state
         }
     },
@@ -51,12 +53,14 @@ export default {
 </script>
 
 <template>
-    <div class="container my-5">
+    <div class="container justify-content-center align-items-center forgot">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <el-card class="box-card card-body text-center" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
-                    <h2>Reset Password</h2>
-                    <p class="description">Enter your email address and we'll send you instructions to reset your password.</p>
+                <div class="box-card card-body text-center" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
+                    <div class="text-center mb-4">
+                      <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 150px;" />
+                    </div>
+                    <p class="description">{{ $t('forgotInstruction') }}</p>
                     <p v-if="error" class="error text-danger">{{error}}</p> 
                     <p v-if="success" class="success text-success">{{success}}</p>
                     <el-form :model="form" ref="resetForm" label-width="120px" @submit.prevent="resetPassword" class="form-horizontal form-material">
@@ -66,10 +70,9 @@ export default {
                     </el-form>
                     <br/>
                     <div class="links-container">
-                        <p>Remember your password? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
-                        <p>Don't have an account? <el-link type="primary" @click="onRegister">{{ $t('register') }}</el-link></p>
+                        <p>{{ $t('rememberPwd') }}? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
                     </div>
-                </el-card>
+                  </div>
             </div>
         </div>
     </div>
@@ -87,6 +90,7 @@ export default {
   color: #606266;
   margin: 1rem 0;
   text-align: center;
+  font-weight: bold;
 }
 
 .error {
@@ -126,7 +130,6 @@ export default {
 
 .links-container p {
   margin: 0.5rem 0;
-  font-weight: 500;
 }
 
 :deep(.el-link) {
@@ -140,6 +143,10 @@ export default {
 
 .el-input {
   width: 100%;
+}
+
+.forgot {
+  padding: 15px;
 }
 
 </style>

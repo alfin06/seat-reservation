@@ -20,6 +20,7 @@ from dashboard.models import Reservation, Seat, ClassRoom
 from dashboard.serializers import ReservationSerializer, SeatSerializer, ClassRoomSerializer
 
 from datetime import timedelta
+from django.utils import timezone
 import pytz
 # import qrcode
 # from io import BytesIO
@@ -35,17 +36,40 @@ class ReservationCreateView(APIView):
             if duration > 4:
                 return Response({'error': 'Duration cannot exceed 4 hours.'}, status=400)
             reservation = serializer.save(user=request.user)
-            # Send confirmation email (simple example)
+            # Send confirmation email
+            # Convert UTC to Shanghai time
+            
+            html_message = f'''
+            <html>
+                <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+                    <div style="max-width: 600px; margin: 0 auto; padding: 20px;">
+                        <h2 style="color: #2c3e50;">Your Seat Reservation Has Been Confirmed!</h2>
+                        <p>Hello {request.user.name},</p>
+                        <p>Your seat reservation has been confirmed. Here is the detail of your reservation:</p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <p><strong>Classroom:</strong> {reservation.classroom.name}</p>
+                            <p><strong>Seat:</strong> Seat {reservation.seat.id}</p>
+                            <p><strong>Start time:</strong> {reservation.reserved_at}</p>
+                            <p><strong>End time:</strong> {reservation.reserved_end}</p>
+                        </div>
+                        <p><i>Disclaimer: This is an automated email. Please do not reply to this email.</i></p>
+                        <p>Best regards,<br>Seat Reservation Team</p>
+                    </div>
+                </body>
+            </html>
+            '''
+
             try:
                 send_mail(
                     subject='Seat Reservation Confirmation',
                     message=f"Your reservation for seat {reservation.seat.id} in room {reservation.classroom.id} is confirmed.",
                     from_email=settings.DEFAULT_FROM_EMAIL,
                     recipient_list=[request.user.email],
+                    html_message=html_message,
                     fail_silently=True,
                 )
             except Exception as e:
-                pass  # Optionally log error
+                return Response({'error': 'Reservation failed!'}, status=status.HTTP_400_BAD_REQUEST)
             return Response(ReservationSerializer(reservation).data, status=201)
         return Response(serializer.errors, status=400)
 
@@ -377,11 +401,16 @@ class InstantBookingView(APIView):
             return Response({'error': 'Duration must be between 1 and 4 hours'}, status=400)
 
         # 3. Check for overlapping reservations
-        now = timezone.now()
+        # Get current time in UTC and convert it to Shanghai time
+        shanghai_tz = pytz.timezone('Asia/Shanghai')
+        now_utc = timezone.now()
+        now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
+
         end_time = now + timedelta(hours=duration)
+
         overlapping = Reservation.objects.filter(
             seat=seat,
-            status__in=['0', '3'],  # Active or Checked-In
+            status__in=['0', '1'],  # Active or Checked-In
             reserved_at__lt=end_time,
             reserved_end__gt=now
         ).exists()
@@ -396,7 +425,7 @@ class InstantBookingView(APIView):
             duration=duration,
             reserved_at=now,
             reserved_end=end_time,
-            status='3'  # Checked-In
+            status='1'  # Checked-In
         )
 
         # 5. Update seat status
@@ -415,8 +444,41 @@ class InstantBookingView(APIView):
             'reserved_at': reservation.reserved_at,
             'reserved_end': reservation.reserved_end
         }, status=201)
-
+    
 class QRCodeCheckView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.data.get('user_id')
+        seat_id = request.data.get('qrCode')  # Assuming QR code carries seat ID
+
+        if not user_id or not seat_id:
+            return Response({"detail": "Missing user_id or qrCode"}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Get current time in UTC and convert it to Shanghai time
+        shanghai_tz = pytz.timezone('Asia/Shanghai')
+        now_utc = timezone.now()
+        now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
+
+        # Filter potential matching reservations
+        reservations = Reservation.objects.filter(
+            user__id=user_id,
+            seat__id=seat_id,
+            status=0  # Only active reservations
+        )
+
+        for reservation in reservations:
+            checkin_window_start = reservation.reserved_at - timedelta(minutes=10)
+
+            if checkin_window_start <= now <= reservation.reserved_end:
+                reservation.status = 1  # Checked-In
+                reservation.checked_in_at = now
+                reservation.save()
+                return Response({"detail": "Checked in successfully. "}, status=201)
+
+        return Response({"detail": "No valid reservation for check-in found."}, status=400)
+
+class QRCodeCheckView2(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -468,3 +530,89 @@ class QRCodeCheckView(APIView):
 #         response = HttpResponse(buffer.getvalue(), content_type='image/png')
 #         response['Content-Disposition'] = f'attachment; filename="seat_{seat_id}_qr.png"'
 #         return response
+
+class UserReservationStatsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = User.objects.get(id=user_id)
+
+            total = Reservation.objects.filter(user=user).count()
+            active = Reservation.objects.filter(user=user, status='0').count()
+            completed = Reservation.objects.filter(user=user, status='1').count()
+            cancelled = Reservation.objects.filter(user=user, status='2').count()
+
+            return Response({
+                "total_reservations": total,
+                "active_reservations": active,
+                "completed_reservations": completed,
+                "cancelled_reservations": cancelled,
+            }, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+    
+class ActiveReservationsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        try:
+            user_id = request.data.get('user_id')
+            if not user_id:
+                return Response({"error": "user_id is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+            user = User.objects.get(id=user_id)
+
+            # Get the active reservations for the user, ordered by reserved_at
+            reservations = Reservation.objects.filter(user=user, status='0').order_by('reserved_at')
+
+            # Manually prepare the data to return
+            active_reservations = [
+                {
+                    "id": reservation.id,
+                    "classroom": reservation.classroom.name,
+                    "seat_id": reservation.seat.id,
+                    "reserved_start_time": reservation.reserved_at,
+                    "reserved_end_time": reservation.reserved_end,
+                    "status": reservation.status,
+                }
+                for reservation in reservations
+            ]
+
+            return Response(active_reservations, status=status.HTTP_200_OK)
+
+        except User.DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class CancelReservationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, reservation_id):
+        user = request.user
+
+        try:
+            reservation = Reservation.objects.get(id=reservation_id)
+
+            # if reservation.user != user and not user.is_staff:
+            #     return Response({"error": "Permission denied."}, status=status.HTTP_403_FORBIDDEN)
+
+            # if reservation.status == "CANCELLED":
+            #     return Response({"message": "Reservation already cancelled."}, status=status.HTTP_200_OK)
+
+            reservation.status = 2
+            reservation.save()
+
+            return Response({"message": "Reservation cancelled successfully."}, status=status.HTTP_200_OK)
+
+        except Reservation.DoesNotExist:
+            return Response({"error": "Reservation not found."}, status=status.HTTP_404_NOT_FOUND)
