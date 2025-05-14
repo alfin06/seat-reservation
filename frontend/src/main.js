@@ -4,6 +4,7 @@ import './style.css' // Using the default Vite CSS. Replace with your own global
 import App from './App.vue'
 import router from './router'
 import { useAuthStore } from './store/auth'
+import { useSettingsStore } from '@/store/setting.js'
 
 import { createI18n } from 'vue-i18n'
 import ElementPlus from 'element-plus'
@@ -37,3 +38,6 @@ app.mount('#app')
 
 const authStore = useAuthStore()
 authStore.setCsrfToken()
+
+const settingsStore = useSettingsStore()
+await settingsStore.fetchSettings()

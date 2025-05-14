@@ -32,12 +32,6 @@ export default {
       return this.maxBookingDuration > 0 ? this.maxBookingDuration : 1;
     }
   },
-  computed:{
-    ...mapState(useSettingsStore, ['maxBookingDuration', 'isLoading']),
-    effectiveMaxBookingDuration() {
-      return this.maxBookingDuration > 0 ? this.maxBookingDuration : 1;
-    }
-  },
   watch: {
     'reservationForm.room'(roomId) {
       const selectedRoom = this.rooms.find(r => r.id === roomId);
@@ -60,6 +54,13 @@ export default {
   async mounted() {
     this.fetchRooms();
     await this.authStore.fetchUser();
+    
+    // Ensure settings are loaded before checking duration
+    const settingsStore = useSettingsStore();
+    if (!settingsStore.maxBookingDuration) {
+      await settingsStore.fetchSettings(); // Assuming this method exists
+    }
+    
     const initialMax = this.maxBookingDuration > 0 ? this.maxBookingDuration : 1;
     if (this.reservationForm.duration > initialMax) {
         this.reservationForm.duration = initialMax;
@@ -140,10 +141,6 @@ export default {
         this.$notify({type:"error", text:"Reservation failed! Please try book your seat again in 5 minutes."});
         console.log('Reservation failed ' + err);
       }
-    },
-
-    async mounted() {
-      await this.authStore.fetchUser();
     },
   }
 };

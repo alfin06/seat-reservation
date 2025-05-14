@@ -1,11 +1,12 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
+import { ref, reactive, computed, onMounted, onBeforeUnmount, watch, nextTick } from 'vue';
 import { BrowserQRCodeReader } from '@zxing/browser';
 import { useRouter, onBeforeRouteLeave } from 'vue-router';
 import { useAuthStore, getCSRFToken } from "../../store/auth.js";
 import { notify } from "@kyvg/vue3-notification";
 import axios from 'axios';
 import { Tooltip } from 'bootstrap';
+import { useSettingsStore } from "@/store/setting.js";
 
 const router = useRouter();
 const authStore = useAuthStore();
@@ -19,6 +20,27 @@ const cameraReady = ref(false);
 const scannedValue = ref('');
 const scanningStopped = ref(false);
 let codeReader = null;
+
+const settingsStore = useSettingsStore();
+
+const reservationForm = reactive({
+  duration: 1
+});
+
+const effectiveMaxBookingDuration = computed(() => {
+  return settingsStore.maxBookingDuration > 0
+    ? settingsStore.maxBookingDuration
+    : 1;
+});
+
+function clampDuration() {
+  const max = effectiveMaxBookingDuration.value;
+  if (reservationForm.duration < 1) {
+    reservationForm.duration = 1;
+  } else if (reservationForm.duration > max) {
+    reservationForm.duration = max;
+  }
+}
 
 const stopCamera = async () => {
   if (codeReader && typeof codeReader.reset === 'function') {
@@ -97,6 +119,8 @@ function navigate(route) {
 onMounted(async () => {
   codeReader = new BrowserQRCodeReader();
   const previewVideoElement = video.value;
+  await authStore.fetchUser(); 
+  clampDuration(); 
 
   try {
     const devices = await BrowserQRCodeReader.listVideoInputDevices();
@@ -177,12 +201,14 @@ onBeforeUnmount(() => {
                 <div class="row">
                   <div class="col-4 fw-semibold">Duration:</div>
                   <div class="col-8">
-                    <select v-model="duration" class="form-select">
+                    <!-- <select v-model="duration" class="form-select">
                       <option value="1">1 hour</option>
                       <option value="2">2 hours</option>
-                      <option value="3">3 hours</option>
+                      <option value="3">3 hours</opti on>
                       <option value="4">4 hours</option>
-                    </select>
+                    </select> -->
+                    <el-input-number v-model="reservationForm.duration" :min="1" :max="effectiveMaxBookingDuration" /> 
+                    &nbsp;&nbsp;<label>{{ $t('hour') }}</label>
                   </div>
                 </div>
               </div>
