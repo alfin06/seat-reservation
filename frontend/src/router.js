@@ -10,6 +10,9 @@ import CheckIn from './pages/student/CheckIn.vue'
 import Reservation from './pages/student/Reservation.vue'
 import AdminDashboard from './pages/admin/AdminDashboard.vue'
 import InstantBooking from './pages/student/InstantBooking.vue'
+import ManageRooms from './pages/admin/ManageRooms.vue'
+import ManageSeats from './pages/admin/ManageSeats.vue'
+import Settings from './pages/admin/SystemSettings.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -19,8 +22,12 @@ const routes = [
   { path: '/verify-email/:token', name: 'verify-email', component: VerifyEmail, meta: { hideSidebar: true }},
   { path: '/reset-password/:token', name: 'reset-password', component: ResetPassword, meta: { hideSidebar: true }},
   
-  { path: '/home', name: 'home', component: Home, meta: { requiresAuth: true } },
   { path: '/admin-dashboard', name: 'admin-dashboard', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true }},
+  { path: '/manage-rooms', name: 'manage-rooms', component: ManageRooms, meta: { requiresAuth: true, requiresAdmin: true }},
+  { path: '/manage-seats', name: 'manage-seats', component: ManageSeats, meta: { requiresAuth: true, requiresAdmin: true }},
+  { path: '/settings', name: 'settings', component: Settings, meta: { requiresAuth: true, requiresAdmin: true }},
+
+  { path: '/home', name: 'home', component: Home, meta: { requiresAuth: true } },
   { path: '/check-in', name: 'check-in', component: CheckIn, meta: { requiresAuth: true } },
   { path: '/booking', name: 'booking', component: Reservation, meta: { requiresAuth: true } },
   { path: '/student/instant-booking', name: 'instant-booking', component: InstantBooking, meta: { requiresAuth: true } },

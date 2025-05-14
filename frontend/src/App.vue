@@ -5,17 +5,33 @@ import { computed } from 'vue';
 
 const authStore = useAuthStore();
 
+
 const buttons = computed(() => {
-  const base = [
-    { label: "Home", route: "/home", icon: "bi-house" },  
+  if (!authStore.user) return [];
+
+  const shared = [
     { label: "Book a Seat", route: "/booking", icon: "bi-journal-plus" },
     { label: "Check‑in", route: "/check-in", icon: "bi-clipboard-check" },
     { label: "Instant Booking", route: "/instant", icon: "bi-lightning" },
     { label: "Booking History", route: "/history", icon: "bi-clock-history" },
   ];
-  return authStore.user?.role === 'ADMIN'
-    ? [{ label: "Admin Dashboard", route: "/admin-dashboard", icon: "bi-speedometer2" }, ...base]
-    : base;
+
+  if (authStore.user.role === 'ADMIN') {
+    const adminOnly = [
+      { label: "Admin Dashboard", route: "/admin-dashboard", icon: "bi-speedometer2" },
+      { label: "Manage Classroom", route: "/manage-rooms", icon: "bi-door-open" },
+      { label: "Manage Seat", route: "/manage-seats", icon: "bi-journal" },
+      { label: "General Settings", route: "/settings", icon: "bi-gear" },
+      { type: 'divider' }, // Horizontal line
+    ];
+    return [...adminOnly, ...shared];
+  }
+
+  // For students and other users
+  return [
+    { label: "Home", route: "/home", icon: "bi-house" },
+    ...shared
+  ];
 });
 </script>
 

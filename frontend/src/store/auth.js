@@ -97,16 +97,24 @@ export const useAuthStore = defineStore('auth', {
         const data = await response.json()
         this.user = {
           ...data.user,
-          role: data.role // Include role in user data
+          role: data.user.role?.toUpperCase()
         }
         this.isAuthenticated = true
         localStorage.setItem("token", data.token);
-        localStorage.setItem("authState", data.user);
+        localStorage.setItem("authState", JSON.stringify({
+          isAuthenticated: true,
+          user: {
+            ...data.user,
+            role: data.user.role?.toUpperCase()
+          }
+        }));
         this.saveState()
         
         if (router) {
           // Redirect based on role
-          const route = data.role === 'ADMIN' ? 'admin-dashboard' : 'home'
+          console.log(data.user.role)
+          const route = data.user.role == 'ADMIN' ? 'admin-dashboard' : 'home'
+          console.log(route)
           await router.push({ name: route })
         }
       } catch (error) {

@@ -1,4 +1,5 @@
 import { defineStore } from 'pinia';
+import { useAuthStore, getCSRFToken } from './auth.js';
 import axios from 'axios'; 
 
 export const useSettingsStore = defineStore('settings', {
@@ -21,15 +22,17 @@ export const useSettingsStore = defineStore('settings', {
         const token = localStorage.getItem('token');
         const response = await axios.get('http://127.0.0.1:8000/dashboard/admin/setting/', {
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Token ${token}`,
-          }
+            'X-CSRFToken': getCSRFToken()
+          },
         });
         if (response.data) {
-          if (response.data.max_booking_duration !== undefined && response.data.max_booking_duration !== null) {
-            this.maxBookingDuration = parseInt(response.data.max_booking_duration, 10);
+          if (response.data.data[0].max_booking_duration !== undefined && response.data.data[0].max_booking_duration !== null) {
+            this.maxBookingDuration = parseInt(response.data.data[0].max_booking_duration, 10);
           }
-          if (response.data.reset_time !== undefined && response.data.reset_time !== null) {
-            this.resetHour = response.data.reset_time.substring(0, 5); // "HH:mm"
+          if (response.data.data[0].reset_time !== undefined && response.data.data[0].reset_time !== null) {
+            this.resetHour = response.data.data[0].reset_time.substring(0, 5); // "HH:mm"
           }
         }
                 console.log('Settings fetched:', { maxBookingDuration: this.maxBookingDuration, resetHour: this.resetHour });
@@ -50,9 +53,10 @@ export const useSettingsStore = defineStore('settings', {
         await axios.put('http://127.0.0.1:8000/dashboard/admin/setting-update/', 
           payload, {
           headers: {
+            'Content-Type': 'application/json',
             'Authorization': `Token ${token}`,
-            'Content-Type': 'application/json'
-          }
+            'X-CSRFToken': getCSRFToken()
+          },
         });
 
         if (payload.max_booking_duration !== undefined) {

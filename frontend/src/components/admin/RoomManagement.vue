@@ -2,18 +2,17 @@
   <div class="room-management">
     <div class="action-bar">
       <el-button type="primary" @click="showAddRoomForm">
-        <i class="el-icon-plus"></i> Add Room
+        <i class="bi-plus"></i> Add Classroom
       </el-button>
       <el-input
         v-model="searchQuery"
         placeholder="Search room..."
         clearable
-        style="width: 300px; margin-left: 10px;"
-      />
+        style="width: 300px; margin-left: 10px;" />
     </div>
 
     <!-- Add Room Popup Form Dialog -->
-    <div v-if="addRoomDialogVisible" class="custom-modal-overlay" @click.self="addRoomDialogVisible = false">
+    <div v-if="addRoomDialogVisible" class="custom-modal-overlay addRoom" @click.self="addRoomDialogVisible = false">
       <div class="custom-modal">
         <div class="modal-header">
           <h3>Add New Room</h3>
@@ -24,22 +23,13 @@
             :model="newRoom"
             :rules="roomRules"
             ref="roomForm"
-            label-position="top"
-          >
-            <!-- <el-form-item label="Room Name" prop="name">
-              <el-input
-                v-model="newRoom.name"
-                placeholder="e.g., Conference Room A"
-                clearable
-              />
-            </el-form-item> -->
+            label-position="top">
 
             <el-form-item label="Location" prop="location">
               <el-input
                 v-model="newRoom.location"
                 placeholder="e.g., Building 2, Floor 3"
-                clearable
-              />
+                clearable />
             </el-form-item>
             
             <el-form-item label="Capacity" prop="capacity">
@@ -48,36 +38,29 @@
                 :min="1"
                 :max="1000"
                 controls-position="right"
-                style="width: 100%"
-              />
+                style="width: 100%" />
             </el-form-item>
           </el-form>
         </div>
 
         <div class="modal-footer">
           <el-button @click="addRoomDialogVisible = false">Cancel</el-button>
-          <el-button 
-            type="primary" 
-            @click="submitRoomForm"
-            :loading="isSubmitting"
-          >
+          <el-button type="primary" @click="submitRoomForm" :loading="isSubmitting">
             Create Room
           </el-button>
         </div>
       </div>
     </div>
+    <br/>
 
     <el-table :data="displayedRooms" border>
       <!-- Name -->
-      <el-table-column prop="name" label="Classroom Name" width="120" sortable />
-
+      <el-table-column prop="name" label="Classroom" sortable />
       <!-- Location -->
       <el-table-column prop="location" label="Location" sortable />
-
-      <el-table-column prop="number_of_seat" label="Number of Seat" />
-
+      <el-table-column prop="number_of_seat" label="Number of Seat" width="150"/>
       <!-- Availability -->
-      <el-table-column label="Available" width="90">
+      <el-table-column label="Available" width="100">
         <template #default="{ row }">
           <el-tag :type="row.is_available.value ? 'success' : 'warning'">
             {{ row.is_available.display }}
@@ -96,45 +79,31 @@
 
       <!-- Updated At -->
       <el-table-column prop="updated_at" label="Last Updated" width="180" />
-      
 
       <!-- Actions -->
       <el-table-column label="Actions" width="180">
-          <template #default="{ row }">
-            <el-button-group>
-                <!-- <el-button
-                size="mini"
-                @click="showDialog('edit', row)"
-              >
-                Edit
-                <i class="el-icon-edit" style="margin-left:4px;"></i>
-              </el-button> -->
-              <el-button
-                type="warning"
-                size="mini"
-                @click="toggleEnable(row)"
-              >
-                Enable
-              </el-button>
-              <el-button
-                type="danger"
-                size="mini"
-                @click="toggleDisable (row)"
-                >
-                Disable
-              </el-button>
-            </el-button-group>
-          </template>
-        </el-table-column>
-        <el-table-column label="QR Code" width="140">
         <template #default="{ row }">
-          <el-button
-            size="mini"
-            @click="generateQR(row)"
-            class="open-btn"
-          >
-            Generate QR
-          </el-button>
+          <el-button-group>
+              <!-- <el-button
+              size="mini"
+              @click="showDialog('edit', row)"
+            >
+              Edit
+              <i class="el-icon-edit" style="margin-left:4px;"></i>
+            </el-button> -->
+            <el-button
+              type="warning"
+              size="mini"
+              @click="toggleEnable(row)">
+              Enable
+            </el-button>
+            <el-button
+              type="danger"
+              size="mini"
+              @click="toggleDisable (row)">
+              Disable
+            </el-button>
+          </el-button-group>
         </template>
       </el-table-column>
     </el-table>
@@ -509,5 +478,8 @@ export default {
 .modal-content svg {
   width: var(--qr-size);
   height: var(--qr-size);
+}
+.addRoom {
+  width:50%;
 }
 </style>

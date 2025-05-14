@@ -19,8 +19,7 @@
             :max="24"
             placeholder="Hours"
             @change="handleMaxBookingDurationUpdate"
-            :disabled="isUpdating"
-          />
+            :disabled="isUpdating" />
         </el-form-item>
 
         <el-form-item label="Reset Reservation Hour">
@@ -31,8 +30,7 @@
             format="HH:mm"
             value-format="HH:mm"
             @change="handleResetTimeUpdate"
-            :disabled="isUpdating"
-          />
+            :disabled="isUpdating" />
         </el-form-item>
       </el-form>
     </el-card>

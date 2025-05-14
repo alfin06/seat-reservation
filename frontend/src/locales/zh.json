@@ -68,6 +68,11 @@
     "completed": "完全的",
     "cancelled": "取消",
     "cancel": "取消",
-    "upcoming": "即将预订"
+    "upcoming": "即将预订",
+    "adminStats": "统计数据",
+    "manageRoom": "管理教室",
+    "manageSeat": "管理席位",
+    "settings": "常规设置",
+    "userManagement": "用户管理"
   }
   

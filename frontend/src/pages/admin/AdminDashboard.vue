@@ -1,76 +1,91 @@
 <template>
-  <div class="admin-dashboard">
-    <!-- Header with Back Button -->
-    <div class="admin-header">
-      <el-button 
-        type="primary" 
-        icon="el-icon-back" 
-        @click="goToHome"
-        class="back-button"
-      >
-        Back to Home
-      </el-button>
+  <div class="container-fluid">
+    <div class="row flex-nowrap">
+      <main class="col py-4">
+
+        <!-- Welcome Section -->
+        <section class="card shadow-sm mb-4 p-4">
+          <h2 class="h5 fw-semibold text-dark">
+            {{ $t('welcome') }}, {{ authStore.user?.name || authStore.user?.username }}!
+            <span class="badge bg-primary-subtle text-dark ms-2 text-uppercase">
+              {{ authStore.user?.role || 'ADMIN' }}
+            </span>
+          </h2>
+          <p class="small text-muted">
+            {{ $t('lastLogin') }}: {{ new Date(authStore.user?.last_login).toLocaleString() }}
+          </p>
+        </section>
+
+        <!-- Dashboard Content Section -->
+        <section class="card shadow-sm mb-4 p-4">
+          <h2 class="h5 fw-semibold mb-4">{{ $t('adminStats') }}</h2>
+
+          <div class="row text-center mb-4">
+            <div class="col-6 col-md-3" v-for="(stat, label) in stats" :key="label">
+              <div class="p-3 bg-light rounded">
+                <div class="fs-4 fw-bold">{{ stat }}</div>
+                <div class="small text-muted text-capitalize"><strong>{{ label }}</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Add more admin controls/sections below as needed -->
+          <!-- Urgent Alert -->
+          <!-- <el-alert 
+            type="warning" 
+            title="Immediate Action Needed" 
+            show-icon
+            class="mb-4"
+          >
+            <span>3 seats need cleaning in Room B</span>
+            <el-button type="warning" size="mini" class="ml-2">
+              Mark as Cleaned
+            </el-button>
+          </el-alert> -->
+
+          <!-- Stats Cards -->
+          <el-row :gutter="20" class="mb-6">
+            <el-col :span="8">
+              <el-card class="stat-card" shadow="hover">
+                <h3>{{ dashboardStats.total_classrooms }}</h3>
+                <p>Total Rooms</p>
+                <el-tag type="success">{{ dashboardStats.available_classroom_count }} Available</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :span="8">
+              <el-card class="stat-card" shadow="hover">
+                <h3>{{ dashboardStats.available_seats_count }}</h3>
+                <p>Available Seats</p>
+                <el-tag type="warning">{{ dashboardStats.empty_seats_count }} Reserved</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :span="8">
+              <el-card class="stat-card" shadow="hover">
+                <h3>{{ dashboardStats.available_classroom_count }}</h3>
+                <p>Available Rooms</p>
+                <el-tag type="warning">{{ dashboardStats.empty_classroom_count }} Reserved</el-tag>
+              </el-card>
+            </el-col>
+          </el-row>
+
+          <!-- Admin Tabs -->
+          <!-- <el-tabs v-model="activeTab">
+            <el-tab-pane label="Rooms" name="rooms">
+              <room-management @room-status-changed="handleRoomStatusUpdate" />
+            </el-tab-pane>
+            <el-tab-pane label="Seats" name="seats">
+              <seat-management ref="seatManagement" @seat-status-changed="handleSeatStatusUpdate" />
+            </el-tab-pane>
+            <el-tab-pane label="Users" name="users">
+              <user-management />
+            </el-tab-pane>
+            <el-tab-pane label="Settings" name="settings">
+              <system-settings />
+            </el-tab-pane>
+          </el-tabs> -->
+        </section>
+      </main>
     </div>
-
-    <!-- Urgent Alert -->
-    <el-alert 
-      type="warning" 
-      title="Immediate Action Needed" 
-      show-icon
-      style="margin-bottom: 20px;"
-    >
-      <span>3 seats need cleaning in Room B</span>
-      <el-button type="warning" size="mini" style="margin-left: 10px;">
-        Mark as Cleaned
-      </el-button>
-    </el-alert>
-
-    <!-- Stats Cards -->
-    <el-row :gutter="20" class="stats-row">
-      <el-col :span="8">
-        <el-card class="stat-card" shadow="hover">
-          <div class="stat-content">
-            <h3>{{ dashboardStats.total_classrooms }}</h3>
-            <p>Total Rooms</p>
-            <el-tag type="success" effect="dark">{{ dashboardStats.available_classroom_count }} Available</el-tag>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card class="stat-card" shadow="hover">
-          <div class="stat-content">
-            <h3>{{ dashboardStats.available_seats_count }}</h3>
-            <p>Available Seats</p>
-            <el-tag type="warning" effect="dark">{{ dashboardStats.empty_seats_count }} Reserved</el-tag>
-          </div>
-        </el-card>
-      </el-col>
-      <el-col :span="8">
-        <el-card class="stat-card" shadow="hover">
-          <div class="stat-content">
-            <h3>{{ dashboardStats.available_classroom_count }}</h3>
-            <p>Available Rooms</p>
-            <el-tag type="warning" effect="dark">{{ dashboardStats.empty_classroom_count }} Reserved</el-tag>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <!-- Main Tabs -->
-    <el-tabs v-model="activeTab">
-      <el-tab-pane label="Rooms" name="rooms">
-        <room-management @room-status-changed="handleRoomStatusUpdate" />
-      </el-tab-pane>
-      <el-tab-pane label="Seats" name="seats">
-        <seat-management ref="seatManagement" @seat-status-changed="handleSeatStatusUpdate" />
-      </el-tab-pane>
-      <el-tab-pane label="Users" name="users">
-        <user-management />
-      </el-tab-pane>
-      <el-tab-pane label="Settings" name="settings">
-        <system-settings />
-      </el-tab-pane>
-    </el-tabs>
   </div>
 </template>
 
@@ -80,13 +95,59 @@ import UserManagement from '../../components/admin/UserManagement.vue'
 import SystemSettings from '../../components/admin/SystemSettings.vue'
 import SeatManagement from '@/components/admin/SeatManagement.vue'
 import axios from 'axios'
+import { useAuthStore } from '../../store/auth.js'
+import { onMounted, ref } from 'vue'
 
 export default {
+  name: "AdminDashboard",
   components: {
     RoomManagement,
     UserManagement,
     SystemSettings,
     SeatManagement
+  },
+  setup() {
+    const authStore = useAuthStore();
+    const stats = ref({
+      users: 0,
+      classrooms: 0,
+      reservations: 0,
+      checkInsToday: 0,
+    });
+
+    const fetchAdminStats = async () => {
+      const token = localStorage.getItem('token');
+      try {
+        const res = await fetch('http://localhost:8000/dashboard/api/admin/stats/', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Token ${token}`,
+          },
+        });
+        if (!res.ok) throw new Error("Failed to fetch admin stats");
+
+        const data = await res.json();
+        stats.value = {
+          users: data.total_users,
+          classrooms: data.total_classrooms,
+          reservations: data.total_reservations,
+          checkInsToday: data.check_ins_today,
+        };
+      } catch (err) {
+        console.error("Error fetching admin stats:", err);
+      }
+    };
+
+    onMounted(async () => {
+      await authStore.fetchUser();
+      await fetchAdminStats();
+    });
+
+    return {
+      authStore,
+      stats,
+    };
   },
   data() {
     return {
@@ -101,12 +162,12 @@ export default {
         total_seats: 0,
         number_of_user: 0
       }
-    }
+    };
   },
   methods: {
     changeLanguage(lang) {
-      this.currentLanguage = lang
-      this.$message.success(`Language changed to ${lang === 'en' ? 'English' : 'Chinese'}`)
+      this.currentLanguage = lang;
+      this.$message.success(`Language changed to ${lang === 'en' ? 'English' : 'Chinese'}`);
     },
 
     goToHome() {
@@ -119,15 +180,13 @@ export default {
         seatManagementComponent.fetchSeats();
         this.$message.info('Seat list refreshed due to room status change.');
       }
-      // Refresh dashboard stats when room status changes
       this.fetchDashboardStats();
     },
-    
+
     handleSeatStatusUpdate() {
-      // Refresh dashboard stats when seat status changes
       this.fetchDashboardStats();
     },
-    
+
     async fetchDashboardStats() {
       try {
         const token = localStorage.getItem('token');
@@ -150,47 +209,49 @@ export default {
   mounted() {
     this.fetchDashboardStats();
   }
-}
+};
 </script>
 
 <style scoped>
-.admin-dashboard {
+.page-container {
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto;
 }
-.admin-header {
-  display: flex;
-  justify-content: flex-start;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.back-button {
-  margin-right: 20px;
-}
-.language-toggle {
-  cursor: pointer;
-  color: #666;
-  font-size: 14px;
-}
-.language-toggle:hover {
-  color: #409EFF;
-}
-.stats-row {
-  margin-bottom: 20px;
-}
+
 .stat-card {
   text-align: center;
-  padding: 15px 0;
-  border-top: 3px solid #409EFF;
+  padding: 20px;
+  border-top: 4px solid #409EFF;
 }
 .stat-card h3 {
-  font-size: 32px;
+  font-size: 30px;
   margin: 0;
   color: #409EFF;
 }
 .stat-card p {
-  margin: 5px 0;
-  font-weight: bold;
+  font-weight: 600;
+  margin: 5px 0 10px;
 }
+
+.mb-4 {
+  margin-bottom: 20px;
+}
+.mb-6 {
+  margin-bottom: 30px;
+}
+.ml-2 {
+  margin-left: 10px;
+}
+.d-flex {
+  display: flex;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.items-center {
+  align-items: center;
+}
+
+
 </style>

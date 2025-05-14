@@ -69,5 +69,10 @@
   "completed": "Completed",
   "cancelled": "Cancelled",
   "cancel": "Cancel",
-  "upcoming": "Upcoming Reservation"
+  "upcoming": "Upcoming Reservation",
+  "adminStats": "Statistics",
+  "manageRoom": "Manage Classrooms",
+  "manageSeat": "Manage Seats",
+  "settings": "General Settings",
+  "userManagement": "User Management"
 }

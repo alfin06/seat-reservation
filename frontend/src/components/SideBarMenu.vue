@@ -26,10 +26,18 @@ watch(() => route.path, (newVal) => {
 
 onMounted(() => {
   sidebarStore.init();
+
+  // Restore last route
   const savedRoute = localStorage.getItem('lastActiveRoute');
   if (savedRoute && savedRoute !== route.path) {
     router.replace(savedRoute);
   }
+
+  // Enable Bootstrap tooltips
+  const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
+  tooltipTriggerList.forEach(el => {
+    new bootstrap.Tooltip(el);
+  });
 });
 
 const go = (path) => {
@@ -70,13 +78,21 @@ const logout = async () => {
         <li
           v-for="btn in buttons"
           :key="btn.route"
+          :title="sidebarStore.isCollapsed ? btn.label : null"
+          data-bs-toggle="tooltip"
+          data-bs-placement="right"
           :class="['nav-item', 'sidebar-item', 'mb-2', { active: activeRoute === btn.route }]"
           @click="go(btn.route)">
           <i :class="['bi', btn.icon, 'me-3', 'fs-4']"></i>
           <span v-if="!sidebarStore.isCollapsed">{{ btn.label }}</span>
         </li>
         <div class="mt-auto">
-          <li class="nav-item sidebar-item mb-2" @click="logout">
+          <li
+            class="nav-item sidebar-item mb-2"
+            title="Logout"
+            data-bs-toggle="tooltip"
+            data-bs-placement="right"
+            @click="logout">
             <i class="bi bi-box-arrow-right me-3 fs-4"></i>
             <span v-if="!sidebarStore.isCollapsed">Logout</span>
           </li>
@@ -98,13 +114,15 @@ const logout = async () => {
     </div>
     <div class="offcanvas-body">
       <ul class="nav flex-column">
-        <li
-          v-for="btn in buttons"
-          :key="btn.route"
-          class="nav-item sidebar-item mb-2"
-          @click="go(btn.route)">
-          <i :class="['bi', btn.icon, 'me-3', 'fs-5']"></i>
-          {{ btn.label }}
+        <li v-for="(btn, index) in buttons" :key="index">
+          <hr v-if="btn.type === 'divider'" class="my-2" />
+          <div
+            v-else
+            class="nav-item sidebar-item mb-2"
+            @click="go(btn.route)">
+            <i :class="['bi', btn.icon, 'me-3', 'fs-5']"></i>
+            {{ btn.label }}
+          </div>
         </li>
         <li class="nav-item sidebar-item mb-2" @click="logout">
           <i class="bi bi-box-arrow-right me-3 fs-4"></i>
