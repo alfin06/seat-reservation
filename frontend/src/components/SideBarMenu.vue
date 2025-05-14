@@ -75,16 +75,15 @@ const logout = async () => {
       </div>
 
       <ul class="nav flex-column">
-        <li
-          v-for="btn in buttons"
-          :key="btn.route"
-          :title="sidebarStore.isCollapsed ? btn.label : null"
-          data-bs-toggle="tooltip"
-          data-bs-placement="right"
-          :class="['nav-item', 'sidebar-item', 'mb-2', { active: activeRoute === btn.route }]"
-          @click="go(btn.route)">
-          <i :class="['bi', btn.icon, 'me-3', 'fs-4']"></i>
-          <span v-if="!sidebarStore.isCollapsed">{{ btn.label }}</span>
+        <li v-for="(btn, index) in buttons" :key="index">
+          <hr v-if="btn.type === 'divider'" class="my-2" />
+          <div
+            v-else
+            :class="['nav-item', 'sidebar-item', 'mb-2', { active: activeRoute === btn.route }]"
+            @click="go(btn.route)">
+            <i :class="['bi', btn.icon, 'me-3', 'fs-4']"></i>
+            <span v-if="!sidebarStore.isCollapsed">{{ btn.label }}</span>
+          </div>
         </li>
         <div class="mt-auto">
           <li
