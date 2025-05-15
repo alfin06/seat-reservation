@@ -15,7 +15,7 @@
     <div v-if="addRoomDialogVisible" class="custom-modal-overlay addRoom" @click.self="addRoomDialogVisible = false">
       <div class="custom-modal">
         <div class="modal-header">
-          <h3>Add New Room</h3>
+          <h3>{{ dialogMode === 'edit' ? 'Edit Room' : 'Add New Room' }}</h3>
         </div>
         
         <div class="modal-body">
@@ -24,6 +24,13 @@
             :rules="roomRules"
             ref="roomForm"
             label-position="top">
+
+            <el-form-item label="Classroom Name" prop="classroom">
+              <el-input
+                v-model="newRoom.name"
+                placeholder="e.g., Room 123"
+                clearable />
+            </el-form-item>
 
             <el-form-item label="Location" prop="location">
               <el-input
@@ -44,12 +51,13 @@
         </div>
 
         <div class="modal-footer">
-          <el-button @click="addRoomDialogVisible = false">Cancel</el-button>
+          <el-button @click="handleCancel">Cancel</el-button>
           <el-button type="primary" @click="submitRoomForm" :loading="isSubmitting">
-            Create Room
+            Submit
           </el-button>
         </div>
       </div>
+      <hr/>
     </div>
     <br/>
 
@@ -81,27 +89,26 @@
       <el-table-column prop="updated_at" label="Last Updated" width="180" />
 
       <!-- Actions -->
-      <el-table-column label="Actions" width="180">
+      <el-table-column label="Actions" width="320">
         <template #default="{ row }">
           <el-button-group>
-              <!-- <el-button
+            <el-button
+              type="primary"
               size="mini"
-              @click="showDialog('edit', row)"
-            >
-              Edit
-              <i class="el-icon-edit" style="margin-left:4px;"></i>
-            </el-button> -->
+              @click="editRoom(row)">
+              <i class="bi bi-pencil"></i>&nbsp;Edit
+            </el-button>
             <el-button
               type="warning"
               size="mini"
               @click="toggleEnable(row)">
-              Enable
+              <i class="bi bi-eye"></i>&nbsp;Enable
             </el-button>
             <el-button
               type="danger"
               size="mini"
-              @click="toggleDisable (row)">
-              Disable
+              @click="toggleDisable(row)">
+              <i class="bi bi-x"></i>&nbsp;Disable
             </el-button>
           </el-button-group>
         </template>
@@ -145,10 +152,14 @@ export default {
   data() {
     return {
       newRoom: {
+        name: '',
         location: '',
         capacity: null,
       },
       roomRules: {
+        name: [
+          { required: true, message: 'Please enter room name', trigger: 'blur' }
+        ],
         location: [
           { required: true, message: 'Please enter room location', trigger: 'blur' }
         ],
@@ -189,46 +200,78 @@ export default {
   },
   methods: {
     showAddRoomForm() {
-      this.addRoomDialogVisible = true
+      //this.addRoomDialogVisible = true
+      this.dialogMode = 'add'; // Always start fresh
+      this.resetRoomForm();    // Clear any old data
+      this.addRoomDialogVisible = true;
     },
 
     resetRoomForm() {
       this.newRoom = {
+        name: '',
         location: '',
         capacity: null,
       }
       this.$refs.roomForm?.resetFields()
     },
 
+    editRoom(room) {
+      this.dialogMode = 'edit';
+      this.currentRoom = { ...room }; // Clone the object
+      this.newRoom = {
+        name: room.name,
+        location: room.location,
+        capacity: room.number_of_seat
+      };
+      this.addRoomDialogVisible = true;
+    },
+
+    handleCancel() {
+      this.addRoomDialogVisible = false;
+      this.dialogMode = 'add'; // Reset to default mode
+      this.resetRoomForm();    // Clear form data
+    },
+
     async submitRoomForm() {
       try {
-        // 1. Validate the form
         await this.$refs.roomForm.validate();
         const token = localStorage.getItem('token');
-
         this.isSubmitting = true;
 
-        // 2. Build the flat JSON payload
         const payload = {
+          name: this.newRoom.name,
           location: this.newRoom.location,
           number_of_seats: Number(this.newRoom.capacity)
         };
-        console.log('Sending payload:', payload);
 
-        // 3. Post it to your insert endpoint
-        const response = await axios.post(
-          'http://127.0.0.1:8000/dashboard/admin/classroom/insert/',
-          payload,
-          { headers: { 
-            'Authorization': `Token ${token}`,
-            'Content-Type': 'application/json' 
-            } 
-          }
-        );
+        let response;
+        if (this.dialogMode === 'edit') {
+          payload.id = this.currentRoom.id;
+          response = await axios.put(
+            'http://127.0.0.1:8000/dashboard/admin/classroom/update/',
+            payload,
+            {
+              headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+        } else {
+          response = await axios.post(
+            'http://127.0.0.1:8000/dashboard/admin/classroom/insert/',
+            payload,
+            {
+              headers: {
+                'Authorization': `Token ${token}`,
+                'Content-Type': 'application/json'
+              }
+            }
+          );
+        }
 
-        // 4. Handle a 201 Created response
-        if (response.status === 201) {
-          this.$message.success('Room created successfully!');
+        if ([200, 201].includes(response.status)) {
+          this.$message.success(`Room ${this.dialogMode === 'edit' ? 'updated' : 'created'} successfully!`);
           this.addRoomDialogVisible = false;
           await this.fetchRooms();
           this.$emit('room-status-changed');
@@ -236,23 +279,17 @@ export default {
         } else {
           this.$message.error(response.data.message || 'Unexpected response');
         }
-
       } catch (err) {
         if (err.name === 'ValidationError') return;
-
-        let msg = 'Failed to create room';
+        let msg = this.dialogMode === 'edit' ? 'Failed to update room' : 'Failed to create room';
         if (err.response) {
-          msg = err.response.data.message
-            || err.response.data.error
-            || `Server error: ${err.response.status}`;
+          msg = err.response.data.message || err.response.data.error || `Server error: ${err.response.status}`;
         }
         this.$message.error(msg);
-
       } finally {
         this.isSubmitting = false;
       }
     },
-
 
     handlePageChange(newPage) {
         this.currentPage = newPage

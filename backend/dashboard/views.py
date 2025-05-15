@@ -615,3 +615,26 @@ class CancelReservationView(APIView):
 
         except Reservation.DoesNotExist:
             return Response({"error": "Reservation not found."}, status=status.HTTP_404_NOT_FOUND)
+        
+class UpdateClassroomView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        try:
+            classroom_id = request.data.get('id')
+            if not classroom_id:
+                return Response({'message': 'Missing classroom ID'}, status=status.HTTP_400_BAD_REQUEST)
+
+            classroom = ClassRoom.objects.filter(id=classroom_id).first()
+            if not classroom:
+                return Response({'message': 'Classroom not found'}, status=status.HTTP_404_NOT_FOUND)
+
+            serializer = ClassRoomSerializer(classroom, data=request.data, partial=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response({'message': 'Classroom updated successfully'}, status=status.HTTP_200_OK)
+            else:
+                return Response({'message': 'Validation failed', 'errors': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
+
+        except Exception as e:
+            return Response({'message': f'Server error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

@@ -20,14 +20,14 @@
         <section class="card shadow-sm mb-4 p-4">
           <h2 class="h5 fw-semibold mb-4">{{ $t('adminStats') }}</h2>
 
-          <div class="row text-center mb-4">
+          <!-- <div class="row text-center mb-4">
             <div class="col-6 col-md-3" v-for="(stat, label) in stats" :key="label">
               <div class="p-3 bg-light rounded">
                 <div class="fs-4 fw-bold">{{ stat }}</div>
                 <div class="small text-muted text-capitalize"><strong>{{ label }}</strong></div>
               </div>
             </div>
-          </div>
+          </div> -->
 
           <!-- Add more admin controls/sections below as needed -->
           <!-- Urgent Alert -->
@@ -67,22 +67,6 @@
               </el-card>
             </el-col>
           </el-row>
-
-          <!-- Admin Tabs -->
-          <!-- <el-tabs v-model="activeTab">
-            <el-tab-pane label="Rooms" name="rooms">
-              <room-management @room-status-changed="handleRoomStatusUpdate" />
-            </el-tab-pane>
-            <el-tab-pane label="Seats" name="seats">
-              <seat-management ref="seatManagement" @seat-status-changed="handleSeatStatusUpdate" />
-            </el-tab-pane>
-            <el-tab-pane label="Users" name="users">
-              <user-management />
-            </el-tab-pane>
-            <el-tab-pane label="Settings" name="settings">
-              <system-settings />
-            </el-tab-pane>
-          </el-tabs> -->
         </section>
       </main>
     </div>
