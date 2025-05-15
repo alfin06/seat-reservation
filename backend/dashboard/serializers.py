@@ -50,6 +50,13 @@ class ReservationResetSettingSerializer(serializers.ModelSerializer):
             'reset_time': {'required': False},
         }
     
+    def update(self, instance, validated_data):
+        # Only update fields that are provided in the request
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+    
     def validate(self, attrs):
         if not attrs:
             raise serializers.ValidationError(

@@ -1,20 +1,16 @@
 <template>
-  <div class="system-settings">
+  <div class="">
     <el-card shadow="never">
-      <template #header> <div class="card-header">
-          <span>System Controls</span>
-        </div>
-      </template>
-
-      <div v-if="isLoadingInitial" class="loading-state">Loading settings...</div>
+      <div v-if="isLoadingInitial" class="loading-state">
+        <span>Please wait...</span>
+      </div>
       <div v-else-if="initialError" class="error-state">
         Error loading settings: {{ initialError }}. Displaying default values.
       </div>
 
       <el-form v-else label-width="200px" @submit.prevent>
         <el-form-item label="Max Booking Hours">
-          <el-input-number
-            v-model="editableMaxBookingDuration"
+          <el-input-number v-model="editableMaxBookingDuration"
             :min="1"
             :max="24"
             placeholder="Hours"
@@ -100,15 +96,28 @@ export default {
         updateSettingInStore: 'updateSetting'
     }),
 
+    getTimestampFromTime(timeStr) {
+      const match = timeStr.match(/(\d{2})(\d{2})/)
+      if (match) {
+        const hours = match[1];
+        const minutes = match[2];
+        timeStr = `${hours}:${minutes}` + ':00';
+      }
+
+      return timeStr; // e.g. "2025-05-14T20:25:00"
+    },
+
     async handleMaxBookingDurationUpdate(currentValue) {
       if (currentValue === null || currentValue === undefined) {
         this.$message.warning('Max booking hours cannot be empty. Reverting.');
         this.editableMaxBookingDuration = this.maxBookingDuration; // Revert to store's value
         return;
       }
+
+      const resetTimestamp = this.getTimestampFromTime(this.editableResetHour);
       
       this.isUpdating = true;
-      const result = await this.updateSettingInStore({ max_booking_duration: currentValue });
+      const result = await this.updateSettingInStore({ max_booking_duration: currentValue, reset_time: resetTimestamp });
       this.isUpdating = false;
 
       if (result.success) {
@@ -126,8 +135,10 @@ export default {
         return;
       }
 
+      const resetTimestamp = this.getTimestampFromTime(currentValue);
+
       this.isUpdating = true;
-      const result = await this.updateSettingInStore({ reset_time: currentValue });
+      const result = await this.updateSettingInStore({ max_booking_duration: this.editableMaxBookingDuration, reset_time: resetTimestamp });
       this.isUpdating = false;
 
       if (result.success) {

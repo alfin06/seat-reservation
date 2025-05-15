@@ -50,21 +50,27 @@ export const useSettingsStore = defineStore('settings', {
         return { success: false, message: 'Not authenticated for updating settings.' };
       }
       try {
+
+        console.log(payload);
+
         await axios.put('http://127.0.0.1:8000/dashboard/admin/setting-update/', 
           payload, {
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${token}`,
-            'X-CSRFToken': getCSRFToken()
-          },
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Token ${token}`,
+              'X-CSRFToken': getCSRFToken()
+            },
+            credentials: 'include',
         });
 
         if (payload.max_booking_duration !== undefined) {
           this.maxBookingDuration = parseInt(payload.max_booking_duration, 10);
         }
         if (payload.reset_time !== undefined) {
-          this.openingHour = payload.reset_time;
+          // Store back as just "HH:mm" for UI
+          this.resetHour = payload.reset_time; // "HH:mm"
         }
+
         return { success: true, message: 'Setting updated successfully.' };
       } catch (error) {
         console.error('Failed to update setting:', error.response?.data || error.message, 'Payload:', payload);

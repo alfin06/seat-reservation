@@ -347,9 +347,8 @@ class ReservationSettingUpdateView(generics.UpdateAPIView):
     def get_object(self):
         return ReservationSetting.get_solo()
 
-    
     def update(self, request, *args, **kwargs):
-        # Treat PUT just like PATCH → only the provided fields get updated.
+        # Treat PUT like PATCH to allow partial updates
         kwargs['partial'] = True
         return super().update(request, *args, **kwargs)
 
