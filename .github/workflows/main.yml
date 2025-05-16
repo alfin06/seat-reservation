@@ -44,17 +44,14 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Add .env for backend (CI DB config)
-      working-directory: ./backend
-      run: |
-        echo "DB_NAME=seat_reservation" >> .env
-        echo "DB_USER=root" >> .env
-        echo "DB_PASSWORD=root" >> .env
-        echo "DB_HOST=127.0.0.1" >> .env
-        echo "DB_PORT=3306" >> .env
-
     - name: Run backend tests with coverage
       working-directory: ./backend
+      env:
+        DB_NAME: seat_reservation
+        DB_USER: root
+        DB_PASSWORD: root
+        DB_HOST: 127.0.0.1
+        DB_PORT: 3306
       run: |
         python manage.py migrate
         pytest --cov=. --cov-report=term
