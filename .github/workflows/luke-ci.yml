@@ -2,11 +2,9 @@ name: Luke CI - Django Tests with Coverage
 
 on:
   push:
-    branches: [ main, ]
+    branches: [ main ]
   pull_request:
-
-    branches: [ main,]
-
+    branches: [ main ]
 
 jobs:
   backend-test:
@@ -28,22 +26,22 @@ jobs:
 
     steps:
     - name: Checkout code
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
 
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
-        python-version: '3.13'
+        python-version: '3.11'
         cache: 'pip'
 
     - name: Set up Node.js
-      uses: actions/setup-node@v3
+      uses: actions/setup-node@v4
       with:
         node-version: '18'
         cache: 'npm'
 
     - name: Cache pip packages
-      uses: actions/cache@v3
+      uses: actions/cache@v4
       with:
         path: ~/.cache/pip
         key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
@@ -79,19 +77,19 @@ jobs:
         pytest --reuse-db --cov=. --cov-report=term-missing --cov-report=xml --junitxml=test-results.xml -v
 
     - name: Upload coverage report
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: coverage-report
         path: backend/coverage.xml
 
     - name: Upload test results
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results
         path: backend/test-results.xml
 
     - name: Publish Test Results
-      uses: mikepenz/action-junit-report@v3
+      uses: mikepenz/action-junit-report@v4
       with:
         report_paths: 'backend/test-results.xml'
 
