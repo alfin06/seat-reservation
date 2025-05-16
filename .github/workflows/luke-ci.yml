@@ -2,9 +2,9 @@ name: Luke CI - Django Tests with Coverage
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, test, luke-dev ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, test, luke-dev ]
 
 jobs:
   backend-test:
@@ -15,7 +15,7 @@ jobs:
         image: mysql:5.7
         env:
           MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: seat_reservation
+          MYSQL_DATABASE: test_db
         ports:
           - 3306:3306
         options: >-
@@ -31,12 +31,22 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: '3.11'
+        python-version: '3.13'
+        cache: 'pip'
 
     - name: Set up Node.js
       uses: actions/setup-node@v3
       with:
         node-version: '18'
+        cache: 'npm'
+
+    - name: Cache pip packages
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
 
     - name: Install backend dependencies
       working-directory: ./backend
@@ -47,17 +57,41 @@ jobs:
     - name: Add .env for backend (CI DB config)
       working-directory: ./backend
       run: |
-        echo "DB_NAME=seat_reservation" >> .env
+        echo "DB_NAME=test_db" >> .env
         echo "DB_USER=root" >> .env
         echo "DB_PASSWORD=root" >> .env
         echo "DB_HOST=127.0.0.1" >> .env
         echo "DB_PORT=3306" >> .env
+        echo "DJANGO_SETTINGS_MODULE=seat_reservation.settings" >> .env
+        echo "SECRET_KEY=test-key" >> .env
+        echo "DEBUG=True" >> .env
 
     - name: Run backend tests with coverage
       working-directory: ./backend
+      env:
+        DJANGO_SETTINGS_MODULE: seat_reservation.settings
+        SECRET_KEY: test-key
+        DEBUG: "True"
       run: |
         python manage.py migrate
-        pytest --cov=. --cov-report=term
+        pytest --reuse-db --cov=. --cov-report=term-missing --cov-report=xml --junitxml=test-results.xml -v
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: backend/coverage.xml
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: backend/test-results.xml
+
+    - name: Publish Test Results
+      uses: mikepenz/action-junit-report@v3
+      with:
+        report_paths: 'backend/test-results.xml'
 
     - name: Install frontend and build
       working-directory: ./frontend

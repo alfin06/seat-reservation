@@ -6,7 +6,7 @@ from dashboard.models import Seat, ClassRoom
 from users.models import User
 
 @pytest.mark.django_db
-class TestSeatClassroomAPI:
+class TestDashboardAPI:
     def setup_method(self):
         self.client = APIClient()
         # Create admin user
@@ -31,7 +31,7 @@ class TestSeatClassroomAPI:
         self.client.force_authenticate(user=self.admin_user)
 
     def test_rooms_and_seats_availability(self):
-        url = reverse('available-rooms-seats')
+        url = reverse('dashboard-stats')
         response = self.client.get(url)
         assert response.status_code == status.HTTP_200_OK
         assert isinstance(response.data, dict)
@@ -103,4 +103,4 @@ class TestSeatClassroomAPI:
         }
         response = self.client.post(url, data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
-        assert isinstance(response.data, dict)
+        assert isinstance(response.data, dict) 
