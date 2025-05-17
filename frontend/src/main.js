@@ -4,12 +4,13 @@ import './style.css' // Using the default Vite CSS. Replace with your own global
 import App from './App.vue'
 import router from './router'
 import { useAuthStore } from './store/auth'
+import { useSettingsStore } from '@/store/setting.js'
 
 import { createI18n } from 'vue-i18n'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
-import "bootstrap/dist/css/bootstrap.css"
-import "bootstrap/dist/js/bootstrap.js"
+import 'bootstrap/dist/css/bootstrap.min.css';
+import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 // Import locale files
 import en from './locales/en.json'
@@ -33,7 +34,10 @@ app.use(i18n)
 app.use(ElementPlus)
 app.use(Notifications)
 
+app.mount('#app')
+
 const authStore = useAuthStore()
 authStore.setCsrfToken()
 
-app.mount('#app')
+const settingsStore = useSettingsStore()
+await settingsStore.fetchSettings()

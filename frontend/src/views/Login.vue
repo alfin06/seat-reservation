@@ -15,6 +15,7 @@
   </el-card>
 </template>
 
+
 <script>
 export default {
   name: 'Login',
@@ -23,17 +24,38 @@ export default {
       form: {
         email: '',
         password: ''
-      }
+      },
+      error: ''
     }
   },
   methods: {
-    onSubmit() {
-      // Handle login form submission here (e.g., API call)
-      console.log('Login form submitted:', this.form);
+    async onSubmit() {
+      this.error = '';
+      try {
+        // If your backend expects email as username
+        const res = await fetch('http://127.0.0.1:8000/api-token-auth/', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            username: this.form.email,
+            password: this.form.password
+          })
+        });
+        const data = await res.json();
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+          this.$router.push('/reservation'); // Make sure this route matches your router config
+        } else {
+          this.error = data.non_field_errors ? data.non_field_errors[0] : 'Login failed';
+        }
+      } catch (e) {
+        this.error = 'Network error';
+      }
     }
   }
 }
 </script>
+
 
 <style scoped>
 .box-card {
