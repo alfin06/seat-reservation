@@ -156,7 +156,7 @@ class AdminDashboardStatusView(APIView):
             "reservations_last_week": reservations_last_week,
             "available_seats_per_room": room_seat_data,
         }
-        print(data)
+
         return Response(data)
 
 class AdminDashboardRoomsStats(APIView):
