@@ -24,6 +24,8 @@ from django.utils import timezone
 import pytz
 # import qrcode
 # from io import BytesIO
+from collections import OrderedDict
+from django.db.models import Count
 
 class ReservationCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -99,13 +101,49 @@ class AdminDashboardStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+        # Base stats
         total_seats = Seat.objects.count()
         empty_seats_count = Seat.objects.filter(is_available=False).count()
         available_seats_count = total_seats - empty_seats_count
+
         total_classrooms = ClassRoom.objects.count()
         empty_classroom_count = ClassRoom.objects.filter(is_available=False).count()
         available_classroom_count = total_classrooms - empty_classroom_count
+
         number_of_user = User.objects.count()
+
+        # 1. Reservations in the past 7 days
+        today = timezone.now().date()
+        seven_days_ago = today - timedelta(days=6)
+
+        reservations = (
+            Reservation.objects
+            .filter(reserved_at__date__range=(seven_days_ago, today))
+            .extra(select={'day': "DATE(reserved_at)"})
+            .values('day')
+            .annotate(count=Count('id'))
+        )
+
+        reservations_last_week = OrderedDict()
+        for i in range(7):
+            day = seven_days_ago + timedelta(days=i)
+            reservations_last_week[day.strftime("%a")] = 0
+
+        for entry in reservations:
+            day_str = timezone.datetime.strptime(str(entry['day']), '%Y-%m-%d').strftime("%a")
+            reservations_last_week[day_str] = entry['count']
+
+        # 2. Available seats per room
+        available_seats_per_room = (
+            Seat.objects
+            .filter(is_available=1)  # 1 means available in your RESERVE_STATE
+            .values('classroom__name')
+            .annotate(available=Count('id'))
+        )
+
+        room_seat_data = {}
+        for room in available_seats_per_room:
+            room_seat_data[room['classroom__name']] = room['available']
 
         data = {
             "total_seats": total_seats,
@@ -115,6 +153,8 @@ class AdminDashboardStatusView(APIView):
             "empty_classroom_count": empty_classroom_count,
             "available_classroom_count": available_classroom_count,
             "number_of_user": number_of_user,
+            "reservations_last_week": reservations_last_week,
+            "available_seats_per_room": room_seat_data,
         }
 
         return Response(data)
