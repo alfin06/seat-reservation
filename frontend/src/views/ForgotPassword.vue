@@ -4,14 +4,16 @@
       <div class="logo-container">
         <img :src="logo" alt="App Logo" class="logo" />
       </div>
-      <h2 class="title">{{ $t('resetPasswordTitle') }}</h2>
-      <p class="description">{{ $t('forgotInstruction') }}</p>
+      <h2 class="title">Reset Password</h2>
+      <p class="description">
+        Enter the email address you used during registration. We'll send you instructions to reset your password.
+      </p>
 
       <el-form @submit.prevent="resetPassword" class="form">
         <el-input
           v-model="email"
           type="email"
-          :placeholder="$t('enterEmail')"
+          placeholder="Enter email"
         />
         <el-button
           type="primary"
@@ -19,34 +21,30 @@
           @click="resetPassword"
           :loading="loading"
         >
-          {{ $t('sendInstructions') }}
+          Send Instructions
         </el-button>
       </el-form>
 
       <div class="links-container">
         <p>
-          {{ $t('rememberPassword') }}
-          <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link>
+          Remember your password?
+          <el-link type="primary" @click="onLogin">Login</el-link>
         </p>
       </div>
     </div>
 
-    <div class="lang-switch-container">
-      <div class="lang-content">
-        <button
-          @click="changeLanguage('en')"
-          :class="{ active: currentLanguage === 'en' }"
-        >
-          English
-        </button>
-        <span class="divider">|</span>
-        <button
-          @click="changeLanguage('zh')"
-          :class="{ active: currentLanguage === 'zh' }"
-        >
-          中文
-        </button>
-      </div>
+    <div class="lang-switcher">
+      <a
+        href="#"
+        :class="{ active: currentLanguage === 'en' }"
+        @click.prevent="changeLanguage('en')"
+      >English</a>
+      <span>|</span>
+      <a
+        href="#"
+        :class="{ active: currentLanguage === 'zh' }"
+        @click.prevent="changeLanguage('zh')"
+      >中文</a>
     </div>
   </div>
 </template>
@@ -56,6 +54,7 @@ import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useAuthStore } from '@/store/auth'
 import logo from '@/assets/app_logo.png'
+import { ElNotification } from 'element-plus'
 
 const email = ref('')
 const loading = ref(false)
@@ -104,21 +103,22 @@ const onLogin = () => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding-top: 4vh;
+  justify-content: center;
+  padding: 20px;
 }
 
 .box-card {
   background: #fff;
   border-radius: 16px;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  padding: 2rem;
+  padding: 40px;
   width: 100%;
   max-width: 420px;
   text-align: center;
 }
 
 .logo-container {
-  margin-bottom: 1rem;
+  margin-bottom: 24px;
 }
 
 .logo {
@@ -126,68 +126,56 @@ const onLogin = () => {
 }
 
 .title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: bold;
-  margin-bottom: 0.75rem;
+  margin-bottom: 12px;
+  color: #303133;
 }
 
 .description {
   color: #606266;
-  margin-bottom: 1.5rem;
+  margin-bottom: 24px;
+  font-size: 0.95rem;
 }
 
 .form {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 16px;
 }
 
 .submit-btn {
   width: 100%;
+  height: 44px;
+  font-weight: 600;
 }
 
 .links-container {
-  margin-top: 1.5rem;
-}
-
-/* Updated language switcher styles */
-.lang-switch-container {
-  background: #f0f2f5;
-  width: 100%;
-  padding: 1rem 0;
-  margin-top: 2rem;
-  border-top: 1px solid #e4e7ed;
-}
-
-.lang-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.lang-content button {
-  border: none;
-  background: transparent;
-  font-weight: 600;
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0.25rem 0.5rem;
+  margin-top: 24px;
+  font-size: 0.95rem;
   color: #606266;
-  transition: all 0.2s ease;
 }
 
-.lang-content button:hover {
+.links-container a {
+  margin-left: 4px;
+}
+
+/* Language Switcher – matches login page style */
+.lang-switcher {
+  margin-top: 40px;
+  font-size: 14px;
+  color: #606266;
+}
+
+.lang-switcher a {
+  color: #606266;
+  text-decoration: none;
+  margin: 0 6px;
+  font-weight: 500;
+}
+
+.lang-switcher a.active {
+  font-weight: 600;
   color: #409eff;
-}
-
-.lang-content button.active {
-  color: #409eff;
-}
-
-.divider {
-  color: #dcdfe6;
 }
 </style>
