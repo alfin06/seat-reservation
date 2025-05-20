@@ -17,6 +17,7 @@
     "bootstrap": "^5.3.5",
     "bootstrap-icons": "^1.11.3",
     "chart.js": "^4.4.9",
+    "dayjs": "^1.11.13",
     "element-plus": "^2.9.7",
     "pinia": "^3.0.2",
     "qrcode": "^1.5.4",
