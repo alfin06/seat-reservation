@@ -95,6 +95,25 @@ class AvailableRoomsSeatsView(APIView):
             data.append(room_data)
 
         return Response({'rooms': data})
+    
+class AllRoomsSeatsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        # has_outlet = request.query_params.get('has_outlet')
+        rooms = ClassRoom.objects.filter(is_available=1, is_disable=1)
+        data = []
+
+        for room in rooms:
+            seats_qs = room.seats.filter()
+            # if has_outlet is not None:
+            #     seats_qs = seats_qs.filter(has_outlet=(has_outlet.lower() == 'true'))
+
+            room_data = ClassRoomSerializer(room).data
+            room_data['seats'] = SeatSerializer(seats_qs, many=True).data
+            data.append(room_data)
+
+        return Response({'rooms': data})
 
 ##Nick
 
@@ -680,3 +699,27 @@ class UpdateClassroomView(APIView):
 
         except Exception as e:
             return Response({'message': f'Server error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class SeatUpdateView(APIView):
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        seat_id = data.get('id')
+
+        if not seat_id:
+            return Response({'message': 'Seat ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            seat = Seat.objects.get(id=seat_id)
+        except Seat.DoesNotExist:
+            return Response({'message': 'Seat not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Parse and update fields
+        seat.has_outlet = data.get('has_outlet') in [True, 'Yes', 'yes']
+        seat.is_available = data.get('is_available') in [True, 'Available', 'available']
+        seat.is_disable = data.get('is_disable') in [True, 'Disabled', 'disabled']
+        seat.save()
+
+        return Response({'message': 'Seat updated successfully.'}, status=status.HTTP_200_OK)

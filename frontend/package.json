@@ -12,6 +12,7 @@
     "axios": "^1.8.4",
     "bootstrap": "^5.3.6",
     "chart.js": "^4.4.9",
+    "dayjs": "^1.11.13",
     "element-plus": "^2.9.7",
     "pinia": "^3.0.2",
     "qrcode.vue": "^3.6.0",

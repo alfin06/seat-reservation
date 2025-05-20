@@ -24,19 +24,42 @@
       </el-table-column>
       <el-table-column :label="$t('actions')" width="180">
         <template #default="{ row }">
-          <el-button 
-            size="mini" 
-            icon="el-icon-edit" 
-            @click="showDialog('edit', row)"
-            :disabled="loading"
-          />
-          <el-button 
-            type="danger" 
-            size="mini" 
-            icon="el-icon-delete" 
-            @click="deleteRoom(row)"
-            :disabled="loading"
-          />
+          <el-tag :type="row.is_disable.value ? 'danger' : 'info'">
+            {{ row.is_disable.display }}
+          </el-tag>
+        </template>
+      </el-table-column>
+
+      <!-- Updated At -->
+      <el-table-column label="Last Updated" width="180">
+        <template #default="{ row }">
+          {{ formatDate(row.updated_at) }}
+        </template>
+      </el-table-column>
+
+      <!-- Actions -->
+      <el-table-column label="Actions" width="320">
+        <template #default="{ row }">
+          <el-button-group>
+            <el-button
+              type="primary"
+              size="mini"
+              @click="editRoom(row)">
+              <i class="bi bi-pencil"></i>&nbsp;Edit
+            </el-button>
+            <el-button
+              type="warning"
+              size="mini"
+              @click="toggleEnable(row)">
+              <i class="bi bi-eye"></i>&nbsp;Enable
+            </el-button>
+            <el-button
+              type="danger"
+              size="mini"
+              @click="toggleDisable(row)">
+              <i class="bi bi-x"></i>&nbsp;Disable
+            </el-button>
+          </el-button-group>
         </template>
       </el-table-column>
     </el-table>
@@ -73,7 +96,9 @@
 </template>
 
 <script>
-import adminApi from '@/services/adminApi'
+import axios from 'axios'
+import QrcodeVue from 'qrcode.vue'
+import dayjs from 'dayjs'
 
 export default {
   data() {
@@ -170,6 +195,36 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+
+    generateQR(row) {
+      this.qrValue = row.id.toString()
+      this.showQR = true
+    },
+    downloadQR() {
+      const svg = this.$refs.qrCanvas.$el;
+      const svgData = new XMLSerializer().serializeToString(svg);
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      
+      canvas.width = this.size;
+      canvas.height = this.size;
+      
+      const img = new Image();
+      img.onload = () => {
+        ctx.drawImage(img, 0, 0);
+        const link = document.createElement('a');
+        link.href = canvas.toDataURL('image/png');
+        link.download = `qr_${this.qrValue}.png`;
+        link.click();
+      };
+      img.src = 'data:image/svg+xml;base64,' + btoa(svgData);
+    },
+    closeModal() {
+      this.showQR = false
+    },
+    formatDate(dateString) {
+      return dayjs(dateString).format('YYYY-MM-DD HH:mm:ss')
     }
   }
 }
