@@ -18,16 +18,6 @@
             :disabled="isUpdating" />
         </el-form-item>
 
-        <el-form-item label="Reset Reservation Hour">
-          <el-time-picker
-            v-model="editableResetHour" 
-            :picker-options="{ selectableRange: '00:00:00 - 23:59:59' }"
-            placeholder="Select time"
-            format="HH:mm"
-            value-format="HH:mm"
-            @change="handleResetTimeUpdate"
-            :disabled="isUpdating" />
-        </el-form-item>
       </el-form>
     </el-card>
   </div>
@@ -113,11 +103,9 @@ export default {
         this.editableMaxBookingDuration = this.maxBookingDuration; // Revert to store's value
         return;
       }
-
-      const resetTimestamp = this.getTimestampFromTime(this.editableResetHour);
       
       this.isUpdating = true;
-      const result = await this.updateSettingInStore({ max_booking_duration: currentValue, reset_time: resetTimestamp });
+      const result = await this.updateSettingInStore({ max_booking_duration: currentValue});
       this.isUpdating = false;
 
       if (result.success) {
@@ -128,26 +116,6 @@ export default {
       }
     },
 
-    async handleResetTimeUpdate(currentValue) {
-      if (!currentValue) {
-        this.$message.warning('Reset reservation hour cannot be empty. Reverting.');
-        this.editableResetHour = this.resetHour;
-        return;
-      }
-
-      const resetTimestamp = this.getTimestampFromTime(currentValue);
-
-      this.isUpdating = true;
-      const result = await this.updateSettingInStore({ max_booking_duration: this.editableMaxBookingDuration, reset_time: resetTimestamp });
-      this.isUpdating = false;
-
-      if (result.success) {
-        this.$message.success(result.message);
-      } else {
-        this.$message.error(result.message + " Reverting to previous value.");
-        this.editableResetHour = this.resetHour; // Revert on failure
-      }
-    }
   }
 };
 </script>

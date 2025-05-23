@@ -342,7 +342,7 @@ class ClassRoomEnableView(generics.DestroyAPIView):
 
 class ReservationSettingUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
-    serializer_class = ReservationResetSettingSerializer
+    serializer_class = ReservationSettingSerializer
 
     def get_object(self):
         return ReservationSetting.get_solo()
@@ -354,7 +354,7 @@ class ReservationSettingUpdateView(generics.UpdateAPIView):
 
 class ReservationSettingView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ReservationResetSettingSerializer
+    serializer_class = ReservationSettingSerializer
 
     def get(self, request, format=None):
         try:
@@ -363,7 +363,6 @@ class ReservationSettingView(generics.UpdateAPIView):
             for data in queryset:
                 setting_data.append({
                     'max_booking_duration': data.max_booking_duration,
-                    'reset_time': data.reset_time
                 })
             
             return JsonResponse({

@@ -41,13 +41,12 @@ class ReservationSerializer(serializers.ModelSerializer):
         fields = ['id', 'classroom', 'seat', 'duration', 'status', 'reserved_at', 'reserved_end']
         read_only_fields = ['id', 'status']
 
-class ReservationResetSettingSerializer(serializers.ModelSerializer):
+class ReservationSettingSerializer(serializers.ModelSerializer):
     class Meta:
         model = ReservationSetting
-        fields = ['max_booking_duration', 'reset_time']
+        fields = ['max_booking_duration']
         extra_kwargs = {
             'max_booking_duration': {'required': False},
-            'reset_time': {'required': False},
         }
     
     def update(self, instance, validated_data):
