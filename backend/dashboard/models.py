@@ -60,8 +60,7 @@ class Reservation(models.Model):
     reserved_at = models.DateTimeField(default=timezone.now)
     reserved_end = models.DateTimeField(default=timezone.now)
     create_at = models.DateTimeField(default=timezone.now)
-    checked_in_at = models.DateTimeField(default=timezone.now)
-
+    checked_in_at = models.DateTimeField(null=True, blank=True)
     def __str__(self):
         return f"Reservation by {self.user} for Seat {self.seat.id} in Room {self.classroom.id}"
 
@@ -72,17 +71,10 @@ class Reservation(models.Model):
 
 class ReservationSetting(models.Model):
     max_booking_duration = models.PositiveSmallIntegerField(default=4)
-    reset_time = models.TimeField(help_text="When (each day) to reset today's reservations to Active")
-
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)
-    
-    @classmethod
-    def get_solo(cls):
-        obj, _ = cls.objects.get_or_create(pk=1, defaults={"reset_time": "23:00"})
-        return obj
-    
+     
 class ClassRoom(models.Model):
     RESERVE_STATE = (
         (0, 'Reserved'),

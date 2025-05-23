@@ -1,50 +1,27 @@
 <template>
-  <el-card class="system-settings" shadow="never">
-    <div slot="header">
-      <span>{{ $t('systemControls') }}</span>
-    </div>
 
-    <el-form label-width="200px">
-      <!-- System Status -->
-      <el-form-item :label="$t('systemStatus')">
-        <el-switch
-          v-model="isSystemOnline"
-          :active-text="$t('online')"
-          :inactive-text="$t('maintenance')"
-          @change="handleSystemToggle"
-        />
-      </el-form-item>
+  <div class="">
+    <el-card shadow="never">
+      <div v-if="isLoadingInitial" class="loading-state">
+        <span>Please wait...</span>
+      </div>
+      <div v-else-if="initialError" class="error-state">
+        Error loading settings: {{ initialError }}. Displaying default values.
+      </div>
 
-      <!-- Max Booking Hours -->
-      <el-form-item :label="$t('maxBookingHours')">
-        <el-input-number 
-          v-model="maxHours" 
-          :min="1" 
-          :max="24" 
-        />
-      </el-form-item>
+      <el-form v-else label-width="200px" @submit.prevent>
+        <el-form-item label="Max Booking Hours">
+          <el-input-number v-model="editableMaxBookingDuration"
+            :min="1"
+            :max="24"
+            placeholder="Hours"
+            @change="handleMaxBookingDurationUpdate"
+            :disabled="isUpdating" />
+        </el-form-item>
 
-      <!-- No-Show Policy -->
-      <el-form-item :label="$t('noShowPolicy')">
-        <el-input-number
-          v-model="noShowLimit"
-          :min="1"
-          :max="10"
-        />
-        <span class="hint-text">{{ $t('noShowStrikesHint') }}</span>
-      </el-form-item>
-
-      <el-form-item>
-        <el-button 
-          type="primary" 
-          @click="saveSettings"
-          :loading="saving"
-        >
-          {{ $t('saveSettings') }}
-        </el-button>
-      </el-form-item>
-    </el-form>
-  </el-card>
+      </el-form>
+    </el-card>
+  </div>
 </template>
 
 <script>
@@ -73,34 +50,25 @@ export default {
         console.error("Failed to load settings:", error)
       }
     },
-    async handleSystemToggle() {
-      try {
-        await this.$confirm(
-          `${this.$t('switchSystemTo')} ${this.$t(this.isSystemOnline ? 'online' : 'maintenance')} ${this.$t('mode')}?`,
-          this.$t('warning'),
-          { confirmButtonText: this.$t('confirm') }
-        )
-        await this.saveSettings()
-      } catch {
-        this.isSystemOnline = !this.isSystemOnline
+
+    async handleMaxBookingDurationUpdate(currentValue) {
+      if (currentValue === null || currentValue === undefined) {
+        this.$message.warning('Max booking hours cannot be empty. Reverting.');
+        this.editableMaxBookingDuration = this.maxBookingDuration; // Revert to store's value
+        return;
+      }
+      
+      this.isUpdating = true;
+      const result = await this.updateSettingInStore({ max_booking_duration: currentValue});
+      this.isUpdating = false;
+
+      if (result.success) {
+        this.$message.success(result.message);
+      } else {
+        this.$message.error(result.message + " Reverting to previous value.");
+        this.editableMaxBookingDuration = this.maxBookingDuration; // Revert on failure
       }
     },
-    async saveSettings() {
-      this.saving = true
-      try {
-        await adminApi.updateSystemSettings({
-          status: this.isSystemOnline ? 'online' : 'maintenance',
-          max_hours: this.maxHours,
-          no_show_strikes: this.noShowLimit
-        })
-        this.$message.success(this.$t('settingsSavedMessage'))
-      } catch (error) {
-        console.error("Save failed:", error)
-        this.$message.error(this.$t('saveError'))
-      } finally {
-        this.saving = false
-      }
-    }
   }
 }
 </script>
