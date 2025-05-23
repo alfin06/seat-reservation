@@ -1,10 +1,9 @@
 <template>
-  <div class="container-fluid">
+  <div class="admin-dashboard container-fluid">
     <div class="row flex-nowrap">
       <main class="col py-4">
-
-        <!-- Welcome Section -->
-        <section class="card shadow-sm mb-4 p-4">
+        <!-- Welcome -->
+        <section class="card shadow-sm mb-4 p-4 welcome-section">
           <h2 class="h5 fw-semibold text-dark">
             {{ $t('welcome') }}, {{ authStore.user?.name || authStore.user?.username }}!
             <span class="badge bg-primary-subtle text-dark ms-2 text-uppercase">
@@ -16,54 +15,49 @@
           </p>
         </section>
 
-        <!-- Dashboard Content Section -->
+        <!-- Stats Overview -->
         <section class="card shadow-sm mb-4 p-4">
-          <h2 class="h5 fw-semibold mb-4">{{ $t('adminStats') }}</h2>
-
-          <!-- <div class="row text-center mb-4">
-            <div class="col-6 col-md-3" v-for="(stat, label) in stats" :key="label">
-              <div class="p-3 bg-light rounded">
-                <div class="fs-4 fw-bold">{{ stat }}</div>
-                <div class="small text-muted text-capitalize"><strong>{{ label }}</strong></div>
-              </div>
-            </div>
-          </div> -->
-
-          <!-- Add more admin controls/sections below as needed -->
-          <!-- Urgent Alert -->
-          <!-- <el-alert 
-            type="warning" 
-            title="Immediate Action Needed" 
-            show-icon
-            class="mb-4"
-          >
-            <span>3 seats need cleaning in Room B</span>
-            <el-button type="warning" size="mini" class="ml-2">
-              Mark as Cleaned
-            </el-button>
-          </el-alert> -->
-
-          <!-- Stats Cards -->
-          <el-row :gutter="20" class="mb-6">
-            <el-col :span="8">
-              <el-card class="stat-card" shadow="hover">
+          <h2 class="h5 fw-semibold mb-4">{{ $t('adminTitle') }}</h2>
+          <el-row :gutter="20">
+            <el-col :span="6">
+              <el-card class="stat-card">
                 <h3>{{ dashboardStats.total_classrooms }}</h3>
                 <p>Total Rooms</p>
-                <el-tag type="success">{{ dashboardStats.available_classroom_count }} Available</el-tag>
               </el-card>
             </el-col>
-            <el-col :span="8">
-              <el-card class="stat-card" shadow="hover">
-                <h3>{{ dashboardStats.available_seats_count }}</h3>
-                <p>Available Seats</p>
-                <el-tag type="warning">{{ dashboardStats.empty_seats_count }} Reserved</el-tag>
-              </el-card>
-            </el-col>
-            <el-col :span="8">
-              <el-card class="stat-card" shadow="hover">
+            <el-col :span="6">
+              <el-card class="stat-card">
                 <h3>{{ dashboardStats.available_classroom_count }}</h3>
                 <p>Available Rooms</p>
-                <el-tag type="warning">{{ dashboardStats.empty_classroom_count }} Reserved</el-tag>
+              </el-card>
+            </el-col>
+            <el-col :span="6">
+              <el-card class="stat-card">
+                <h3>{{ dashboardStats.available_seats_count }}</h3>
+                <p>Available Seats</p>
+              </el-card>
+            </el-col>
+            <el-col :span="6">
+              <el-card class="stat-card">
+                <h3>{{ dashboardStats.empty_seats_count }}</h3>
+                <p>Reserved Seats</p>
+              </el-card>
+            </el-col>
+          </el-row>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="card shadow-sm mb-4 p-4">
+          <h2 class="h5 fw-semibold mb-4">Analytics</h2>
+          <el-row :gutter="20">
+            <el-col :span="12">
+              <el-card>
+                <line-chart :chart-data="reservationChartData" />
+              </el-card>
+            </el-col>
+            <el-col :span="12">
+              <el-card>
+                <bar-chart :chart-data="seatChartData" />
               </el-card>
             </el-col>
           </el-row>
@@ -73,6 +67,7 @@
   </div>
 </template>
 
+
 <script>
 import RoomManagement from '../../components/admin/RoomManagement.vue'
 import UserManagement from '../../components/admin/UserManagement.vue'
@@ -81,6 +76,8 @@ import SeatManagement from '@/components/admin/SeatManagement.vue'
 import axios from 'axios'
 import { useAuthStore } from '../../store/auth.js'
 import { onMounted, ref } from 'vue'
+import LineChart from '@/components/charts/LineChart.vue'
+import BarChart from '@/components/charts/BarChart.vue'
 
 export default {
   name: "AdminDashboard",
@@ -88,7 +85,9 @@ export default {
     RoomManagement,
     UserManagement,
     SystemSettings,
-    SeatManagement
+    SeatManagement,
+    LineChart,
+    BarChart,
   },
   setup() {
     const authStore = useAuthStore();
@@ -99,38 +98,12 @@ export default {
       checkInsToday: 0,
     });
 
-    const fetchAdminStats = async () => {
-      const token = localStorage.getItem('token');
-      try {
-        const res = await fetch('http://localhost:8000/dashboard/api/admin/stats/', {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Token ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Failed to fetch admin stats");
-
-        const data = await res.json();
-        stats.value = {
-          users: data.total_users,
-          classrooms: data.total_classrooms,
-          reservations: data.total_reservations,
-          checkInsToday: data.check_ins_today,
-        };
-      } catch (err) {
-        console.error("Error fetching admin stats:", err);
-      }
-    };
-
     onMounted(async () => {
       await authStore.fetchUser();
-      await fetchAdminStats();
     });
 
     return {
-      authStore,
-      stats,
+      authStore
     };
   },
   data() {
@@ -145,6 +118,23 @@ export default {
         empty_classroom_count: 0,
         total_seats: 0,
         number_of_user: 0
+      },
+       reservationChartData: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [{
+          label: 'Reservations',
+          data: [10, 12, 14, 8, 7, 5, 3],
+          borderColor: '#42b983',
+          fill: false
+        }]
+      },
+      seatChartData: {
+        labels: ['Room A', 'Room B', 'Room C'],
+        datasets: [{
+          label: 'Available Seats',
+          data: [12, 9, 15],
+          backgroundColor: ['#409EFF', '#67C23A', '#E6A23C']
+        }]
       }
     };
   },
@@ -182,10 +172,36 @@ export default {
           withCredentials: true
         });
         if (response.data) {
+          const data = response.data;
           this.dashboardStats = response.data;
+
+          // Update Reservation Line Chart
+          const labels = Object.keys(data.reservations_last_week || {});
+          const values = Object.values(data.reservations_last_week || {});
+          this.reservationChartData = {
+            labels: labels,
+            datasets: [{
+              label: 'Reservations',
+              data: values,
+              borderColor: '#42b983',
+              fill: false
+            }]
+          };
+
+          // Update Seat Availability Bar Chart
+          const roomLabels = Object.keys(data.available_seats_per_room || {});
+          const seatValues = Object.values(data.available_seats_per_room || {});
+          this.seatChartData = {
+            labels: roomLabels,
+            datasets: [{
+              label: 'Available Seats',
+              data: seatValues,
+              backgroundColor: ['#409EFF', '#67C23A', '#E6A23C']
+            }]
+          };
         }
       } catch (error) {
-        console.error('Error fetching dashboard stats:', error);
+        console.error('Error fetching dashboard stats: ', error);
         this.$message.error('Failed to load dashboard statistics');
       }
     }
@@ -236,6 +252,23 @@ export default {
 .items-center {
   align-items: center;
 }
-
+.stat-card {
+  text-align: center;
+  padding: 20px;
+  background: #f9f9f9;
+  border-radius: 10px;
+}
+.stat-card h3 {
+  font-size: 28px;
+  margin-bottom: 5px;
+  color: #409EFF;
+}
+.stat-card p {
+  color: #666;
+}
+.welcome-section {
+  background: linear-gradient(to right, #f0f9ff, #e0f7fa);
+  border-left: 5px solid #409EFF;
+}
 
 </style>
