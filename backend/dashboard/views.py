@@ -699,7 +699,7 @@ class UpdateClassroomView(APIView):
         except Exception as e:
             return Response({'message': f'Server error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         
-class SeatUpdateView(APIView): 
+class SeatUpdateView(APIView):
     authentication_classes = [TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
