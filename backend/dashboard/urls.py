@@ -1,28 +1,5 @@
 from django.urls import path
-from dashboard.views import (
-    AdminDashboardStatusView,
-    AdminDashboardRoomsStats,
-    AdminDashboardUserStats,
-    SeatGetAll,
-    SeatDisableView,
-    SeatEnableView,
-    ClassRoomGetAll,
-    ClassRoomCreateView,
-    ClassRoomDisableView,
-    ClassRoomEnableView,
-    ReservationSettingUpdateView,
-    ReservationSettingView,
-    UpdateClassroomView,
-    ReservationCreateView,
-    AvailableRoomsSeatsView,
-    QRCodeCheckView,
-    QRCodeCheckView2,
-    InstantBookingView,
-    UserReservationStatsView,
-    ActiveReservationsView,
-    CancelReservationView,
-    ReservationHistoryView  # chetona - included new view
-)
+from dashboard.views import *
 
 urlpatterns = [
     path('admin/status/', AdminDashboardStatusView.as_view(), name='dashboard-stats'),
