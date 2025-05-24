@@ -1,4 +1,5 @@
-# 🎓 Student Seat Reservation System
+<img src="frontend/src/assets/app_logo.png" alt="logo" />
+# Study Reserve App
 
 A full-stack web application for reserving student seats in study areas and classrooms. Built using **Vue 3** for the frontend, **Django** for the backend, and **MySQL** for data persistence.
 
