@@ -1,5 +1,4 @@
 <template>
-
   <div class="">
     <el-card shadow="never">
       <div v-if="isLoadingInitial" class="loading-state">
@@ -19,36 +18,93 @@
             :disabled="isUpdating" />
         </el-form-item>
 
+        <el-form-item label="Reset Reservation Hour">
+          <el-time-picker
+            v-model="editableResetHour" 
+            :picker-options="{ selectableRange: '00:00:00 - 23:59:59' }"
+            placeholder="Select time"
+            format="HH:mm"
+            value-format="HH:mm"
+            @change="handleResetTimeUpdate"
+            :disabled="isUpdating" />
+        </el-form-item>
       </el-form>
     </el-card>
   </div>
 </template>
 
 <script>
-import adminApi from '@/services/adminApi'
+import { useSettingsStore } from "@/store/setting.js";
+import { mapState, mapActions } from 'pinia';
 
 export default {
+  name: 'SystemSettings',
   data() {
     return {
-      isSystemOnline: true,
-      maxHours: 4,
-      noShowLimit: 3,
-      saving: false
+      editableMaxBookingDuration: 4,
+      editableResetHour: '23:00',
+      
+      isLoadingInitial: true,
+      initialError: null,
+      isUpdating: false,
+    };
+  },
+  computed: {
+    ...mapState(useSettingsStore, ['maxBookingDuration', 'resetHour', 'error']),
+  },
+  watch: {
+    maxBookingDuration(newValue) {
+      this.editableMaxBookingDuration = newValue;
+    },
+    resetHour(newValue) {
+      this.editableResetHour = newValue;
     }
   },
-  async created() {
-    await this.loadSettings()
+  async mounted() {
+    this.isLoadingInitial = true;
+    this.initialError = null; // Reset error on mount
+
+    try {
+      await this.fetchSettingsStore(); 
+      this.editableMaxBookingDuration = this.maxBookingDuration;
+      this.editableResetHour = this.resetHour;
+
+    } catch (e) {
+     
+        console.error("Error during fetchSettingsStore dispatch:", e);
+        this.initialError = "Failed to dispatch fetch settings.";
+    } finally {
+        if (this.error) {
+            this.initialError = this.error;
+        }
+        this.isLoadingInitial = false;
+        
+        console.log('SystemSettings mounted. Store values:', {
+            hours: this.maxBookingDuration,
+            time: this.resetHour
+        });
+        console.log('SystemSettings mounted. Editable values set to:', {
+            hours: this.editableMaxBookingDuration,
+            time: this.editableResetHour
+        });
+    }
   },
   methods: {
-    async loadSettings() {
-      try {
-        const response = await adminApi.getSystemSettings()
-        this.isSystemOnline = response.data.status === 'online'
-        this.maxHours = response.data.max_hours
-        this.noShowLimit = response.data.no_show_strikes
-      } catch (error) {
-        console.error("Failed to load settings:", error)
+    // Map actions from Pinia store
+    ...mapActions(useSettingsStore, {
+        fetchSettingsStore: 'fetchSettings', 
+        updateSettingInStore: 'updateSetting'
+    }),
+
+    getTimestampFromTime(timeStr) {
+      const match = timeStr.match(/(\d{2})(\d{2})/)
+      if (match) {
+        const hours = match[1];
+        const minutes = match[2];
+        timeStr = `${hours}:${minutes}` + ':00';
       }
+
+      return timeStr; // e.g. "2025-05-14T20:25:00"
     },
 
     async handleMaxBookingDurationUpdate(currentValue) {
@@ -57,9 +113,11 @@ export default {
         this.editableMaxBookingDuration = this.maxBookingDuration; // Revert to store's value
         return;
       }
+
+      const resetTimestamp = this.getTimestampFromTime(this.editableResetHour);
       
       this.isUpdating = true;
-      const result = await this.updateSettingInStore({ max_booking_duration: currentValue});
+      const result = await this.updateSettingInStore({ max_booking_duration: currentValue, reset_time: resetTimestamp });
       this.isUpdating = false;
 
       if (result.success) {
@@ -69,17 +127,46 @@ export default {
         this.editableMaxBookingDuration = this.maxBookingDuration; // Revert on failure
       }
     },
+
+    async handleResetTimeUpdate(currentValue) {
+      if (!currentValue) {
+        this.$message.warning('Reset reservation hour cannot be empty. Reverting.');
+        this.editableResetHour = this.resetHour;
+        return;
+      }
+
+      const resetTimestamp = this.getTimestampFromTime(currentValue);
+
+      this.isUpdating = true;
+      const result = await this.updateSettingInStore({ max_booking_duration: this.editableMaxBookingDuration, reset_time: resetTimestamp });
+      this.isUpdating = false;
+
+      if (result.success) {
+        this.$message.success(result.message);
+      } else {
+        this.$message.error(result.message + " Reverting to previous value.");
+        this.editableResetHour = this.resetHour; // Revert on failure
+      }
+    }
   }
-}
+};
 </script>
 
 <style scoped>
 .system-settings {
   padding: 20px;
 }
-.hint-text {
-  margin-left: 10px;
-  color: #666;
-  font-size: 0.9em;
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.loading-state, .error-state {
+  text-align: center;
+  padding: 20px;
+  color: grey;
+}
+.error-state {
+  color: red;
 }
 </style>

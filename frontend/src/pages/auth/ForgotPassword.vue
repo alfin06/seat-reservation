@@ -1,193 +1,152 @@
-<template>
-  <div class="forgot-wrapper">
-    <div class="box-card">
-      <div class="logo-container">
-        <img :src="logo" alt="App Logo" class="logo" />
-      </div>
-      <h2 class="title">{{ $t('resetPasswordTitle') }}</h2>
-      <p class="description">{{ $t('forgotInstruction') }}</p>
+<script>
+import { useAuthStore } from '../../store/auth'
+import logo from '@/assets/app_logo.png';
 
-      <el-form @submit.prevent="resetPassword" class="form">
-        <el-input
-          v-model="email"
-          type="email"
-          :placeholder="$t('enterEmail')"
-        />
-        <el-button
-          type="primary"
-          class="submit-btn"
-          @click="resetPassword"
-          :loading="loading"
-        >
-          {{ $t('sendInstructions') }}
-        </el-button>
-      </el-form>
+export default {
+    name: 'ForgotPassword',
+    data() {
+        return {
+            email: '',
+            error: '',
+            success: '',
+            logo,
+            loading: false, // Loader state
+        }
+    },
+    methods: {
+        async resetPassword() {
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        
+            try {
+                this.loading = true; // Show loader
+                if(!emailRegex.test(this.email)) {
+                    this.error = "Invalid email address!"
+                    return
+                }
 
-      <div class="links-container">
-        <p>
-          {{ $t('rememberPassword') }}
-          <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link>
-        </p>
-      </div>
-    </div>
+                const authStore = useAuthStore()
+                await authStore.resetPassword(this.email)
 
-    <div class="lang-switch-container">
-      <div class="lang-content">
-        <button
-          @click="changeLanguage('en')"
-          :class="{ active: currentLanguage === 'en' }"
-        >
-          English
-        </button>
-        <span class="divider">|</span>
-        <button
-          @click="changeLanguage('zh')"
-          :class="{ active: currentLanguage === 'zh' }"
-        >
-          中文
-        </button>
-      </div>
-    </div>
-  </div>
-</template>
-
-<script setup>
-import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { useAuthStore } from '@/store/auth'
-import logo from '@/assets/app_logo.png'
-
-const email = ref('')
-const loading = ref(false)
-const { locale } = useI18n()
-const currentLanguage = ref(locale.value)
-
-const changeLanguage = (lang) => {
-  locale.value = lang
-  currentLanguage.value = lang
-}
-
-const resetPassword = async () => {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  if (!emailRegex.test(email.value)) {
-    ElNotification.error({ title: 'Error', message: 'Invalid email address!' })
-    return
-  }
-
-  try {
-    loading.value = true
-    const authStore = useAuthStore()
-    await authStore.resetPassword(email.value)
-    ElNotification.success({
-      title: 'Success',
-      message: 'Password reset instructions have been sent to your email.'
-    })
-  } catch (error) {
-    ElNotification.error({
-      title: 'Error',
-      message: error.message || 'Failed to send reset instructions.'
-    })
-  } finally {
-    loading.value = false
-  }
-}
-
-const onLogin = () => {
-  window.location.href = '/login'
+                //this.success = 'Password reset instructions have been sent to your email.'
+                this.$notify({
+                    type: "success",
+                    text: "Password reset instructions have been sent to your email."
+                })
+            } catch (error) {
+                //this.error = error.message || 'Failed to send reset instructions'
+                this.$notify({
+                    type: "error",
+                    text: this.error
+                })
+            } finally {
+                this.loading = false; // Hide loader
+            }
+        },
+        onLogin() {
+            this.$router.push('/login')
+        },
+        onRegister() {
+            this.$router.push('/register')
+        }
+    }
 }
 </script>
 
+<template>
+    <div class="container justify-content-center align-items-center forgot">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="box-card card-body text-center" v-loading="loading" element-loading-text="Please wait..." element-loading-spinner="el-icon-loading">
+                    <div class="text-center mb-4">
+                      <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 150px;" />
+                    </div>
+                    <p class="description">{{ $t('forgotInstruction') }}</p>
+                    <p v-if="error" class="error text-danger">{{error}}</p> 
+                    <p v-if="success" class="success text-success">{{success}}</p>
+                    <el-form :model="form" ref="resetForm" label-width="120px" @submit.prevent="resetPassword" class="form-horizontal form-material">
+                        <el-input v-model="email" id="email" type="email" required :placeholder="$t('enterEmail')"></el-input>
+                        <br/><br/>
+                        <el-button type="primary" @click="resetPassword">{{ $t('sendInstructions') }}</el-button>
+                    </el-form>
+                    <br/>
+                    <div class="links-container">
+                        <p>{{ $t('rememberPwd') }}? <el-link type="primary" @click="onLogin">{{ $t('login') }}</el-link></p>
+                    </div>
+                  </div>
+            </div>
+        </div>
+    </div>
+</template>
+
 <style scoped>
-.forgot-wrapper {
-  min-height: 100vh;
-  background: #f7f9fc;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 4vh;
-}
-
 .box-card {
-  background: #fff;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
   padding: 2rem;
-  width: 100%;
-  max-width: 420px;
-  text-align: center;
-}
-
-.logo-container {
-  margin-bottom: 1rem;
-}
-
-.logo {
-  max-height: 90px;
-}
-
-.title {
-  font-size: 1.25rem;
-  font-weight: bold;
-  margin-bottom: 0.75rem;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  background: #fff;
 }
 
 .description {
   color: #606266;
+  margin: 1rem 0;
+  text-align: center;
+  font-weight: bold;
+}
+
+.error {
+  color: #f56c6c;
+  margin-bottom: 1rem;
+}
+
+.success {
+  color: #67c23a;
+  margin-bottom: 1rem;
+}
+
+.form-item {
   margin-bottom: 1.5rem;
 }
 
-.form {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.input-field {
+  padding: 10px 15px;
+  border-radius: 8px;
+  border: 1px solid #dcdfe6;
 }
 
-.submit-btn {
-  width: 100%;
+.input-field:focus {
+  border-color: #409eff;
+  box-shadow: 0 0 8px rgba(64, 158, 255, 0.3);
 }
 
-.links-container {
-  margin-top: 1.5rem;
-}
-
-/* Updated language switcher styles */
-.lang-switch-container {
-  background: #f0f2f5;
-  width: 100%;
-  padding: 1rem 0;
-  margin-top: 2rem;
-  border-top: 1px solid #e4e7ed;
-}
-
-.lang-content {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 0.5rem;
-  max-width: 420px;
-  margin: 0 auto;
-}
-
-.lang-content button {
-  border: none;
-  background: transparent;
+.el-form-item__label {
   font-weight: 600;
-  cursor: pointer;
-  font-size: 0.9rem;
-  padding: 0.25rem 0.5rem;
-  color: #606266;
-  transition: all 0.2s ease;
+  margin-bottom: 8px;
 }
 
-.lang-content button:hover {
-  color: #409eff;
+.el-button {
+  padding: 10px 0;
+  border-radius: 8px;
 }
 
-.lang-content button.active {
-  color: #409eff;
+.links-container p {
+  margin: 0.5rem 0;
 }
 
-.divider {
-  color: #dcdfe6;
+:deep(.el-link) {
+  font-weight: 600;
+  margin-left: 4px;
 }
+
+:deep(.el-button) {
+  min-width: 200px;
+}
+
+.el-input {
+  width: 100%;
+}
+
+.forgot {
+  padding: 15px;
+}
+
 </style>

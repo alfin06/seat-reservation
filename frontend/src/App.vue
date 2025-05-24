@@ -1,102 +1,95 @@
+<script setup>
+import SidebarMenu from './components/SideBarMenu.vue';
+import { useAuthStore } from './store/auth';
+import { computed } from 'vue';
+
+const authStore = useAuthStore();
+
+
+const buttons = computed(() => {
+  if (!authStore.user) return [];
+
+  const shared = [
+    { label: "Book a Seat", route: "/booking", icon: "bi-journal-plus" },
+    { label: "Check‑in", route: "/check-in", icon: "bi-clipboard-check" },
+    { label: "Instant Booking", route: "/instant", icon: "bi-lightning" },
+    { label: "Booking History", route: "/history", icon: "bi-clock-history" },
+  ];
+
+  if (authStore.user.role === 'ADMIN') {
+    const adminOnly = [
+      { label: "Admin Dashboard", route: "/admin-dashboard", icon: "bi-speedometer2" },
+      { label: "Manage Classroom", route: "/manage-rooms", icon: "bi-door-open" },
+      { label: "Manage Seat", route: "/manage-seats", icon: "bi-journal" },
+      { label: "General Settings", route: "/settings", icon: "bi-gear" },
+      { type: 'divider' }, // Horizontal line
+    ];
+    return [...adminOnly, ...shared];
+  }
+
+  // For students and other users
+  return [
+    { label: "Home", route: "/home", icon: "bi-house" },
+    ...shared
+  ];
+});
+</script>
+
 <template>
-  <div class="app">
-    <header class="app-header">
-      <!-- Wrap the title in $t() for translation -->
-      <h1>{{ $t('title') }}</h1>
-      
-      <nav class="main-nav">
-        <router-link to="/register" class="nav-link">{{ $t('register') }}</router-link>
-        <span class="nav-divider">|</span>
-        <router-link to="/login" class="nav-link">{{ $t('login') }}</router-link>
-        <span class="nav-divider">|</span>
-        <router-link to="/reservation" class="nav-link">{{ $t('reservationTitle') }}</router-link>
-        <span class="nav-divider">|</span>
-        <router-link to="/check-in" class="nav-link">{{ $t('checkInTitle') }}</router-link>
-        <span class="nav-divider">|</span>
-        <router-link to="/instant-booking" class="nav-link">{{ $t('instantBookingTitle') }}</router-link>
-        <span class="nav-divider">|</span>
-        <router-link to="/booking-history" class="nav-link">{{ $t('bookingHistory.title') }}</router-link>
-        <span class="nav-divider">|</span>
-        <router-link to="/admin-dashboard" class="nav-link">{{ $t('adminTitle') }}</router-link>
-        <span class="nav-divider">|</span>
-        <router-link to="/general-settings" class="nav-link">{{ $t('generalSettingsTitle') }}</router-link>
-      </nav>
-    </header>
-
-    <main class="app-content">
-      <router-view />
-    </main>
-
-    <footer class="app-footer">
-      <div class="language-toggle">
-        <button 
-          @click="changeLanguage('en')"
-          :class="{ 'active': currentLanguage === 'en' }"
-        >
-          English
+  <div class="d-flex flex-column vh-100">
+    <div class="flex-grow-1 d-flex overflow-hidden">
+      <SidebarMenu :buttons="buttons" class="d-none d-md-block" v-if="!$route.meta.hideSidebar" />
+      <main class="flex-grow-1 overflow-auto">
+        <button v-if="!$route.meta.hideSidebar"
+          class="btn d-md-none m-3"
+          type="button"
+          data-bs-toggle="offcanvas"
+          data-bs-target="#mobileSidebar"
+          aria-controls="mobileSidebar">
+          <i class="bi bi-list"></i>
         </button>
-        <span class="divider">|</span>
-        <button 
-          @click="changeLanguage('zh')"
-          :class="{ 'active': currentLanguage === 'zh' }"
-        >
-          中文
-        </button>
+        <router-view />
+      </main>
+    </div>
+
+    <notifications position="top center" class="notif" />
+
+    <footer class="text-center border-top bg-white py-2">
+      <div class="translation-controls mb-1">
+        <button @click="$i18n.locale = 'en'" class="lang-btn">English</button>
+        <button @click="$i18n.locale = 'zh'" class="lang-btn">中文</button>
+      </div>
+      <div class="footer text-muted small">
+        &copy; {{ new Date().getFullYear() }} Seat Reservation App | Developed by International Students
       </div>
     </footer>
   </div>
 </template>
 
-<script setup>
-import { useI18n } from 'vue-i18n'
-import { ref } from 'vue'
-
-const { locale } = useI18n()
-const currentLanguage = ref(locale.value)
-
-const changeLanguage = (lang) => {
-  locale.value = lang
-  currentLanguage.value = lang
-}
-</script>
-
 <style scoped>
-.app-header {
-  background-color: #2c3e50;
-  color: white;
-  padding: 1rem;
-  text-align: center;
+html, body, #app {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
-.main-nav {
-  margin-top: 1rem;
-}
-.nav-link {
-  color: white;
-  text-decoration: none;
-  margin: 0 0.5rem;
-}
-.nav-divider {
-  color: #ccc;
-}
-.app-content {
-  padding: 2rem;
-}
-.app-footer {
-  text-align: center;
-  padding: 1rem;
-  background-color: #f5f5f5;
-}
-.language-toggle button {
+
+.lang-btn {
+  margin: 0 5px;
+  padding: 8px 16px;
   border: none;
-  background: none;
+  border-radius: 4px;
+  background: #f8f9fa;
+  color: #495057;
   cursor: pointer;
-  font-weight: bold;
+  transition: all 0.3s ease;
 }
-.language-toggle .active {
-  text-decoration: underline;
+
+.lang-btn:hover {
+  background: #e9ecef;
 }
-.divider {
-  margin: 0 0.5rem;
-  color: #999;
+
+.notif {
+  font-size: 20pt;
 }
 </style>
