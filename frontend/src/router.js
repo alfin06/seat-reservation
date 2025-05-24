@@ -1,36 +1,69 @@
 import { createRouter, createWebHistory } from 'vue-router'
-
-// Views
-import Login from './views/Login.vue'
-import Register from './views/Register.vue'
+import Home from './pages/Home.vue'
+import BookingSuccess from './pages/student/BookingSuccess.vue'
+import Login from './pages/auth/Login.vue'
+import Register from './pages/auth/Register.vue'
 import ForgotPassword from './pages/auth/ForgotPassword.vue'
 import VerifyEmail from './pages/auth/VerifyEmail.vue'
 import ResetPassword from './pages/auth/ResetPassword.vue'
-import CheckIn from './views/CheckIn.vue'
-import Reservation from './views/Reservation.vue'
-import BookingHistory from './views/BookingHistory.vue'
-import AdminDashboard from './views/AdminDashboard.vue'
-import InstantBooking from './views/InstantBooking.vue'
-import GeneralSettings from './views/GeneralSettings.vue'
+import CheckIn from './pages/student/CheckIn.vue'
+import Reservation from './pages/student/Reservation.vue'
+import AdminDashboard from './pages/admin/AdminDashboard.vue'
+import InstantBooking from './pages/student/InstantBooking.vue'
+import ManageRooms from './pages/admin/ManageRooms.vue'
+import ManageSeats from './pages/admin/ManageSeats.vue'
+import Settings from './pages/admin/SystemSettings.vue'
+import History from './pages/student/BookingHistory.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
-  { path: '/login', component: Login, name: 'login' },
-  { path: '/register', component: Register, name: 'register' },
-  { path: '/forgot-password', component: ForgotPassword, name: 'forgot-password' },
-  { path: '/verify-email/:token', component: VerifyEmail, name: 'verify-email' },
-  { path: '/reset-password/:token', component: ResetPassword, name: 'reset-password' },
-  { path: '/check-in', component: CheckIn, name: 'check-in' },
-  { path: '/reservation', component: Reservation, name: 'reservation' },
-  { path: '/booking-history', component: BookingHistory, name: 'booking-history' },
-  { path: '/admin-dashboard', component: AdminDashboard, name: 'admin-dashboard' },
-  { path: '/instant-booking', component: InstantBooking, name: 'instant-booking' },
-  { path: '/general-settings', component: GeneralSettings, name: 'general-settings' },
+  { path: '/login', name: 'login', component: Login, meta: { hideSidebar: true }},
+  { path: '/register', name: 'register', component: Register, meta: { hideSidebar: true }},
+  { path: '/forgot-password', name: 'forgot-password', component: ForgotPassword, meta: { hideSidebar: true }},
+  { path: '/verify-email/:token', name: 'verify-email', component: VerifyEmail, meta: { hideSidebar: true }},
+  { path: '/reset-password/:token', name: 'reset-password', component: ResetPassword, meta: { hideSidebar: true }},
+  
+  { path: '/admin-dashboard', name: 'admin-dashboard', component: AdminDashboard, meta: { requiresAuth: true, requiresAdmin: true }},
+  { path: '/manage-rooms', name: 'manage-rooms', component: ManageRooms, meta: { requiresAuth: true, requiresAdmin: true }},
+  { path: '/manage-seats', name: 'manage-seats', component: ManageSeats, meta: { requiresAuth: true, requiresAdmin: true }},
+  { path: '/settings', name: 'settings', component: Settings, meta: { requiresAuth: true, requiresAdmin: true }},
+
+  { path: '/home', name: 'home', component: Home, meta: { requiresAuth: true } },
+  { path: '/check-in', name: 'check-in', component: CheckIn, meta: { requiresAuth: true } },
+  { path: '/booking', name: 'booking', component: Reservation, meta: { requiresAuth: true } },
+  { path: '/student/instant-booking', name: 'instant-booking', component: InstantBooking, meta: { requiresAuth: true } },
+  { path: '/instant', redirect: '/student/instant-booking' },
+  { path: '/booking-success', name: 'booking-success', component: BookingSuccess, meta: { requiresAuth: true } },
+  { path: '/history', name: 'history', component: History, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+})
+
+// Navigation Guard for Auth
+router.beforeEach((to, from, next) => {
+  const storedState = JSON.parse(localStorage.getItem('authState'))
+  const isAuthenticated = storedState?.isAuthenticated
+  const userRole = storedState?.user?.role
+  
+  const publicRoutes = ['reset-password', 'verify-email'];
+  if (publicRoutes.includes(to.name)) {
+    next();
+    return;
+  }
+
+  // Redirect authenticated users away from login/register/forgot-password
+  if ((to.name === 'login' || to.name === 'register' || to.name === 'forgot-password') && isAuthenticated) {
+    next({ name: 'home' });
+  } else if (to.meta.requiresAdmin && (!isAuthenticated || userRole !== 'ADMIN')) {
+    next({ name: 'home' });
+  } else if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'login' });
+  } else {
+    next();
+  }
 })
 
 export default router
