@@ -71,7 +71,7 @@ const logout = async () => {
       </button>
 
       <div class="text-center mb-3">
-        <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 100px;" />
+        <img :src="logo" alt="App Logo" class="img-fluid" style="max-height: 150px;" />
       </div>
 
       <ul class="nav flex-column">
@@ -85,17 +85,16 @@ const logout = async () => {
             <span v-if="!sidebarStore.isCollapsed">{{ btn.label }}</span>
           </div>
         </li>
-        <div class="mt-auto">
-          <li
-            class="nav-item sidebar-item mb-2"
+
+        <!-- Fix: logout button should be in its own <li> -->
+        <li class="nav-item sidebar-item mb-2 mt-auto"
             title="Logout"
             data-bs-toggle="tooltip"
             data-bs-placement="right"
             @click="logout">
-            <i class="bi bi-box-arrow-right me-3 fs-4"></i>
-            <span v-if="!sidebarStore.isCollapsed">Logout</span>
-          </li>
-        </div>
+          <i class="bi bi-box-arrow-right me-3 fs-4"></i>
+          <span v-if="!sidebarStore.isCollapsed">Logout</span>
+        </li>
       </ul>
     </div>
   </div>
@@ -135,8 +134,11 @@ const logout = async () => {
 <style scoped>
 .sidebar {
   width: 250px;
-  min-height: 100vh;
+  height: 100vh;
+  overflow-y: auto; /* allow vertical scrolling */
   transition: width 0.3s ease;
+  display: flex;
+  flex-direction: column;
 }
 
 .sidebar.collapsed {
