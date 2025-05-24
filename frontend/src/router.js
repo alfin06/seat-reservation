@@ -1,8 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import Home from './pages/Home.vue'
-import BookingSuccess from './pages/student/BookingSuccess.vue'
-import Login from './pages/auth/Login.vue'
-import Register from './pages/auth/Register.vue'
+
+// Views
+import Login from './views/Login.vue'
+import Register from './views/Register.vue'
 import ForgotPassword from './pages/auth/ForgotPassword.vue'
 import VerifyEmail from './pages/auth/VerifyEmail.vue'
 import ResetPassword from './pages/auth/ResetPassword.vue'
@@ -39,31 +39,7 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes,
-})
-
-// Navigation Guard for Auth
-router.beforeEach((to, from, next) => {
-  const storedState = JSON.parse(localStorage.getItem('authState'))
-  const isAuthenticated = storedState?.isAuthenticated
-  const userRole = storedState?.user?.role
-  
-  const publicRoutes = ['reset-password', 'verify-email'];
-  if (publicRoutes.includes(to.name)) {
-    next();
-    return;
-  }
-
-  // Redirect authenticated users away from login/register/forgot-password
-  if ((to.name === 'login' || to.name === 'register' || to.name === 'forgot-password') && isAuthenticated) {
-    next({ name: 'home' });
-  } else if (to.meta.requiresAdmin && (!isAuthenticated || userRole !== 'ADMIN')) {
-    next({ name: 'home' });
-  } else if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'login' });
-  } else {
-    next();
-  }
+  routes
 })
 
 export default router

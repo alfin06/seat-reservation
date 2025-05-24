@@ -12,20 +12,22 @@ from users.serializers import UserSerializer
 from dashboard.models import *
 from users.models import User
 
-# Create your views here.
-#Nick
 from django.core.mail import send_mail
 from django.conf import settings
-from dashboard.models import Reservation, Seat, ClassRoom
-from dashboard.serializers import ReservationSerializer, SeatSerializer, ClassRoomSerializer
-
 from datetime import timedelta
-from django.utils import timezone
 import pytz
-# import qrcode
-# from io import BytesIO
 from collections import OrderedDict
 from django.db.models import Count
+
+#chetona - Booking History API View
+class ReservationHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        reservations = Reservation.objects.filter(user=user).order_by('-reserved_at')
+        serializer = ReservationHistorySerializer(reservations, many=True)
+        return Response(serializer.data, status=200)
 
 class ReservationCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -410,7 +412,7 @@ class ClassRoomEnableView(generics.DestroyAPIView):
 
 class ReservationSettingUpdateView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
-    serializer_class = ReservationResetSettingSerializer
+    serializer_class = ReservationSettingSerializer
 
     def get_object(self):
         return ReservationSetting.get_solo()
@@ -422,7 +424,7 @@ class ReservationSettingUpdateView(generics.UpdateAPIView):
 
 class ReservationSettingView(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = ReservationResetSettingSerializer
+    serializer_class = ReservationSettingSerializer
 
     def get(self, request, format=None):
         try:
@@ -431,7 +433,6 @@ class ReservationSettingView(generics.UpdateAPIView):
             for data in queryset:
                 setting_data.append({
                     'max_booking_duration': data.max_booking_duration,
-                    'reset_time': data.reset_time
                 })
             
             return JsonResponse({

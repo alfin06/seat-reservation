@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from django.utils import timezone
+from datetime import timedelta
 
 # Load environment variables from .env file
 load_dotenv()
@@ -47,6 +49,7 @@ INSTALLED_APPS = [
     'dashboard',
     'users',
     'rest_framework.authtoken', #Nick
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -124,7 +127,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'utc'
+TIME_ZONE = 'Asia/Shanghai'
 
 USE_I18N = True
 
@@ -254,5 +257,26 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+    },
+}
+
+Q_CLUSTER = {
+    'name': 'seat_reservation',
+    'workers': 4,
+    'timeout': 60,
+    'retry': 120,
+    'label': 'Django Q',
+    'redis': {
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 0,
+    }
+}
+
+Q_SCHEDULES = {
+    'aut-cancelation-task': {
+        'task': 'dashboard.tasks.cancel_overdue_reservations',
+        'schedule_type': 'interval',
+        'minutes': 1,
     },
 }

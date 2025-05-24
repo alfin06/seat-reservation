@@ -12,11 +12,12 @@ urlpatterns = [
     path('admin/classroom/list/', ClassRoomGetAll.as_view(), name='classroom-get-all'),
     path('admin/classroom/insert/', ClassRoomCreateView.as_view(), name='classroom-create'),
     path('admin/classroom/disable/', ClassRoomDisableView.as_view(), name='classroom-disable'),
-    path('admin/classroom/enable/', ClassRoomEnableView.as_view(), name='classroom-enable'),    
+    path('admin/classroom/enable/', ClassRoomEnableView.as_view(), name='classroom-enable'),
     path('admin/setting-update/', ReservationSettingUpdateView.as_view(), name='update-setting'),
     path('admin/setting/', ReservationSettingView.as_view(), name='setting'),
     path('admin/classroom/update/', UpdateClassroomView.as_view(), name='update_classroom'),
-    #Nick
+
+    # API endpoints
     path('api/reservations/', ReservationCreateView.as_view(), name='reservation-create'),
     path('api/available/', AvailableRoomsSeatsView.as_view(), name='available-rooms-seats'),
     path('api/allseats/', AllRoomsSeatsView.as_view(), name='all-rooms-seats'),
