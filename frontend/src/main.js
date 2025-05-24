@@ -19,6 +19,8 @@ import zh from './locales/zh.json'
 // vue3-notification
 import Notifications from '@kyvg/vue3-notification'
 
+import VCalendar from 'v-calendar'
+
 // Configure i18n
 const i18n = createI18n({
     locale: 'en',
@@ -33,6 +35,9 @@ app.use(router)
 app.use(i18n)
 app.use(ElementPlus)
 app.use(Notifications)
+app.use(VCalendar, {
+  componentPrefix: 'Vc', // Use <VcCalendar />, <VcDatePicker /> in templates
+})
 
 app.mount('#app')
 

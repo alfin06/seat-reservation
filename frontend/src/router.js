@@ -13,6 +13,7 @@ import InstantBooking from './pages/student/InstantBooking.vue'
 import ManageRooms from './pages/admin/ManageRooms.vue'
 import ManageSeats from './pages/admin/ManageSeats.vue'
 import Settings from './pages/admin/SystemSettings.vue'
+import History from './pages/student/BookingHistory.vue'
 
 const routes = [
   { path: '/', redirect: '/login' },
@@ -33,6 +34,7 @@ const routes = [
   { path: '/student/instant-booking', name: 'instant-booking', component: InstantBooking, meta: { requiresAuth: true } },
   { path: '/instant', redirect: '/student/instant-booking' },
   { path: '/booking-success', name: 'booking-success', component: BookingSuccess, meta: { requiresAuth: true } },
+  { path: '/history', name: 'history', component: History, meta: { requiresAuth: true } },
 ]
 
 const router = createRouter({

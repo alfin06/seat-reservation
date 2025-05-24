@@ -88,11 +88,11 @@ WSGI_APPLICATION = 'seat_reservation.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': os.getenv('NAME', 'seat_reservation'),
-        'USER': os.getenv('USER', 'root'),
-        'PASSWORD': os.getenv('MYSQL_PASSWORD', ''),
-        'HOST': os.getenv('HOST', '127.0.0.1'),
-        'PORT': os.getenv('PORT', '3306'),
+        'NAME': os.getenv('DB_NAME', 'seat_reservation'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }

@@ -26,4 +26,5 @@ urlpatterns = [
     path('api/reservations/stats/', UserReservationStatsView.as_view(), name='reservation-stats'),
     path('api/reservations/active/', ActiveReservationsView.as_view(), name='active-reservations'),
     path('api/reservations/<int:reservation_id>/cancel/', CancelReservationView.as_view(), name='cancel_reservation'),
+    path('api/reservations/history/', ReservationHistoryView.as_view(), name='reservation-history'),
 ]

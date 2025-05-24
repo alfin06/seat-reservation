@@ -74,6 +74,15 @@ class ReservationCreateView(APIView):
                 return Response({'error': 'Reservation failed!'}, status=status.HTTP_400_BAD_REQUEST)
             return Response(ReservationSerializer(reservation).data, status=201)
         return Response(serializer.errors, status=400)
+    
+class ReservationHistoryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        reservations = Reservation.objects.filter(user=user).order_by('-reserved_at')
+        serializer = ReservationHistorySerializer(reservations, many=True)
+        return Response(serializer.data, status=200)
 
 class AvailableRoomsSeatsView(APIView):
     permission_classes = [AllowAny]

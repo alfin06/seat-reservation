@@ -86,3 +86,15 @@ class ClassRoomSerializer(serializers.ModelSerializer):
         if len(value.strip()) == 0:
             raise serializers.ValidationError("Location cannot be empty.")
         return value
+
+class ReservationHistorySerializer(serializers.ModelSerializer):
+    classroom = serializers.CharField(source='classroom.name')
+    seat_name = serializers.CharField(source='seat.name')
+
+    class Meta:
+        model = Reservation
+        fields = [
+            'id', 'classroom', 'seat_name',
+            'reserved_at', 'reserved_end',
+            'duration', 'status'
+        ]
