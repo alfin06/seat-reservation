@@ -279,12 +279,11 @@ export default {
 }
 .grid-container {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+  grid-template-columns: repeat(5, 1fr);
   gap: 10px;
   justify-items: center;
 }
 .seat-box {
-  padding: 10px;
   width: 60px;
   height: 60px;
   background-color: #e9ecef;
@@ -295,7 +294,10 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.8rem;
+  font-size: 0.7rem;
+  position: relative;
+  padding: 0;
+  overflow: hidden;
 }
 .seat-box:hover {
   background-color: #d6d8db;
@@ -320,10 +322,17 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  text-align: center;
+  padding: 4px;
+  box-sizing: border-box;
+  gap: 2px;
 }
 .outlet-icon {
-  font-size: 1rem;
+  font-size: 0.9rem;
   color: #ffc107; /* Yellow lightning icon */
+  line-height: 1;
 }
 </style>
