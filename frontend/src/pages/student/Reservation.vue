@@ -94,7 +94,7 @@ export default {
 
       // 2. Convert to UTC explicitly
       const utcTimeStr = new Date(
-        shanghaiTime.getTime() - (shanghaiTime.getTimezoneOffset() * 60000)
+        shanghaiTime.getTime()
       ).toISOString(); // Will send as UTC
 
       // 3. Compute reserved_end
@@ -102,6 +102,8 @@ export default {
       const utcReservedEnd = new Date(
         reservedEnd.getTime() - (reservedEnd.getTimezoneOffset() * 60000)
       ).toISOString();
+      console.log(utcTimeStr)
+      console.log(utcReservedEnd)
 
       if (!token) {
         this.error = 'Not authenticated';
