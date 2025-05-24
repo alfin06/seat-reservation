@@ -558,6 +558,17 @@ class QRCodeCheckView2(APIView):
 
         if not seat.is_available or seat.is_disable == 0:
             return Response({'error': 'Seat is not available'}, status=400)
+        
+        # Check for active reservation for this seat and user
+        now = timezone.now()
+        has_valid_reservation = Reservation.objects.filter(
+            seat=seat,
+            reserved_at__lte=now,
+            reserved_end__gte=now
+        ).exists()
+
+        if has_valid_reservation:
+            return Response({'error': 'Seat is not available'}, status=400)
 
         return Response({
             'seat_id': seat.id,
