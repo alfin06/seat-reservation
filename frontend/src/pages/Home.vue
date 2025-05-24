@@ -1,177 +1,172 @@
-<script>
-import {useAuthStore} from '../store/auth.js'
-import {useRouter} from 'vue-router'
+<script setup>
+import { useAuthStore, getCSRFToken } from "@/store/auth.js";
+import { useRouter } from "vue-router";
+import { computed, onMounted, ref } from "vue";
+import { notify } from "@kyvg/vue3-notification";
 
-export default {
-    setup() {
-        const authStore = useAuthStore()
-        const router = useRouter()
+const authStore = useAuthStore();
+const router = useRouter();
 
-        return {
-            authStore,
-            router
-        }
-    },
-    methods: {
-        async logout() {
-            try {
-                await this.authStore.logout(this.$router)
-            } catch (error) {
-                console.error(error)
-            }
-        }
-    },
-    async mounted() {
-        await this.authStore.fetchUser()
+const stats = ref({ total: 0, active: 0, completed: 0, cancelled: 0 });
+const activeReservations = ref([]);
+
+const isToday = (date) => {
+  const d = new Date(date);
+  const now = new Date();
+  return d.getDate() === now.getDate() &&
+         d.getMonth() === now.getMonth() &&
+         d.getFullYear() === now.getFullYear();
+};
+
+const getLabel = (date) => (isToday(date) ? "Today" : "Upcoming");
+const getBadgeClass = (date) =>
+  isToday(date) ? "bg-success-subtle text-success" : "bg-warning-subtle text-warning";
+const getCardClass = (date) =>
+  isToday(date) ? "bg-success bg-opacity-10" : "bg-warning bg-opacity-10";
+
+const buttons = computed(() => {
+  const baseButtons = [
+    { label: "Book", route: "/booking", icon: "bi-journal-plus" },
+    { label: "Check‑in", route: "/check-in", icon: "bi-clipboard-check" },
+    { label: "Instant", route: "/instant", icon: "bi-lightning" },
+  ];
+  if (authStore.user?.role === "ADMIN") {
+    return [{ label: "Admin", route: "/admin-dashboard", icon: "bi-speedometer2" }, ...baseButtons];
+  }
+  return baseButtons;
+});
+
+const go = (path) => router.push(path);
+
+const cancelReservation = async (reservationId) => {
+  if (!window.confirm("Are you sure you want to cancel this reservation?")) return;
+
+  try {
+    const res = await fetch(`http://localhost:8000/dashboard/api/reservations/${reservationId}/cancel/`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${localStorage.getItem("token")}`,
+        "X-CSRFToken": getCSRFToken(),
+      },
+      body: JSON.stringify({ user_id: authStore.user?.id }),
+    });
+
+    if (!res.ok) throw new Error("Cancel failed");
+
+    notify({ type: "success", title: "Cancelled", text: "Reservation cancelled", duration: 2500 });
+    await fetchStatsAndReservations();
+  } catch (error) {
+    notify({ type: "error", title: "Error", text: "Could not cancel reservation", duration: 3000 });
+    console.error("Cancel failed:", error);
+  }
+};
+
+const fetchStatsAndReservations = async () => {
+  try {
+    const token = localStorage.getItem("token");
+
+    const statsRes = await fetch("http://localhost:8000/dashboard/api/reservations/stats/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+        "X-CSRFToken": getCSRFToken(),
+      },
+      body: JSON.stringify({ user_id: authStore.user?.id }),
+    });
+
+    if (statsRes.ok) {
+      const data = await statsRes.json();
+      stats.value = {
+        total: data.total_reservations,
+        active: data.active_reservations,
+        completed: data.completed_reservations,
+        cancelled: data.cancelled_reservations,
+      };
     }
-} 
+
+    const activeRes = await fetch("http://localhost:8000/dashboard/api/reservations/active/", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Token ${token}`,
+        "X-CSRFToken": getCSRFToken(),
+      },
+      body: JSON.stringify({ user_id: authStore.user?.id }),
+    });
+
+    if (activeRes.ok) {
+      activeReservations.value = await activeRes.json();
+    }
+  } catch (err) {
+    console.error("Error loading data:", err);
+  }
+};
+
+onMounted(async () => {
+  await authStore.fetchUser();
+  await fetchStatsAndReservations();
+});
 </script>
 
 <template>
-    <div class="home-container">
-        <h1 class="welcome-title">Study Seat Reservation System</h1>
-        
-        <div class="system-description">
-            <p>Welcome to our smart study space management system. Here you can:</p>
-            <ul>
-                <li>Reserve study seats in advance</li>
-                <li>Find available quiet spaces to study</li>
-                <li>Manage your bookings</li>
-                <li>Get notifications about your reservations</li>
-            </ul>
-        </div>
+  <div class="container-fluid py-4">
+    <section v-if="authStore.isAuthenticated" class="card shadow-sm p-4 mb-4">
+      <h5>Welcome, {{ authStore.user?.name || authStore.user?.username }}!</h5>
+      <p class="text-muted small">Last login: {{ new Date(authStore.user?.last_login).toLocaleString() }}</p>
 
-        <div v-if="authStore.isAuthenticated" class="user-info">
-            <h2>Welcome, {{ authStore.user?.name || authStore.user?.username }}!</h2>
-            
-            <div class="user-details">
-                <p><strong>Email:</strong> {{ authStore.user?.email }}</p>
-                <p><strong>Role:</strong> {{ authStore.user?.role || 'Student' }}</p>
-                <p><strong>Account Status:</strong> Active</p>
-                <p><strong>Last Login:</strong> {{ new Date(authStore.user?.last_login).toLocaleString() }}</p>
-            </div>
+      <div class="d-flex flex-wrap gap-2 mt-3">
+        <button v-for="btn in buttons" :key="btn.route" class="btn btn-outline-primary" @click="go(btn.route)">
+          <i :class="`bi ${btn.icon} me-2`"></i>{{ btn.label }}
+        </button>
+      </div>
+    </section>
 
-            <div class="actions">
-                <button 
-                    @click="$router.push(authStore.user?.role === 'ADMIN' ? '/admin-dashboard' : '/dashboard')" 
-                    class="btn primary"
-                >
-                    {{ authStore.user?.role === 'ADMIN' ? 'Admin Dashboard' : 'Make a Reservation' }}
-                </button>
-                <button @click="logout" class="btn secondary">Logout</button>
+    <section class="card shadow-sm p-4">
+      <h5>Reservation Stats</h5>
+      <div class="row text-center mb-4 mt-3">
+        <div class="col-6 col-md-3" v-for="(value, key) in stats" :key="key">
+          <div class="p-3 bg-light rounded">
+            <div class="fw-bold fs-5">{{ value }}</div>
+            <div class="small text-muted text-capitalize">{{ key }}</div>
+          </div>
+        </div>
+      </div>
+
+      <div v-if="activeReservations.length" class="mt-4">
+        <h6>Upcoming Reservations</h6>
+        <div class="row">
+          <div v-for="res in activeReservations" :key="res.id" class="col-12 col-md-6 col-lg-4">
+            <div class="card shadow-sm mb-3 p-3" :class="getCardClass(res.reserved_start_time)">
+              <div class="mb-2">
+                <h6 class="text-primary mb-1">{{ res.classroom }}</h6>
+                <span class="badge" :class="getBadgeClass(res.reserved_start_time)">
+                  {{ getLabel(res.reserved_start_time) }}
+                </span>
+              </div>
+              <div class="small mb-1">Seat {{ res.seat_id }}</div>
+              <div class="small mb-2">
+                {{ new Date(res.reserved_start_time).toLocaleString() }} — 
+                {{ new Date(res.reserved_end_time).toLocaleTimeString() }}
+              </div>
+              <button class="btn btn-sm btn-outline-success w-100 mb-1" @click="$router.push('/check-in')">
+                <i class="bi bi-clipboard-check me-2"></i>Check In
+              </button>
+              <button class="btn btn-sm btn-outline-danger w-100" @click="cancelReservation(res.id)">
+                <i class="bi bi-x-circle me-2"></i>Cancel
+              </button>
             </div>
+          </div>
         </div>
-        
-        <div v-else class="auth-prompt">
-            <p>Please <router-link to="/login">login</router-link> or <router-link to="/register">register</router-link> to make a seat reservation.</p>
-        </div>
-    </div>
+      </div>
+    </section>
+  </div>
 </template>
 
 <style scoped>
-.home-container {
-    max-width: 800px;
-    margin: 0 auto;
-    padding: 2rem;
-}
-
-.welcome-title {
-    color: #2c3e50;
-    text-align: center;
-    margin-bottom: 2rem;
-}
-
-.system-description {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 1.5rem;
-    margin: 2rem 0;
-    color: #495057;
-}
-
-.system-description ul {
-    list-style-type: none;
-    padding: 0;
-    margin: 1rem 0;
-}
-
-.system-description li {
-    padding: 0.5rem 0;
-    padding-left: 1.5rem;
-    position: relative;
-}
-
-.system-description li:before {
-    content: "✓";
-    color: #3498db;
-    position: absolute;
-    left: 0;
-}
-
-.user-info {
-    background: #f8f9fa;
-    border-radius: 8px;
-    padding: 2rem;
-    margin-top: 2rem;
-}
-
-.user-details {
-    margin: 1.5rem 0;
-}
-
-.user-details p {
-    margin: 0.5rem 0;
-    color: #495057;
-}
-
-.actions {
-    display: flex;
-    gap: 1rem;
-    margin-top: 2rem;
-}
-
-.btn {
-    padding: 0.75rem 1.5rem;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.btn.primary {
-    background: #3498db;
-    color: white;
-}
-
-.btn.primary:hover {
-    background: #2980b9;
-}
-
-.btn.secondary {
-    background: #e74c3c;
-    color: white;
-}
-
-.btn.secondary:hover {
-    background: #c0392b;
-}
-
-.auth-prompt {
-    text-align: center;
-    margin-top: 2rem;
-    padding: 2rem;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.auth-prompt a {
-    color: #3498db;
-    text-decoration: none;
-    font-weight: 600;
-}
-
-.auth-prompt a:hover {
-    text-decoration: underline;
+.card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 0.75rem 1.25rem rgba(0, 0, 0, 0.05);
 }
 </style>

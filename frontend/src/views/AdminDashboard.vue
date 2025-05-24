@@ -1,29 +1,26 @@
 <template>
   <div class="admin-dashboard">
-    <!-- Header with Language Toggle -->
+    <!-- Header -->
     <div class="admin-header">
-      <h1>Study Seat Reservation System</h1>
-      <el-dropdown trigger="click" @command="changeLanguage">
-        <span class="language-toggle">
-          <i class="el-icon-global"></i> {{ currentLanguage.toUpperCase() }} ▼
-        </span>
-        <el-dropdown-menu slot="dropdown">
-          <el-dropdown-item command="en">English</el-dropdown-item>
-          <el-dropdown-item command="zh">中文</el-dropdown-item>
-        </el-dropdown-menu>
-      </el-dropdown>
+      <h1>{{ $t('adminTitle') }}</h1>
     </div>
 
     <!-- Urgent Alert -->
     <el-alert 
+      v-if="showCleaningAlert"
       type="warning" 
-      title="Immediate Action Needed" 
+      :title="$t('urgentAlertTitle')" 
       show-icon
       style="margin-bottom: 20px;"
     >
-      <span>3 seats need cleaning in Room B</span>
-      <el-button type="warning" size="mini" style="margin-left: 10px;">
-        Mark as Cleaned
+      <span>{{ $t('cleaningNotice') }}</span>
+      <el-button 
+        type="warning" 
+        size="mini" 
+        style="margin-left: 10px;"
+        @click="dismissCleaningAlert"
+      >
+        {{ $t('markAsCleaned') }}
       </el-button>
     </el-alert>
 
@@ -33,8 +30,8 @@
         <el-card class="stat-card" shadow="hover">
           <div class="stat-content">
             <h3>8</h3>
-            <p>Total Rooms</p>
-            <el-tag type="success" effect="dark">+2 New</el-tag>
+            <p>{{ $t('totalRooms') }}</p>
+            <el-tag type="success" effect="dark">{{ $t('newRoomsTag') }}</el-tag>
           </div>
         </el-card>
       </el-col>
@@ -42,8 +39,8 @@
         <el-card class="stat-card" shadow="hover">
           <div class="stat-content">
             <h3>24</h3>
-            <p>Active Bookings</p>
-            <el-tag type="warning" effect="dark">3 Ending Soon</el-tag>
+            <p>{{ $t('activeBookings') }}</p>
+            <el-tag type="warning" effect="dark">{{ $t('endingSoonTag') }}</el-tag>
           </div>
         </el-card>
       </el-col>
@@ -51,23 +48,23 @@
         <el-card class="stat-card" shadow="hover">
           <div class="stat-content">
             <h3>2</h3>
-            <p>Today's No-Shows</p>
-            <el-tag type="danger" effect="dark">-10% from avg</el-tag>
+            <p>{{ $t('todaysNoShows') }}</p>
+            <el-tag type="danger" effect="dark">{{ $t('noShowDropTag') }}</el-tag>
           </div>
         </el-card>
       </el-col>
     </el-row>
 
     <!-- Main Tabs -->
-    <el-tabs v-model="activeTab">
-      <el-tab-pane label="Rooms" name="rooms">
-        <room-management />
+    <el-tabs v-model="activeTab" class="dashboard-tabs">
+      <el-tab-pane :label="$t('tabRooms')" name="rooms">
+        <RoomManagement />
       </el-tab-pane>
-      <el-tab-pane label="Users" name="users">
-        <user-management />
+      <el-tab-pane :label="$t('tabUsers')" name="users">
+        <UserManagement />
       </el-tab-pane>
-      <el-tab-pane label="Settings" name="settings">
-        <system-settings />
+      <el-tab-pane :label="$t('tabSettings')" name="settings">
+        <SystemSettings />
       </el-tab-pane>
     </el-tabs>
   </div>
@@ -79,21 +76,17 @@ import UserManagement from '../components/admin/UserManagement.vue'
 import SystemSettings from '../components/admin/SystemSettings.vue'
 
 export default {
-  components: {
-    RoomManagement,
-    UserManagement,
-    SystemSettings
-  },
+  components: { RoomManagement, UserManagement, SystemSettings },
   data() {
     return {
       activeTab: 'rooms',
-      currentLanguage: 'en'
+      showCleaningAlert: true
     }
   },
   methods: {
-    changeLanguage(lang) {
-      this.currentLanguage = lang
-      this.$message.success(`Language changed to ${lang === 'en' ? 'English' : 'Chinese'}`)
+    dismissCleaningAlert() {
+      this.showCleaningAlert = false
+      this.$message.success(this.$t('cleaningMarkedComplete'))
     }
   }
 }
@@ -102,38 +95,54 @@ export default {
 <style scoped>
 .admin-dashboard {
   padding: 20px;
-  max-width: 1200px;
-  margin: 0 auto;
+  background-color: #f5f7fa;
+  min-height: 100vh;
 }
+
 .admin-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
   margin-bottom: 20px;
 }
-.language-toggle {
-  cursor: pointer;
-  color: #666;
-  font-size: 14px;
+
+.admin-header h1 {
+  color: #303133;
+  font-size: 24px;
+  margin: 0;
 }
-.language-toggle:hover {
-  color: #409EFF;
-}
+
 .stats-row {
   margin-bottom: 20px;
 }
+
 .stat-card {
+  height: 100%;
+  transition: transform 0.3s;
+}
+
+.stat-card:hover {
+  transform: translateY(-5px);
+}
+
+.stat-content {
+  padding: 15px;
   text-align: center;
-  padding: 15px 0;
-  border-top: 3px solid #409EFF;
 }
-.stat-card h3 {
-  font-size: 32px;
-  margin: 0;
-  color: #409EFF;
+
+.stat-content h3 {
+  font-size: 28px;
+  margin: 0 0 8px 0;
+  font-weight: 600;
 }
-.stat-card p {
-  margin: 5px 0;
-  font-weight: bold;
+
+.stat-content p {
+  margin: 0 0 10px 0;
+  font-weight: 500;
+  color: #606266;
+}
+
+.dashboard-tabs {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.1);
 }
 </style>

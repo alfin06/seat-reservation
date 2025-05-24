@@ -28,7 +28,7 @@
           this.loading = false;
           setTimeout(() => {
             this.$router.push({ name: "login" });
-          }, 5000);
+          }, 10000);
         });
     },
   };
@@ -51,7 +51,6 @@
   <style scoped>
   .verify-email {
     text-align: center;
-    margin-top: 50px;
     font-size: 18px;
   }
   .success-message {

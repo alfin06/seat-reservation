@@ -12,6 +12,11 @@ class Seat(models.Model):
         (0, 'Disable'),
         (1, 'Active')
     )
+    HAS_OUTLET = (
+        (0, 'No'),
+        (1, 'Yes')
+    )
+
     id = models.AutoField(primary_key=True)
     classroom = models.ForeignKey(
         'ClassRoom',
@@ -20,24 +25,56 @@ class Seat(models.Model):
         null=True,
         blank=True
     )
-    seat_number = models.IntegerField(null=True, blank=True)
+
     location = models.CharField(max_length=100)
     name = models.CharField(max_length=200)
     is_available = models.SmallIntegerField(choices=RESERVE_STATE, default=1)
     is_disable = models.SmallIntegerField(choices=IS_DISABLE, default=1)
-    create_at = models.DateTimeField(default=timezone.now())
+    has_outlet = models.SmallIntegerField(choices=HAS_OUTLET, default=1)
+    create_at = models.DateTimeField(default=timezone.now)
     update_at = models.DateTimeField(auto_now=True)
 
     def save(self, *args, **kwargs):
-        if not self.pk:
-            super().save(*args, **kwargs)
-        if not self.name:
-            self.name = f"Seat {self.id} - {self.location}"
+        is_new = self.pk is None
+        if is_new and not self.name:
+            self.name = f"Seat - {self.location}"
+        
         super().save(*args, **kwargs)
 
+        if is_new and "Seat -" in self.name:
+            self.name = f"Seat {self.id} - {self.location}"
+            Seat.objects.filter(pk=self.pk).update(name=self.name)
+#Nick   
+class Reservation(models.Model):
+    STATUS_CHOICES = (
+        (0, 'Active'),
+        (1, 'Completed'),
+        (2, 'Cancelled'),
+        # (3, 'Checked-In'),
+    )
+    user = models.ForeignKey('users.User', on_delete=models.CASCADE, related_name='reservations')
+    classroom = models.ForeignKey('ClassRoom', on_delete=models.CASCADE, related_name='reservations')
+    seat = models.ForeignKey('Seat', on_delete=models.CASCADE, related_name='reservations')
+    duration = models.PositiveIntegerField(default=1)  # in hours, max 4
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default=0)
+    reserved_at = models.DateTimeField(default=timezone.now)
+    reserved_end = models.DateTimeField(default=timezone.now)
+    create_at = models.DateTimeField(default=timezone.now)
+    checked_in_at = models.DateTimeField(null=True, blank=True)
     def __str__(self):
-        return f"Seat {self.id} - {self.location}"
+        return f"Reservation by {self.user} for Seat {self.seat.id} in Room {self.classroom.id}"
 
+    def save(self, *args, **kwargs):
+        if self.status == '3' and not self.checked_in_at:  # Checked-In
+            self.checked_in_at = timezone.now()
+        super().save(*args, **kwargs)
+
+class ReservationSetting(models.Model):
+    max_booking_duration = models.PositiveSmallIntegerField(default=4)
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+     
 class ClassRoom(models.Model):
     RESERVE_STATE = (
         (0, 'Reserved'),
@@ -53,15 +90,16 @@ class ClassRoom(models.Model):
     number_of_seats = models.IntegerField()
     is_available = models.SmallIntegerField(choices=RESERVE_STATE, default=1)
     is_disable = models.SmallIntegerField(choices=IS_DISABLE, default=1)
-    create_at = models.DateTimeField(default=timezone.now())
+    create_at = models.DateTimeField(default=timezone.now)
     update_at = models.DateTimeField(auto_now=True)
         
     def save(self, *args, **kwargs):
-        if not self.pk:
-            super().save(*args, **kwargs)
-        if not self.name:
-            self.name = f"Room {self.id} - {self.location}"
+        is_new = self.pk is None
         super().save(*args, **kwargs)
+
+        if is_new and not self.name:
+            self.name = f"Room {self.id} - {self.location}"
+            self.__class__.objects.filter(pk=self.pk).update(name=self.name)
 
     def __str__(self):
         return f"Room {self.id} - {self.location}"

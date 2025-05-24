@@ -1,16 +1,18 @@
-import requests
-import json
+import pytest
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APIClient
+from users.models import User
 
-BASE_URL = 'http://127.0.0.1:8000'
-
+@pytest.mark.django_db
 def test_welcome_page():
-    response = requests.get(f'{BASE_URL}/')
-    print('\nTesting Welcome Page:')
-    print(f'Status Code: {response.status_code}')
-    print(f'Response: {response.text[:200]}...' if len(response.text) > 200 else response.text)
+    client = APIClient()
+    response = client.get('/')
+    assert response.status_code == status.HTTP_200_OK
 
+@pytest.mark.django_db
 def test_user_registration():
-    url = f'{BASE_URL}/users/register/'
+    client = APIClient()
     data = {
         'email': 'test@example.com',
         'password': 'testpass123',
@@ -18,13 +20,7 @@ def test_user_registration():
         'name': 'Test User',
         'role': 'STUDENT'
     }
-    headers = {'Content-Type': 'application/json'}
-    
-    print('\nTesting User Registration:')
-    response = requests.post(url, json=data, headers=headers)
-    print(f'Status Code: {response.status_code}')
-    print(f'Response: {json.dumps(response.json(), indent=2)}')
-
-if __name__ == '__main__':
-    test_welcome_page()
-    test_user_registration() 
+    url = reverse('register')
+    response = client.post(url, data, format='json')
+    assert response.status_code == status.HTTP_201_CREATED
+    assert User.objects.filter(email=data['email']).exists() 
