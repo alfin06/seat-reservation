@@ -1,21 +1,21 @@
 <template>
   <div class="booking-history">
     <h2>{{ $t('bookingHistory.title') }}</h2>
-    
+
     <!-- Filter Bar -->
     <div class="filter-bar">
       <select v-model="filters.room" class="filter-select">
         <option value="all">{{ $t('bookingHistory.filters.allRooms') }}</option>
         <option v-for="room in uniqueRooms" :key="room" :value="room">{{ room }}</option>
       </select>
-      
+
       <div class="date-filter-container">
         <button @click="toggleDatePicker" class="date-filter-btn">
           {{ dateFilterDisplay }}
           <span class="calendar-icon">📅</span>
         </button>
         <div v-if="showDatePicker" class="calendar-popup">
-          <VcDatePicker  
+          <VDatePicker 
             v-model="selectedDate" 
             mode="date"
             is-range
@@ -23,14 +23,14 @@
           />
         </div>
       </div>
-      
+
       <select v-model="filters.status" class="filter-select">
         <option value="all">{{ $t('bookingHistory.filters.allStatuses') }}</option>
         <option value="ACTIVE">{{ $t('bookingHistory.statuses.active') }}</option>
         <option value="COMPLETED">{{ $t('bookingHistory.statuses.completed') }}</option>
         <option value="CANCELLED">{{ $t('bookingHistory.statuses.cancelled') }}</option>
       </select>
-      
+
       <button @click="resetFilters" class="reset-btn">{{ $t('bookingHistory.filters.reset') }}</button>
     </div>
 
@@ -89,57 +89,17 @@
 </template>
 
 <script>
-import { ref } from 'vue';
-import 'v-calendar/dist/style.css';
+import { ref } from 'vue'
+import { DatePicker as VDatePicker } from 'v-calendar'
+import 'v-calendar/dist/style.css'
+import axios from 'axios'
 
 export default {
   name: 'BookingHistory',
-  components: {
-  },
+  components: { VDatePicker },
   data() {
     return {
-      bookings: [
-        {
-          id: 1,
-          room: "Room A",
-          seat: "Seat 1",
-          startTime: "2025-05-02T09:00:00",
-          endTime: "2025-05-02T11:00:00",
-          status: "ACTIVE"
-        },
-        {
-          id: 2,
-          room: "Room A",
-          seat: "Seat 3",
-          startTime: "2025-05-01T14:00:00",
-          endTime: "2025-05-01T16:00:00",
-          status: "ACTIVE"
-        },
-        {
-          id: 3,
-          room: "Room C",
-          seat: "Seat 2",
-          startTime: "2025-04-30T13:00:00",
-          endTime: "2025-04-30T15:00:00",
-          status: "CANCELLED"
-        },
-        {
-          id: 4,
-          room: "Room B",
-          seat: "Seat 4",
-          startTime: "2025-04-29T16:00:00",
-          endTime: "2025-04-29T18:00:00",
-          status: "COMPLETED"
-        },
-        {
-          id: 5,
-          room: "Room B",
-          seat: "Seat 5",
-          startTime: "2025-04-28T10:00:00",
-          endTime: "2025-04-28T12:00:00",
-          status: "COMPLETED"
-        }
-      ],
+      bookings: [], // ← Now loaded from backend
       filters: {
         room: 'all',
         date: 'all',
@@ -155,46 +115,74 @@ export default {
       return [...new Set(this.bookings.map(b => b.room))].sort()
     },
     dateFilterDisplay() {
-      if (this.filters.date === 'all') return this.$t('bookingHistory.filters.allDates');
+      if (this.filters.date === 'all') return this.$t('bookingHistory.filters.allDates')
       if (this.selectedDate?.start && this.selectedDate?.end) {
-        const start = this.formatDate(this.selectedDate.start);
-        const end = this.formatDate(this.selectedDate.end);
-        return start === end ? start : `${start} - ${end}`;
+        const start = this.formatDate(this.selectedDate.start)
+        const end = this.formatDate(this.selectedDate.end)
+        return start === end ? start : `${start} - ${end}`
       }
-      return this.$t('bookingHistory.filters.selectDate');
+      return this.$t('bookingHistory.filters.selectDate')
     },
     filteredBookings() {
       return this.bookings.filter(booking => {
         const roomMatch = this.filters.room === 'all' || booking.room === this.filters.room
         const dateMatch = this.checkDateMatch(booking.startTime)
-        const statusMatch = this.filters.status === 'all' || 
-          booking.status === this.filters.status
-        
+        const statusMatch = this.filters.status === 'all' || booking.status === this.filters.status
         return roomMatch && dateMatch && statusMatch
       })
     }
   },
+  mounted() {
+    const token = localStorage.getItem('token')
+    axios.get('/api/reservations/history/', {
+      headers: {
+        Authorization: `Token ${token}`
+      }
+    })
+    .then(response => {
+      this.bookings = response.data.map(item => ({
+        id: item.id,
+        room: item.classroom,
+        seat: item.seat_name,
+        startTime: item.reserved_at,
+        endTime: item.reserved_end,
+        duration: item.duration,
+        status: this.mapStatus(item.status)
+      }))
+    })
+    .catch(error => {
+      console.error('Error fetching booking history:', error)
+    })
+  },
   methods: {
+    mapStatus(code) {
+      switch (code) {
+        case 0: return 'ACTIVE'
+        case 1: return 'COMPLETED'
+        case 2: return 'CANCELLED'
+        default: return 'UNKNOWN'
+      }
+    },
     checkDateMatch(bookingDate) {
-      if (this.filters.date === 'all') return true;
-      if (!this.selectedDate?.start || !this.selectedDate?.end) return true;
-      
-      const bookingDateTime = new Date(bookingDate).getTime();
-      const startDateTime = new Date(this.selectedDate.start).setHours(0, 0, 0, 0);
-      const endDateTime = new Date(this.selectedDate.end).setHours(23, 59, 59, 999);
-      
-      return bookingDateTime >= startDateTime && bookingDateTime <= endDateTime;
+      if (this.filters.date === 'all') return true
+      if (!this.selectedDate?.start || !this.selectedDate?.end) return true
+
+      const bookingDateTime = new Date(bookingDate).getTime()
+      const startDateTime = new Date(this.selectedDate.start).setHours(0, 0, 0, 0)
+      const endDateTime = new Date(this.selectedDate.end).setHours(23, 59, 59, 999)
+
+      return bookingDateTime >= startDateTime && bookingDateTime <= endDateTime
     },
     formatDate(dateString) {
-      const date = new Date(dateString);
-      return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`;
+      const date = new Date(dateString)
+      return `${date.getFullYear()}/${String(date.getMonth() + 1).padStart(2, '0')}/${String(date.getDate()).padStart(2, '0')}`
     },
     formatTime(dateString) {
       return new Date(dateString).toLocaleTimeString(this.$i18n.locale, {
         hour: '2-digit',
         minute: '2-digit',
         hour12: false
-      }).replace(/^0/, '');
+      }).replace(/^0/, '')
     },
     resetFilters() {
       this.filters = {
@@ -202,8 +190,8 @@ export default {
         date: 'all',
         status: 'all'
       }
-      this.selectedDate = null;
-      this.showDatePicker = false;
+      this.selectedDate = null
+      this.showDatePicker = false
     },
     showCancelModal(booking) {
       this.cancelModal = booking
@@ -218,14 +206,14 @@ export default {
       }
     },
     toggleDatePicker() {
-      this.showDatePicker = !this.showDatePicker;
+      this.showDatePicker = !this.showDatePicker
     },
     handleDateSelection(dateRange) {
       if (dateRange) {
-        this.filters.date = 'selected';
-        this.selectedDate = dateRange;
+        this.filters.date = 'selected'
+        this.selectedDate = dateRange
       }
-      this.showDatePicker = false;
+      this.showDatePicker = false
     }
   }
 }

@@ -39,7 +39,31 @@ const routes = [
 
 const router = createRouter({
   history: createWebHistory(),
-  routes
+  routes,
+})
+
+// Navigation Guard for Auth
+router.beforeEach((to, from, next) => {
+  const storedState = JSON.parse(localStorage.getItem('authState'))
+  const isAuthenticated = storedState?.isAuthenticated
+  const userRole = storedState?.user?.role
+  
+  const publicRoutes = ['reset-password', 'verify-email'];
+  if (publicRoutes.includes(to.name)) {
+    next();
+    return;
+  }
+
+  // Redirect authenticated users away from login/register/forgot-password
+  if ((to.name === 'login' || to.name === 'register' || to.name === 'forgot-password') && isAuthenticated) {
+    next({ name: 'home' });
+  } else if (to.meta.requiresAdmin && (!isAuthenticated || userRole !== 'ADMIN')) {
+    next({ name: 'home' });
+  } else if (to.meta.requiresAuth && !isAuthenticated) {
+    next({ name: 'login' });
+  } else {
+    next();
+  }
 })
 
 export default router
