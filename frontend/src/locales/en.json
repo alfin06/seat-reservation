@@ -74,5 +74,8 @@
   "manageRoom": "Manage Classrooms",
   "manageSeat": "Manage Seats",
   "settings": "General Settings",
-  "userManagement": "User Management"
+  "userManagement": "User Management",
+  "checkInSuccess": "Check-in Successful!",
+  "youHaveCheckedIn": "You have successfully checked in to your reserved seat.",
+  "ok": "OK"
 }

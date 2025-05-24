@@ -4,7 +4,7 @@ import { BrowserQRCodeReader } from '@zxing/browser';
 import { useRouter } from 'vue-router';
 import { useAuthStore, getCSRFToken } from "../../store/auth.js";
 import { notify } from "@kyvg/vue3-notification";
-import { Tooltip } from 'bootstrap';
+import { Tooltip, Modal } from 'bootstrap';
 
 const video = ref(null);
 const scannedValue = ref('');
@@ -14,6 +14,8 @@ const authStore = useAuthStore();
 let codeReader;
 
 const cameraReady = ref(false);
+const showModal = ref(false); // <-- Modal control
+let modalInstance = null;
 
 function navigate(route) {
   router.push(route);
@@ -39,7 +41,10 @@ async function callApi(qrValue) {
 
     const data = await response.json();
     if (response.status === 201) {
-      notify({ type: "success", title: 'SUCCESS', duration: 3000, text: "Check-in successful!" });
+      //notify({ type: "success", title: 'SUCCESS', duration: 2000, text: "Check-in successful!" });
+      // Show modal
+      showModal.value = true;
+      if (modalInstance) modalInstance.show();
     } else {
       notify({ type: "error", title: 'ERROR', duration: 3000, text: "No valid reservation for check-in found." });
     }
@@ -60,7 +65,7 @@ onMounted(async () => {
         cameraReady.value = true;
         setTimeout(() => {
           scannedValue.value = "";
-        }, 5000); // 5 seconds cooldown
+        }, 5000); // cooldown
         if (result && scannedValue.value !== result.getText()) {
           scannedValue.value = result.getText();
           callApi(scannedValue.value);
@@ -74,9 +79,11 @@ onMounted(async () => {
     console.error('QR Error:', error);
   }
 
-  // Initialize all tooltips
   const tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
   tooltipTriggerList.forEach(el => new Tooltip(el));
+
+  const modalEl = document.getElementById('checkinSuccessModal');
+  if (modalEl) modalInstance = new Modal(modalEl);
 });
 
 onBeforeUnmount(() => {
@@ -90,6 +97,11 @@ onBeforeUnmount(() => {
     const tracks = stream.getTracks();
     tracks.forEach(track => track.stop());
     video.value.srcObject = null;
+  }
+
+  if (modalInstance) {
+    modalInstance.hide();
+    modalInstance = null;
   }
 });
 </script>
@@ -140,6 +152,28 @@ onBeforeUnmount(() => {
             </div>
 
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Success Modal -->
+  <div class="modal fade" id="checkinSuccessModal" tabindex="-1" aria-labelledby="checkinSuccessModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content rounded-4 shadow-sm">
+        <div class="modal-header border-0">
+          <h5 class="modal-title text-success fw-semibold" id="checkinSuccessModalLabel">
+            ✅ {{ $t('checkInSuccess') || 'Check-In Successful!' }}
+          </h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body text-muted">
+          {{ $t('youHaveCheckedIn') || 'You have successfully checked in to your reserved seat.' }}
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-primary" data-bs-dismiss="modal">
+            {{ $t('ok') || 'OK' }}
+          </button>
         </div>
       </div>
     </div>

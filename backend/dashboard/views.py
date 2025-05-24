@@ -524,9 +524,9 @@ class QRCodeCheckView(APIView):
             return Response({"detail": "Missing user_id or qrCode"}, status=status.HTTP_400_BAD_REQUEST)
 
         # Get current time in UTC and convert it to Shanghai time
-        shanghai_tz = pytz.timezone('Asia/Shanghai')
+        #shanghai_tz = pytz.timezone('Asia/Shanghai')
         now_utc = timezone.now()
-        now = now_utc.astimezone(shanghai_tz)  # Current time in Shanghai timezone
+        now = now_utc
 
         # Filter potential matching reservations
         reservations = Reservation.objects.filter(

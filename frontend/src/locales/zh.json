@@ -73,6 +73,9 @@
     "manageRoom": "管理教室",
     "manageSeat": "管理席位",
     "settings": "常规设置",
-    "userManagement": "用户管理"
+    "userManagement": "用户管理",
+    "checkInSuccess": "入住成功！",
+    "youHaveCheckedIn": "您已成功办理预订座位的登机手续。",
+    "ok": "好的"
   }
   
