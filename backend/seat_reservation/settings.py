@@ -13,6 +13,8 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+from django.utils import timezone
+from datetime import timedelta
 
 # Load environment variables from .env file
 load_dotenv()
@@ -44,8 +46,10 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'dashboard',
     'users',
-    # 'dashboard',  # Commented out dashboard app
+    'rest_framework.authtoken', #Nick
+    'django_q',
 ]
 
 MIDDLEWARE = [
@@ -87,11 +91,11 @@ WSGI_APPLICATION = 'seat_reservation.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'seat_reservation',
-        'USER': 'root',
-        'PASSWORD': os.getenv('MYSQL_PASSWORD'),
-        'HOST': '127.0.0.1',
-        'PORT': '3306',
+        'NAME': os.getenv('DB_NAME', 'seat_reservation'),
+        'USER': os.getenv('DB_USER', 'root'),
+        'PASSWORD': os.getenv('DB_PASSWORD', ''),
+        'HOST': os.getenv('DB_HOST', '127.0.0.1'),
+        'PORT': os.getenv('DB_PORT', '3306'),
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
         }
@@ -149,21 +153,25 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.SessionAuthentication',
+        'rest_framework.authentication.TokenAuthentication',
     ],
     'DEFAULT_PERMISSION_CLASSES': [
         'rest_framework.permissions.AllowAny',
+        'rest_framework.permissions.IsAuthenticated',
     ],
+
 }
+
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.kinvitation.com'
+EMAIL_HOST = 'mail.finicode.com'
 EMAIL_USE_TLS = False  # Use TLS instead of SSL
 EMAIL_USE_SSL = True  # Disable SSL since we're using TLS
 EMAIL_PORT = 465  # Changed to TLS port
-EMAIL_HOST_USER = 'no-reply@kinvitation.com'
-EMAIL_HOST_PASSWORD = 'Vf@GPOKe25wL'
-DEFAULT_FROM_EMAIL = 'no-reply@kinvitation.com'
+EMAIL_HOST_USER = 'seat-reservation@finicode.com'
+EMAIL_HOST_PASSWORD = 'YwlCR9aC}0jP'
+DEFAULT_FROM_EMAIL = 'seat-reservation@finicode.com'
 # SERVER_EMAIL = 'seat-reservation@finicode.com'
 #EMAIL_TIMEOUT = 30  # Add timeout setting
 
@@ -192,6 +200,7 @@ CORS_ALLOW_HEADERS = [
     'user-agent',
     'x-csrftoken',
     'x-requested-with',
+    'token',
 ]
 
 # CSRF Settings
@@ -248,5 +257,26 @@ LOGGING = {
             'level': 'DEBUG',
             'propagate': True,
         },
+    },
+}
+
+Q_CLUSTER = {
+    'name': 'seat_reservation',
+    'workers': 4,
+    'timeout': 60,
+    'retry': 120,
+    'label': 'Django Q',
+    'redis': {
+        'host': '127.0.0.1',
+        'port': 6379,
+        'db': 0,
+    }
+}
+
+Q_SCHEDULES = {
+    'aut-cancelation-task': {
+        'task': 'dashboard.tasks.cancel_overdue_reservations',
+        'schedule_type': 'interval',
+        'minutes': 1,
     },
 }

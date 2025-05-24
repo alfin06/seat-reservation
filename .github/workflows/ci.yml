@@ -1,0 +1,61 @@
+# .github/workflows/ci.yml
+name: CI - Build and Test
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: seat_reservation
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install Django backend dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # - name: Run Django tests
+    #   working-directory: ./backend
+    #   env:
+    #     DB_HOST: 127.0.0.1
+    #     DB_NAME: seat_reservation
+    #     DB_USER: root
+    #     DB_PASSWORD: root
+    #   run: |
+    #     python manage.py migrate
+    #     python manage.py test
+
+    - name: Install frontend dependencies
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm run build

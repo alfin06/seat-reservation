@@ -97,14 +97,24 @@ export const useAuthStore = defineStore('auth', {
         const data = await response.json()
         this.user = {
           ...data.user,
-          role: data.role // Include role in user data
+          role: data.user.role?.toUpperCase()
         }
         this.isAuthenticated = true
+        localStorage.setItem("token", data.token);
+        localStorage.setItem("authState", JSON.stringify({
+          isAuthenticated: true,
+          user: {
+            ...data.user,
+            role: data.user.role?.toUpperCase()
+          }
+        }));
         this.saveState()
         
         if (router) {
           // Redirect based on role
-          const route = data.role === 'ADMIN' ? 'admin-dashboard' : 'home'
+          console.log(data.user.role)
+          const route = data.user.role == 'ADMIN' ? 'admin-dashboard' : 'home'
+          console.log(route)
           await router.push({ name: route })
         }
       } catch (error) {
@@ -148,7 +158,7 @@ export const useAuthStore = defineStore('auth', {
         this.saveState()
         
         // Clear any stored tokens or session data
-        localStorage.removeItem('authState')
+        localStorage.removeItem('token')
         
         // Redirect to login page
         if (router) {
@@ -211,6 +221,7 @@ export const useAuthStore = defineStore('auth', {
           headers: {
             'Content-Type': 'application/json',
             'X-CSRFToken': getCSRFToken(),
+            'Authorization': `Token ${localStorage.getItem('token')}`
           },
         })
         
@@ -233,6 +244,14 @@ export const useAuthStore = defineStore('auth', {
         this.isAuthenticated = false
       }
       this.saveState()
+    },
+
+    getAuthHeaders() {
+      return {
+        'Content-Type': 'application/json',
+        'X-CSRFToken': getCSRFToken(),
+        'Authorization': `Token ${localStorage.getItem('token')}`
+      }
     },
 
     saveState() {
