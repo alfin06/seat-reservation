@@ -86,7 +86,11 @@
       </el-table-column>
 
       <!-- Updated At -->
-      <el-table-column prop="updated_at" label="Last Updated" width="180" />
+      <el-table-column label="Last Updated" width="180">
+        <template #default="{ row }">
+          {{ formatDate(row.updated_at) }}
+        </template>
+      </el-table-column>
 
       <!-- Actions -->
       <el-table-column label="Actions" width="320">
@@ -144,6 +148,7 @@
 <script>
 import axios from 'axios'
 import QrcodeVue from 'qrcode.vue'
+import dayjs from 'dayjs'
 
 export default {
   components: {
@@ -432,6 +437,9 @@ export default {
     },
     closeModal() {
       this.showQR = false
+    },
+    formatDate(dateString) {
+      return dayjs(dateString).format('YYYY-MM-DD HH:mm:ss')
     }
   },
   mounted() {

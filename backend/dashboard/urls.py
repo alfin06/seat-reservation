@@ -8,6 +8,7 @@ urlpatterns = [
     path('admin/seats/list/', SeatGetAll.as_view(), name='seat-get_all'),
     path('admin/seats/disable/', SeatDisableView.as_view(), name='seat-disable'),
     path('admin/seats/enable/', SeatEnableView.as_view(), name='seat-enable'),
+    path('admin/seats/update/', SeatUpdateView.as_view(), name='seat-update'),
     path('admin/classroom/list/', ClassRoomGetAll.as_view(), name='classroom-get-all'),
     path('admin/classroom/insert/', ClassRoomCreateView.as_view(), name='classroom-create'),
     path('admin/classroom/disable/', ClassRoomDisableView.as_view(), name='classroom-disable'),
@@ -18,6 +19,7 @@ urlpatterns = [
     #Nick
     path('api/reservations/', ReservationCreateView.as_view(), name='reservation-create'),
     path('api/available/', AvailableRoomsSeatsView.as_view(), name='available-rooms-seats'),
+    path('api/allseats/', AllRoomsSeatsView.as_view(), name='all-rooms-seats'),
     path('api/check-qr/', QRCodeCheckView.as_view(), name='check-qr'),
     path('api/qr-check/', QRCodeCheckView2.as_view(), name='qr-check'),
     path('api/instant-booking/', InstantBookingView.as_view(), name='instant-booking'),

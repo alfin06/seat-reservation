@@ -5,14 +5,12 @@
         v-model="selectedRoomId"
         placeholder="Select a room"
         clearable
-        style="width: 300px;"
-      >
+        style="width: 300px;">
         <el-option
           v-for="room in rooms"
           :key="room.id"
           :label="room.name"
-          :value="room.id"
-        />
+          :value="room.id" />
       </el-select>
 
       <el-input
@@ -20,15 +18,46 @@
         placeholder="Search seat..."
         clearable
         style="width: 300px; margin-left: 10px;"
-        :disabled="!selectedRoomId"
-      />
+        :disabled="!selectedRoomId" />
     </div>
+
+    <el-dialog
+      title="Edit Seat"
+      v-model="editDialogVisible"
+      width="500px">
+      <el-form :model="editForm" label-width="120px">
+        <!-- <el-form-item label="Location">
+          <el-input v-model="editForm.location" />
+        </el-form-item>
+
+        <el-form-item label="Classroom">
+          <el-input v-model="editForm.classroom" />
+        </el-form-item> -->
+
+        <el-form-item label="Has Outlet">
+          <el-switch v-model="editForm.has_outlet" />
+        </el-form-item>
+
+        <el-form-item label="Available">
+          <el-switch v-model="editForm.is_available" />
+        </el-form-item>
+
+        <el-form-item label="Disabled">
+          <el-switch v-model="editForm.is_disable" />
+        </el-form-item>
+      </el-form>
+
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="editDialogVisible = false">Cancel</el-button>
+        <el-button type="primary" @click="submitEdit">Save</el-button>
+      </div>
+    </el-dialog>
 
     <template v-if="selectedRoomSeats.length">
       <el-table :data="displayedSeats" border>
         <el-table-column prop="name" label="Seat Name" sortable />
         <el-table-column prop="location" label="Location" />
-        <el-table-column prop="classroom" label="Classroom" width="120" />
+        <el-table-column prop="classroom" label="Classroom" width="90" />
 
         <el-table-column label="Outlet" width="90">
           <template #default="{ row }">
@@ -46,7 +75,7 @@
           </template>
         </el-table-column>
 
-        <el-table-column label="Status" width="90">
+        <el-table-column label="Status" width="100">
           <template #default="{ row }">
             <el-tag :type="row.is_disable.value ? 'danger' : 'info'">
               {{ row.is_disable.display }}
@@ -54,35 +83,35 @@
           </template>
         </el-table-column>
 
-        <el-table-column prop="updated_at" label="Last Updated" width="180" />
+        <el-table-column label="Last Updated" width="180">
+          <template #default="{ row }">
+            {{ formatDate(row.updated_at) }}
+          </template>
+        </el-table-column>
 
-        <el-table-column label="Actions" width="180">
+        <el-table-column label="Actions" width="150">
           <template #default="{ row }">
             <el-button-group>
-              <el-button
-                type="warning"
-                size="mini"
-                @click="toggleEnable(row)">
-                Enable
+              <el-button type="primary" size="mini" @click="openEditModal(row)">
+                <i class="bi bi-pencil"></i>&nbsp;Edit
               </el-button>
-              <el-button
-                type="danger"
-                size="mini"
-                @click="toggleDisable(row)"
-              >
-                Disable
+              <el-button type="warning" size="mini" @click="toggleEnable(row)">
+                <i class="bi bi-eye"></i>&nbsp;Enable
+              </el-button>
+              <el-button type="danger" size="mini" @click="toggleDisable(row)">
+                <i class="bi bi-x"></i>&nbsp;Disable
               </el-button>
             </el-button-group>
           </template>
         </el-table-column>
 
-        <el-table-column label="QR Code" width="140">
+        <el-table-column label="QR Code" width="100">
           <template #default="{ row }">
             <el-button
               size="mini"
               @click="generateQR(row)"
               class="open-btn">
-              <i class="bi bi-qr-code"></i> &nbsp;Generate QR
+              <i class="bi bi-qr-code"></i>
             </el-button>
           </template>
         </el-table-column>
@@ -95,8 +124,7 @@
           :current-page="currentPage"
           :page-size="pageSize"
           :total="filteredSeats.length"
-          @current-change="handlePageChange"
-        />
+          @current-change="handlePageChange" />
       </div>
     </template>
 
@@ -117,6 +145,7 @@
 <script>
 import axios from 'axios';
 import QrcodeVue from 'qrcode.vue';
+import dayjs from 'dayjs';
 
 export default {
   components: { QrcodeVue },
@@ -129,7 +158,16 @@ export default {
       searchQuery: '',
       showQR: false,
       qrValue: '',
-      size: 200
+      size: 200,
+      editDialogVisible: false,
+      editForm: {
+        id: null,
+        location: '',
+        classroom: '',
+        has_outlet: false,
+        is_available: true,
+        is_disable: false
+      }
     };
   },
   computed: {
@@ -137,7 +175,7 @@ export default {
       const room = this.rooms.find(r => r.id === this.selectedRoomId);
       return room ? room.seats.map(seat => ({
         ...seat,
-        name: `Seat ${seat.id}-${seat.location}`,
+        name: `Seat ${seat.id}`,
         location: seat.location,
         classroom: seat.classroom,
         is_available: {
@@ -166,10 +204,48 @@ export default {
     }
   },
   methods: {
+    openEditModal(row) {
+      console.log('Opening edit modal for:', row);
+      this.editForm = {
+        id: row.id,
+        location: row.location,
+        classroom: row.classroom,
+        has_outlet: row.has_outlet.value == 1 ? true : false,
+        is_available: row.is_available.value == 1 ? true : false,
+        is_disable: row.is_disable.value == 1 ? true : false
+      };
+      this.editDialogVisible = true;
+    },
+    async submitEdit() {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await axios.post(
+          'http://127.0.0.1:8000/dashboard/admin/seats/update/',
+          this.editForm,
+          {
+            headers: {
+              'Authorization': `Token ${token}`,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
+
+        if (res.data.message?.includes('successfully')) {
+          this.$message.success(res.data.message);
+          this.editDialogVisible = false;
+          await this.fetchRoomsAndSeats();
+        } else {
+          this.$message.error(res.data.message || 'Update failed.');
+        }
+      } catch (err) {
+        console.error(err);
+        this.$message.error('Server error updating seat.');
+      }
+    },
     async fetchRoomsAndSeats() {
       try {
         const token = localStorage.getItem('token');
-        const res = await axios.get('http://127.0.0.1:8000/dashboard/api/available/', {
+        const res = await axios.get('http://127.0.0.1:8000/dashboard/api/allseats/', {
           headers: {
             'Authorization': `Token ${token}`,
             'Content-Type': 'application/json'
@@ -264,6 +340,9 @@ export default {
     },
     closeModal() {
       this.showQR = false;
+    },
+    formatDate(dateString) {
+      return dayjs(dateString).format('YYYY-MM-DD HH:mm:ss')
     }
   },
   mounted() {
@@ -323,5 +402,8 @@ export default {
 .modal-content svg {
   width: var(--qr-size);
   height: var(--qr-size);
+}
+.dialog-footer {
+  text-align: right;
 }
 </style>

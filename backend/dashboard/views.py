@@ -24,6 +24,8 @@ from django.utils import timezone
 import pytz
 # import qrcode
 # from io import BytesIO
+from collections import OrderedDict
+from django.db.models import Count
 
 class ReservationCreateView(APIView):
     permission_classes = [IsAuthenticated]
@@ -91,6 +93,25 @@ class AvailableRoomsSeatsView(APIView):
             data.append(room_data)
 
         return Response({'rooms': data})
+    
+class AllRoomsSeatsView(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+        # has_outlet = request.query_params.get('has_outlet')
+        rooms = ClassRoom.objects.filter(is_available=1, is_disable=1)
+        data = []
+
+        for room in rooms:
+            seats_qs = room.seats.filter()
+            # if has_outlet is not None:
+            #     seats_qs = seats_qs.filter(has_outlet=(has_outlet.lower() == 'true'))
+
+            room_data = ClassRoomSerializer(room).data
+            room_data['seats'] = SeatSerializer(seats_qs, many=True).data
+            data.append(room_data)
+
+        return Response({'rooms': data})
 
 ##Nick
 
@@ -99,13 +120,49 @@ class AdminDashboardStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
+        # Base stats
         total_seats = Seat.objects.count()
         empty_seats_count = Seat.objects.filter(is_available=False).count()
         available_seats_count = total_seats - empty_seats_count
+
         total_classrooms = ClassRoom.objects.count()
         empty_classroom_count = ClassRoom.objects.filter(is_available=False).count()
         available_classroom_count = total_classrooms - empty_classroom_count
+
         number_of_user = User.objects.count()
+
+        # 1. Reservations in the past 7 days
+        today = timezone.now().date()
+        seven_days_ago = today - timedelta(days=6)
+
+        reservations = (
+            Reservation.objects
+            .filter(reserved_at__date__range=(seven_days_ago, today))
+            .extra(select={'day': "DATE(reserved_at)"})
+            .values('day')
+            .annotate(count=Count('id'))
+        )
+
+        reservations_last_week = OrderedDict()
+        for i in range(7):
+            day = seven_days_ago + timedelta(days=i)
+            reservations_last_week[day.strftime("%a")] = 0
+
+        for entry in reservations:
+            day_str = timezone.datetime.strptime(str(entry['day']), '%Y-%m-%d').strftime("%a")
+            reservations_last_week[day_str] = entry['count']
+
+        # 2. Available seats per room
+        available_seats_per_room = (
+            Seat.objects
+            .filter(is_available=1)  # 1 means available in your RESERVE_STATE
+            .values('classroom__name')
+            .annotate(available=Count('id'))
+        )
+
+        room_seat_data = {}
+        for room in available_seats_per_room:
+            room_seat_data[room['classroom__name']] = room['available']
 
         data = {
             "total_seats": total_seats,
@@ -115,6 +172,8 @@ class AdminDashboardStatusView(APIView):
             "empty_classroom_count": empty_classroom_count,
             "available_classroom_count": available_classroom_count,
             "number_of_user": number_of_user,
+            "reservations_last_week": reservations_last_week,
+            "available_seats_per_room": room_seat_data,
         }
 
         return Response(data)
@@ -637,3 +696,27 @@ class UpdateClassroomView(APIView):
 
         except Exception as e:
             return Response({'message': f'Server error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+        
+class SeatUpdateView(APIView): 
+    authentication_classes = [TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        data = request.data
+        seat_id = data.get('id')
+
+        if not seat_id:
+            return Response({'message': 'Seat ID is required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            seat = Seat.objects.get(id=seat_id)
+        except Seat.DoesNotExist:
+            return Response({'message': 'Seat not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+        # Parse and update fields
+        seat.has_outlet = data.get('has_outlet') in [True, 'Yes', 'yes']
+        seat.is_available = data.get('is_available') in [True, 'Available', 'available']
+        seat.is_disable = data.get('is_disable') in [True, 'Disabled', 'disabled']
+        seat.save()
+
+        return Response({'message': 'Seat updated successfully.'}, status=status.HTTP_200_OK)
