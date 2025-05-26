@@ -2,15 +2,7 @@ from django.urls import path
 from django.views.decorators.csrf import ensure_csrf_cookie
 from django.views.generic import View
 from django.http import JsonResponse
-from .views import (
-    LoginView, 
-    RegistrationView, 
-    PasswordResetRequestView, 
-    PasswordResetConfirmView,
-    EmailVerificationView,
-    LogoutView,
-    UserProfileView
-)
+from .views import *
 
 class GetCSRFToken(View):
     def get(self, request, *args, **kwargs):
@@ -25,4 +17,6 @@ urlpatterns = [
     path('auth/password-reset/', PasswordResetRequestView.as_view(), name='password-reset-request'),
     path('auth/password-reset-confirm/', PasswordResetConfirmView.as_view(), name='password-reset-confirm'),
     path('auth/verify-email/<str:token>/', EmailVerificationView.as_view(), name='email-verification'),
+    path('api/statistics/', UserStatisticsView.as_view(), name='user-statistics'),
+    path('api/all/', AllUsersView.as_view(), name='all-users'),
 ]
