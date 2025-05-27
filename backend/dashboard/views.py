@@ -415,7 +415,8 @@ class ReservationSettingUpdateView(generics.UpdateAPIView):
     serializer_class = ReservationSettingSerializer
 
     def get_object(self):
-        return ReservationSetting.get_solo()
+        obj, _ = ReservationSetting.objects.get_or_create(pk=1)
+        return obj
 
     def update(self, request, *args, **kwargs):
         # Treat PUT like PATCH to allow partial updates
