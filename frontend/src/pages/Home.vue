@@ -176,7 +176,7 @@ export default {
     <div class="row flex-nowrap">
       <main class="col py-4">
         <!-- Welcome & Actions -->
-        <section v-if="authStore.isAuthenticated" class="card shadow-sm mb-4 p-4">
+        <section v-if="authStore.isAuthenticated" class="card shadow-sm mb-4 p-4 welcome-section">
           <div class="d-flex flex-column flex-md-row align-items-center gap-3">
             <div class="flex-grow-1 text-center text-md-start">
               <h2 class="h5 fw-semibold text-dark">
@@ -323,5 +323,10 @@ button.btn:hover {
   background-color: #f8f9fa;
   transform: translateY(-2px);
   box-shadow: 0 0.75rem 1.25rem rgba(0, 0, 0, 0.05);
+}
+
+.welcome-section {
+  background: linear-gradient(to right, #fffbea, #fff3cd);
+  border-left: 5px solid #FFC107;
 }
 </style>

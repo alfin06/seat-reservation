@@ -82,16 +82,7 @@ class TestReservationAPI:
         assert response.status_code == status.HTTP_201_CREATED
 
     def test_qr_code_check_2(self):
-        # First create a reservation
-        reservation = Reservation.objects.create(
-            user=self.user,
-            classroom=self.classroom,
-            seat=self.seat,
-            reserved_at=timezone.now(),
-            reserved_end=timezone.now() + timedelta(hours=2),
-            status='0'
-        )
-        
+        # Create a seat without any active reservation
         url = '/dashboard/api/qr-check/'
         data = {
             'seat_id': self.seat.id

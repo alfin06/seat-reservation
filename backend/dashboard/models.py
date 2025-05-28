@@ -71,6 +71,8 @@ class Reservation(models.Model):
 
 class ReservationSetting(models.Model):
     max_booking_duration = models.PositiveSmallIntegerField(default=4)
+    reset_time = models.TimeField(default="23:00")  # optional if you use this
+
     def save(self, *args, **kwargs):
         self.pk = 1
         super().save(*args, **kwargs)

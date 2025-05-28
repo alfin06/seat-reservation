@@ -326,3 +326,30 @@ class UserProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserStatisticsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        now = timezone.now()
+        start_of_day = timezone.datetime(
+            year=now.year, month=now.month, day=now.day, tzinfo=now.tzinfo
+        )
+
+        active_users = User.objects.filter(is_active=1).count()
+        administrators = User.objects.filter(is_superuser=1).count()
+        new_today = User.objects.filter(email_verified_at__gte=start_of_day).count()
+
+        return Response({
+            "active_users": active_users,
+            "administrators": administrators,
+            "new_today": new_today
+        })
+    
+class AllUsersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)

@@ -1,14 +1,14 @@
 <template>
   <div class="booking-history">
     <h2>{{ $t('bookingHistory.title') }}</h2>
-    
+
     <!-- Filter Bar -->
     <div class="filter-bar">
       <select v-model="filters.room" class="filter-select">
         <option value="all">{{ $t('bookingHistory.filters.allRooms') }}</option>
         <option v-for="room in uniqueRooms" :key="room" :value="room">{{ room }}</option>
       </select>
-      
+
       <div class="date-filter-container">
         <button @click="toggleDatePicker" class="date-filter-btn">
           {{ dateFilterDisplay }}
@@ -23,14 +23,14 @@
           />
         </div>
       </div>
-      
+
       <select v-model="filters.status" class="filter-select">
         <option value="all">{{ $t('bookingHistory.filters.allStatuses') }}</option>
         <option value="ACTIVE">{{ $t('bookingHistory.statuses.active') }}</option>
         <option value="COMPLETED">{{ $t('bookingHistory.statuses.completed') }}</option>
         <option value="CANCELLED">{{ $t('bookingHistory.statuses.cancelled') }}</option>
       </select>
-      
+
       <button @click="resetFilters" class="reset-btn">{{ $t('bookingHistory.filters.reset') }}</button>
     </div>
 
@@ -100,48 +100,7 @@ export default {
   },
   data() {
     return {
-      bookings: [
-        {
-          id: 1,
-          room: "Room A",
-          seat: "Seat 1",
-          startTime: "2025-05-02T09:00:00",
-          endTime: "2025-05-02T11:00:00",
-          status: "ACTIVE"
-        },
-        {
-          id: 2,
-          room: "Room A",
-          seat: "Seat 3",
-          startTime: "2025-05-01T14:00:00",
-          endTime: "2025-05-01T16:00:00",
-          status: "ACTIVE"
-        },
-        {
-          id: 3,
-          room: "Room C",
-          seat: "Seat 2",
-          startTime: "2025-04-30T13:00:00",
-          endTime: "2025-04-30T15:00:00",
-          status: "CANCELLED"
-        },
-        {
-          id: 4,
-          room: "Room B",
-          seat: "Seat 4",
-          startTime: "2025-04-29T16:00:00",
-          endTime: "2025-04-29T18:00:00",
-          status: "COMPLETED"
-        },
-        {
-          id: 5,
-          room: "Room B",
-          seat: "Seat 5",
-          startTime: "2025-04-28T10:00:00",
-          endTime: "2025-04-28T12:00:00",
-          status: "COMPLETED"
-        }
-      ],
+      bookings: [],
       filters: {
         room: 'all',
         date: 'all',
@@ -154,7 +113,7 @@ export default {
   },
   computed: {
     uniqueRooms() {
-      return [...new Set(this.bookings.map(b => b.room))].sort()
+      return [...new Set(this.bookings.map(b => b.room))].sort();
     },
     dateFilterDisplay() {
       if (this.filters.date === 'all') return this.$t('bookingHistory.filters.allDates');
@@ -167,24 +126,66 @@ export default {
     },
     filteredBookings() {
       return this.bookings.filter(booking => {
-        const roomMatch = this.filters.room === 'all' || booking.room === this.filters.room
-        const dateMatch = this.checkDateMatch(booking.startTime)
-        const statusMatch = this.filters.status === 'all' || 
-          booking.status === this.filters.status
-        
-        return roomMatch && dateMatch && statusMatch
-      })
+        const roomMatch = this.filters.room === 'all' || booking.room === this.filters.room;
+        const dateMatch = this.checkDateMatch(booking.startTime);
+        const statusMatch = this.filters.status === 'all' || booking.status === this.filters.status;
+        return roomMatch && dateMatch && statusMatch;
+      });
     }
   },
   methods: {
+    async fetchBookingHistory() {
+  console.log('[BookingHistory] fetchBookingHistory called');
+
+  try {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      console.warn('[BookingHistory] No auth token found. Skipping API call.');
+      return;
+    }
+
+    const response = await fetch('http://localhost:8000/api/reservations/history/', {
+      headers: {
+        'Authorization': `Token ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Fetch failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('[BookingHistory] Data fetched:', data);
+
+    this.bookings = data.map(entry => ({
+      id: entry.id,
+      room: entry.classroom,
+      seat: entry.seat_name,
+      startTime: entry.reserved_at,
+      endTime: entry.reserved_end,
+      status: this.mapStatus(entry.status)
+    }));
+  } catch (error) {
+    console.error('[BookingHistory] Failed to fetch booking history:', error);
+  }
+},
+    mapStatus(code) {
+      switch (code) {
+        case '0': return 'ACTIVE';
+        case '1': return 'COMPLETED';
+        case '2': return 'CANCELLED';
+        default: return 'UNKNOWN';
+      }
+    },
     checkDateMatch(bookingDate) {
       if (this.filters.date === 'all') return true;
       if (!this.selectedDate?.start || !this.selectedDate?.end) return true;
-      
+
       const bookingDateTime = new Date(bookingDate).getTime();
       const startDateTime = new Date(this.selectedDate.start).setHours(0, 0, 0, 0);
       const endDateTime = new Date(this.selectedDate.end).setHours(23, 59, 59, 999);
-      
+
       return bookingDateTime >= startDateTime && bookingDateTime <= endDateTime;
     },
     formatDate(dateString) {
@@ -203,20 +204,20 @@ export default {
         room: 'all',
         date: 'all',
         status: 'all'
-      }
+      };
       this.selectedDate = null;
       this.showDatePicker = false;
     },
     showCancelModal(booking) {
-      this.cancelModal = booking
+      this.cancelModal = booking;
     },
     confirmCancel() {
       if (this.cancelModal) {
-        const index = this.bookings.findIndex(b => b.id === this.cancelModal.id)
+        const index = this.bookings.findIndex(b => b.id === this.cancelModal.id);
         if (index !== -1) {
-          this.bookings[index].status = 'CANCELLED'
+          this.bookings[index].status = 'CANCELLED';
         }
-        this.cancelModal = null
+        this.cancelModal = null;
       }
     },
     toggleDatePicker() {
@@ -229,10 +230,16 @@ export default {
       }
       this.showDatePicker = false;
     }
+  },
+  mounted() {
+    this.fetchBookingHistory();
   }
 }
 </script>
 
+<style scoped>
+/* keep your existing style unchanged */
+</style>
 <style scoped>
 /* ===== BASE STYLES ===== */
 .booking-history {

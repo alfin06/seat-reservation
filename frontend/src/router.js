@@ -56,13 +56,16 @@ router.beforeEach((to, from, next) => {
 
   // Redirect authenticated users away from login/register/forgot-password
   if ((to.name === 'login' || to.name === 'register' || to.name === 'forgot-password') && isAuthenticated) {
-    next({ name: 'home' });
+    next({ name: 'home' })
   } else if (to.meta.requiresAdmin && (!isAuthenticated || userRole !== 'ADMIN')) {
-    next({ name: 'home' });
+    next({ name: 'home' })
   } else if (to.meta.requiresAuth && !isAuthenticated) {
-    next({ name: 'login' });
+    next({ name: 'login' })
+  } else if (userRole === "ADMIN" && isAuthenticated && to.name !== 'admin-dashboard' && !to.meta.requiresAdmin) {
+    // Redirect only if admin is trying to access non-admin routes
+    next({ name: 'admin-dashboard' })
   } else {
-    next();
+    next()
   }
 })
 

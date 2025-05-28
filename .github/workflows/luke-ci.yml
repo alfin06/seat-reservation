@@ -2,9 +2,9 @@ name: Luke CI - Django Tests with Coverage
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, testing ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, testing ]
 
 jobs:
   backend-test:
