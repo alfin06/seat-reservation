@@ -1,0 +1,100 @@
+name: Luke CI - Django Tests with Coverage
+
+on:
+  push:
+    branches: [ main, testing ]
+  pull_request:
+    branches: [ main, testing ]
+
+jobs:
+  backend-test:
+    runs-on: ubuntu-latest
+
+    services:
+      mysql:
+        image: mysql:5.7
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: test_db
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+        cache: 'pip'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Cache pip packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Install backend dependencies
+      working-directory: ./backend
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    - name: Add .env for backend (CI DB config)
+      working-directory: ./backend
+      run: |
+        echo "DB_NAME=test_db" >> .env
+        echo "DB_USER=root" >> .env
+        echo "DB_PASSWORD=root" >> .env
+        echo "DB_HOST=127.0.0.1" >> .env
+        echo "DB_PORT=3306" >> .env
+        echo "DJANGO_SETTINGS_MODULE=seat_reservation.settings" >> .env
+        echo "SECRET_KEY=test-key" >> .env
+        echo "DEBUG=True" >> .env
+
+    - name: Run backend tests with coverage
+      working-directory: ./backend
+      env:
+        DJANGO_SETTINGS_MODULE: seat_reservation.settings
+        SECRET_KEY: test-key
+        DEBUG: "True"
+      run: |
+        python manage.py migrate
+        pytest --reuse-db --cov=. --cov-report=term-missing --cov-report=xml --junitxml=test-results.xml -v
+
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: backend/coverage.xml
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      with:
+        name: test-results
+        path: backend/test-results.xml
+
+    - name: Publish Test Results
+      uses: mikepenz/action-junit-report@v4
+      with:
+        report_paths: 'backend/test-results.xml'
+
+    - name: Install frontend and build
+      working-directory: ./frontend
+      run: |
+        npm install
+        npm run build
