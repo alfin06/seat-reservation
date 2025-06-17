@@ -23,6 +23,7 @@ from django.core.cache import cache
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
 import logging
+from rest_framework.authtoken.models import Token
 
 logger = logging.getLogger(__name__)
 
@@ -47,10 +48,14 @@ class LoginView(APIView):
             login(request, user)
             user.last_login = timezone.now()
             user.save()
+
+            # get or create token
+            token, created = Token.objects.get_or_create(user=user)
             
             return Response({
                 "message": "Login successful",
-                "user": UserSerializer(user).data
+                "user": UserSerializer(user).data,
+                "token": token.key
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -228,7 +233,6 @@ class EmailVerificationView(APIView):
             return Response({
                 "error": "Invalid verification link."
             }, status=status.HTTP_400_BAD_REQUEST)
-        
 
 ##############################
 from django.shortcuts import render
@@ -322,3 +326,30 @@ class UserProfileView(APIView):
             serializer.save()
             return Response(serializer.data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+class UserStatisticsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        now = timezone.now()
+        start_of_day = timezone.datetime(
+            year=now.year, month=now.month, day=now.day, tzinfo=now.tzinfo
+        )
+
+        active_users = User.objects.filter(is_active=1).count()
+        administrators = User.objects.filter(is_superuser=1).count()
+        new_today = User.objects.filter(email_verified_at__gte=start_of_day).count()
+
+        return Response({
+            "active_users": active_users,
+            "administrators": administrators,
+            "new_today": new_today
+        })
+    
+class AllUsersView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = User.objects.all()
+        serializer = UserSerializer(users, many=True)
+        return Response(serializer.data)
