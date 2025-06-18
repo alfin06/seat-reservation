@@ -17,12 +17,12 @@ A full-stack web application for reserving student seats in study areas and clas
 
 | Layer         | Technology           |
 |---------------|----------------------|
-| Frontend      | [Vue 3](https://vuejs.org/) + Element Plus |
+| Frontend      | [Vue 3](https://vuejs.org/) + Element Plus + Bootstrap |
 | Backend       | [Django](https://www.djangoproject.com/) REST Framework |
 | Database      | [MySQL](https://www.mysql.com/) |
-| Authentication| JWT + CSRF protection |
+| Authentication| JWT Auth |
 | CI/CD         | GitHub Actions / Custom pipelines |
-| Project Mgmt  | Jira (Free tier) |
+| Project Mgmt  | Jira |
 
 ---
 
