@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main, testing ]
 
+permissions:
+  contents: read
+  checks: write 
+
 jobs:
   backend-test:
     runs-on: ubuntu-latest
