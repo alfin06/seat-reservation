@@ -31,7 +31,6 @@
   "seatColumnLabel": "Seat",
   "actionColumnLabel": "Action",
   "bookButton": "Book Now",
- 
   "roomNameColumn": "Room Name",
   "capacityColumn": "Capacity",
   "actionsColumn": "Actions",
@@ -40,7 +39,7 @@
   "adminReportsDesc": "Generate and view reports on seat utilization and no-show rates.",
   "selectStudyRoom": "Select a study room",
   "selectSeat": "Select seat",
-  "reservationDuration":"Reservation Duration",
+  "reservationDuration": "Reservation Duration",
   "reserveSeatButton": "Reserve Seat",
   "reserving": "Reserving ...",
   "selectSeatPlaceholder": "Select seat",
@@ -77,5 +76,36 @@
   "userManagement": "User Management",
   "checkInSuccess": "Check-in Successful!",
   "youHaveCheckedIn": "You have successfully checked in to your reserved seat.",
-  "ok": "OK"
+  "ok": "OK",
+  "bookingHistory": {
+    "title": "Booking History",
+    "filters": {
+      "allRooms": "All Rooms",
+      "allStatuses": "All Statuses",
+      "allDates": "All Dates",
+      "selectDate": "Select Date",
+      "reset": "Reset"
+    },
+    "statuses": {
+      "active": "Active",
+      "completed": "Completed",
+      "cancelled": "Cancelled"
+    },
+    "table": {
+      "room": "Room",
+      "seat": "Seat",
+      "date": "Date",
+      "time": "Time",
+      "status": "Status",
+      "action": "Action"
+    },
+    "cancel": "Cancel",
+    "noAction": "—",
+    "modal": {
+      "title": "Cancel this booking?",
+      "keep": "Keep Booking",
+      "confirm": "Yes, Cancel"
+    },
+    "showingBookings": "Showing {count} bookings"
+  }
 }
