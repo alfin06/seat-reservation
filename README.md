@@ -48,6 +48,9 @@ python manage.py migrate
 # Create a superuser
 python manage.py createsuperuser
 
+# Copy `.env.example` to `.env` and update the values
+cp .env.example .env
+
 # Run the server
 python manage.py runserver
 ```

@@ -165,13 +165,13 @@ REST_FRAMEWORK = {
 
 # Email Configuration
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'mail.finicode.com'
+EMAIL_HOST = os.getenv('EMAIL_HOST', '')
 EMAIL_USE_TLS = False  # Use TLS instead of SSL
 EMAIL_USE_SSL = True  # Disable SSL since we're using TLS
 EMAIL_PORT = 465  # Changed to TLS port
-EMAIL_HOST_USER = 'seat-reservation@finicode.com'
-EMAIL_HOST_PASSWORD = 'YwlCR9aC}0jP'
-DEFAULT_FROM_EMAIL = 'seat-reservation@finicode.com'
+EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
+EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
+DEFAULT_FROM_EMAIL = os.getenv('EMAIL_HOST_USER', '')
 # SERVER_EMAIL = 'seat-reservation@finicode.com'
 #EMAIL_TIMEOUT = 30  # Add timeout setting
 
